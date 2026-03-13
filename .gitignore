@@ -1,3 +1,4 @@
+# ── Existentes (Por defecto) ───────────────────────────────
 *.iml
 .gradle
 /local.properties
@@ -12,4 +13,29 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+# Builds de módulos (no solo el raíz)
+app/build/
+**/build/
+
+# Archivos de idea que no deben compartirse
+.idea/misc.xml
+.idea/markdown.xml
+.idea/vcs.xml
+.idea/.name
+.idea/compiler.xml
+.idea/gradle.xml
+.idea/jarRepositories.xml
+
+# Keystore y credenciales — nunca subir
+*.jks
+*.keystore
+google-services.json
+
+# Kotlin/Java compilados
+*.class
+*.kotlin_module
+
+# MacOS
+.DS_Store
+**/.DS_Store
