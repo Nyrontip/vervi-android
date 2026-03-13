@@ -18,8 +18,8 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
+    primary = VerviColors.Blue,
+    secondary = VerviColors.OrangeSecondary,
     tertiary = Pink40
 
     /* Other default colors to override
@@ -35,9 +35,11 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun VerviAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    //darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    //dynamicColor: Boolean = true,
+    darkTheme: Boolean = false,        // ← siempre light, Vervi no tiene dark mode aún
+    dynamicColor: Boolean = false,     // ← desactiva colores dinámicos del sistema
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

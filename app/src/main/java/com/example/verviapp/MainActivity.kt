@@ -1,109 +1,131 @@
 package com.example.verviapp
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.verviapp.ui.components.VerviFooterText
 import com.example.verviapp.ui.theme.VerviAppTheme
+import com.example.verviapp.ui.theme.VerviColors
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            VerviAppTheme {
-                ChatScreen()
-            }
-        }
+        setContent { VerviAppTheme { SplashScreen() }}
     }
 }
 
-
 @Composable
-fun ChatScreen () {
-    Scaffold() {
-        padding ->
-        Column(Modifier.padding(padding)) {
-            ChatHeader(name="Simon", role="Developer", profileImage = 1){
+fun SplashScreen() {
+    var progress by remember { mutableStateOf(0f) }
+    val context = LocalContext.current
 
-            }
-        }
+    // Anima el progreso suavemente al valor objetivo
+    val animatedProgress by animateFloatAsState(
+        targetValue   = progress,
+        animationSpec = tween(durationMillis = 500, easing = LinearEasing),
+        label         = "progressAnimation"
+    )
+
+    // Arranca la animación y al terminar abre LoginActivity
+    LaunchedEffect(Unit) {
+        progress = 1f
+        delay(500) // espera que termine la animación
+        context.startActivity(Intent(context, LoginActivity::class.java))
+        (context as MainActivity).finish() // cierra el splash para que no quede en la pila
     }
-}
 
-
-@Composable
-fun ChatHeader(
-    name: String,
-    role: String,
-    profileImage: Int,
-    onBackClick: () -> Unit
-) {
-    Row(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
+        Spacer(modifier = Modifier.weight(0.8f))
 
-        IconButton(onClick = onBackClick) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back"
+        // ── Bloque central: logo, nombre, subtítulo, barra ──
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter            = painterResource(id = R.drawable.logo_vervi),
+                contentDescription = "Logo Vervi",
+                modifier           = Modifier.size(150.dp)
             )
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text          = "Vervi",
+                fontSize      = 36.sp,
+                fontWeight    = FontWeight.Bold,
+                color         = VerviColors.TextDark,
+                letterSpacing = 0.5.sp
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text          = "COLOMBIA",
+                fontSize      = 13.sp,
+                fontWeight    = FontWeight.Medium,
+                color         = VerviColors.TextGray,
+                letterSpacing = 3.sp
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Texto "Cargando..." alineado a la izquierda
+            Text(
+                text     = "Cargando...",
+                fontSize = 14.sp,
+                color    = VerviColors.TextMid,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Barra de progreso: fondo gris + relleno azul animado
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .background(VerviColors.ProgressBg, RoundedCornerShape(3.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(animatedProgress)
+                        .fillMaxHeight()
+                        .background(VerviColors.Blue, RoundedCornerShape(3.dp))
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
-        Image(
-            painter = painterResource(profileImage),
-            contentDescription = "Profile",
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
+        // Footer global — navigationBarsPadding y padding bottom ya están en el componente
+        VerviFooterText(
+            text     = "Conectando servicios en Colombia",
+            modifier = Modifier.navigationBarsPadding().padding(bottom = 16.dp)
         )
-
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Column {
-            Text(
-                text = name,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp
-            )
-
-            Text(
-                text = role,
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-        }
     }
 }
