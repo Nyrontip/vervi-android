@@ -51,7 +51,7 @@ fun SplashScreen() {
     LaunchedEffect(Unit) {
         progress = 1f
         delay(500) // espera que termine la animación
-        context.startActivity(Intent(context, LoginActivity::class.java))
+        context.startActivity(Intent(context, HomeActivity::class.java))
         (context as MainActivity).finish() // cierra el splash para que no quede en la pila
     }
 

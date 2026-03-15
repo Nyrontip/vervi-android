@@ -38,20 +38,7 @@ class LoginActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onBack: () -> Unit = {}) {
-    var selectedTab by remember { mutableStateOf(0) }
-
-    // Estado login
-    var email           by remember { mutableStateOf("") }
-    var password        by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-
-    // Estado registro
-    var nombre             by remember { mutableStateOf("") }
-    var regEmail           by remember { mutableStateOf("") }
-    var regPassword        by remember { mutableStateOf("") }
-    var regConfirm         by remember { mutableStateOf("") }
-    var regPasswordVisible by remember { mutableStateOf(false) }
-    var regConfirmVisible  by remember { mutableStateOf(false) }
+    var selectedTab by remember { mutableStateOf(0) } // Tab seleccionado (0 es login, 1 registro)
 
     Scaffold(
         // VerviTopBar compartido — mismo estilo en toda la app, solo cambia el título
@@ -105,28 +92,10 @@ fun LoginScreen(onBack: () -> Unit = {}) {
 
             if (selectedTab == 0) {
                 LoginForm(
-                    email            = email,
-                    password         = password,
-                    passwordVisible  = passwordVisible,
-                    onEmailChange    = { email = it },
-                    onPasswordChange = { password = it },
-                    onTogglePassword = { passwordVisible = !passwordVisible },
                     onLogin          = { /* TODO: lógica de login */ }
                 )
             } else {
                 RegisterForm(
-                    nombre           = nombre,
-                    email            = regEmail,
-                    password         = regPassword,
-                    confirmPassword  = regConfirm,
-                    passwordVisible  = regPasswordVisible,
-                    confirmVisible   = regConfirmVisible,
-                    onNombreChange   = { nombre = it },
-                    onEmailChange    = { regEmail = it },
-                    onPasswordChange = { regPassword = it },
-                    onConfirmChange  = { regConfirm = it },
-                    onTogglePassword = { regPasswordVisible = !regPasswordVisible },
-                    onToggleConfirm  = { regConfirmVisible = !regConfirmVisible },
                     onRegister       = { /* TODO: lógica de registro */ }
                 )
             }
@@ -153,21 +122,19 @@ fun LoginScreen(onBack: () -> Unit = {}) {
 // ── LoginForm — STATELESS ──────────
 @Composable
 private fun LoginForm(
-    email: String,
-    password: String,
-    passwordVisible: Boolean,
-    onEmailChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
-    onTogglePassword: () -> Unit,
     onLogin: () -> Unit
 ) {
-    VerviTextField(label = "Correo Electrónico", value = email, onValueChange = onEmailChange,
+    var email           by remember { mutableStateOf("") }
+    var password        by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    VerviTextField(label = "Correo Electrónico", value = email, onValueChange = { email = it },
         placeholder = "nombre@ejemplo.com", keyboardType = KeyboardType.Email)
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    VerviPasswordField(label = "Contraseña", value = password, onValueChange = onPasswordChange,
-        visible = passwordVisible, onToggle = onTogglePassword)
+    VerviPasswordField(label = "Contraseña", value = password, onValueChange = { password = it },
+        visible = passwordVisible, onToggle = { passwordVisible = !passwordVisible})
 
     Spacer(modifier = Modifier.height(28.dp))
     VerviButton(text = "Ingresar  →", onClick = onLogin)
@@ -176,37 +143,32 @@ private fun LoginForm(
 // ── RegisterForm — STATELESS: mismo patrón que LoginForm ───
 @Composable
 private fun RegisterForm(
-    nombre: String,
-    email: String,
-    password: String,
-    confirmPassword: String,
-    passwordVisible: Boolean,
-    confirmVisible: Boolean,
-    onNombreChange: (String) -> Unit,
-    onEmailChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
-    onConfirmChange: (String) -> Unit,
-    onTogglePassword: () -> Unit,
-    onToggleConfirm: () -> Unit,
     onRegister: () -> Unit
 ) {
-    VerviTextField(label = "Nombre de usuario", value = nombre, onValueChange = onNombreChange,
+    var nombre             by remember { mutableStateOf("") }
+    var regEmail           by remember { mutableStateOf("") }
+    var regPassword        by remember { mutableStateOf("") }
+    var regConfirm         by remember { mutableStateOf("") }
+    var regPasswordVisible by remember { mutableStateOf(false) }
+    var regConfirmVisible  by remember { mutableStateOf(false) }
+
+    VerviTextField(label = "Nombre de usuario", value = nombre, onValueChange = {nombre = it},
         placeholder = "Ejem: Camilo Martínez")
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    VerviTextField(label = "Correo Electrónico", value = email, onValueChange = onEmailChange,
+    VerviTextField(label = "Correo Electrónico", value = regEmail, onValueChange = { regEmail = it },
         placeholder = "nombre@ejemplo.com", keyboardType = KeyboardType.Email)
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    VerviPasswordField(label = "Contraseña", value = password, onValueChange = onPasswordChange,
-        visible = passwordVisible, onToggle = onTogglePassword)
+    VerviPasswordField(label = "Contraseña", value = regPassword, onValueChange = { regPassword = it },
+        visible = regPasswordVisible, onToggle = {regPasswordVisible = !regPasswordVisible})
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    VerviPasswordField(label = "Confirmar contraseña", value = confirmPassword,
-        onValueChange = onConfirmChange, visible = confirmVisible, onToggle = onToggleConfirm)
+    VerviPasswordField(label = "Confirmar contraseña", value = regConfirm,
+        onValueChange = {regConfirm = it}, visible = regConfirmVisible, onToggle = {regConfirmVisible = !regConfirmVisible})
 
     Spacer(modifier = Modifier.height(28.dp))
     VerviButton(text = "Registrarse  →", onClick = onRegister)
