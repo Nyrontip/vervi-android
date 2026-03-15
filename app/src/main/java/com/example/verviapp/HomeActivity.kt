@@ -1,5 +1,6 @@
 package com.example.verviapp
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -216,10 +218,11 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
 // ── HomeFabs — dos FABs mismo tamaño apilados ─────────────
 @Composable
 private fun HomeFabs() {
+    val context = LocalContext.current;
     Column(horizontalAlignment = Alignment.End) {
         // FAB perfil — tamaño intermedio fijo
         FloatingActionButton(
-            onClick        = { /* TODO: perfil rápido */ },
+            onClick        = { context.startActivity(Intent(context, PrestadoresActivity::class.java)) },
             containerColor = VerviColors.Blue,
             contentColor   = Color.White,
             modifier       = Modifier.size(52.dp)    // mismo tamaño que el naranja
