@@ -1,16 +1,25 @@
 package com.example.verviapp.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ListAlt
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -22,24 +31,79 @@ import androidx.compose.ui.unit.sp
 import com.example.verviapp.ui.theme.VerviColors
 
 // ════════════════════════════════════════════════════════════
-//  VerviTopBar — barra superior con flecha atrás y título centrado
-//  Uso: VerviTopBar(title = "Vervi", onBack = { finish() })
-//       VerviTopBar(title = "Lista de perfiles", onBack = { navController.popBackStack() })
+//  VerviTopBar — barra superior con título centrado
+//
+//  onBack = null  → sin flecha (ej: Home)
+//  onBack = { }   → con flecha de volver (ej: Login, Detalle)
+//  actions        → iconos opcionales a la derecha (ej: perfil, notificaciones)
+//
+//  Uso sin flecha con acciones:
+//    VerviTopBar(title = "Vervi", actions = {
+//        IconButton(onClick = {}) { Icon(Icons.Default.Person, null) }
+//    })
+//  Uso con flecha sin acciones:
+//    VerviTopBar(title = "Detalle", onBack = { finish() })
 // ════════════════════════════════════════════════════════════
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VerviTopBar(title: String, onBack: () -> Unit) {
+fun VerviTopBar(
+    title: String,
+    onBack: (() -> Unit)? = null,                           // null = sin flecha
+    actions: @Composable RowScope.() -> Unit = {}           // iconos derechos opcionales
+) {
     CenterAlignedTopAppBar(
         title = { Text(title, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
         navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+            // Solo muestra la flecha si onBack no es null
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                }
             }
         },
+        actions = actions,
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = VerviColors.BgColor
         )
     )
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviBottomBar — barra de navegación inferior global
+//
+//  Items fijos de la app — quemados aquí para no repetirlos en cada pantalla.
+//  Uso: VerviBottomBar(selectedIndex = tab, onItemSelected = { tab = it })
+// ════════════════════════════════════════════════════════════
+private data class BottomNavItem(val label: String, val icon: ImageVector)
+@Composable
+fun VerviBottomBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
+    val items = listOf(
+        BottomNavItem("Inicio",          Icons.Default.Home),
+        BottomNavItem("Solicitudes", Icons.Default.ListAlt),
+        BottomNavItem("Historial",       Icons.Default.History),
+        BottomNavItem("Perfil",          Icons.Default.Person)
+    )
+        NavigationBar(
+            containerColor = Color.White,
+            tonalElevation = 0.dp
+        ) {
+            items.forEachIndexed { index, item ->
+                NavigationBarItem(
+                    selected  = selectedIndex == index,
+                    onClick   = { onItemSelected(index) },
+                    icon      = { Icon(item.icon, contentDescription = item.label) },
+                    label     = { Text(item.label, fontSize = 11.sp) },
+                    alwaysShowLabel = true,
+                    colors    = NavigationBarItemDefaults.colors(
+                        selectedIconColor   = VerviColors.Blue,
+                        selectedTextColor   = VerviColors.Blue,
+                        unselectedIconColor = VerviColors.TextGray,
+                        unselectedTextColor = VerviColors.TextGray,
+                        indicatorColor      = Color.Transparent
+                    )
+                )
+            }
+        }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -111,6 +175,104 @@ fun VerviPasswordField(
         colors   = verviFieldColors(),
         modifier = modifier.fillMaxWidth()
     )
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviSearchField — barra de búsqueda estilizada
+//  Uso: VerviSearchField(value = query, onValueChange = { query = it },
+//           placeholder = "¿Qué servicio necesitas?")
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviSearchField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String = "Buscar...",
+    modifier: Modifier = Modifier,
+    leadingIcon: ImageVector? = null
+) {
+    OutlinedTextField(
+        value           = value,
+        onValueChange   = onValueChange,
+        placeholder     = { Text(placeholder, color = Color(0xFFAAAAAA), fontSize = 14.sp) },
+        singleLine      = true,
+        shape           = RoundedCornerShape(16.dp),                    // más redondeado que inputs de form
+        leadingIcon     = if (leadingIcon != null) ({
+            Icon(leadingIcon, contentDescription = null, tint = Color(0xFFAAAAAA),modifier = Modifier.size(20.dp))
+        }) else null,
+        colors          = verviFieldColors(),
+        textStyle     = LocalTextStyle.current.copy(fontSize = 14.sp),
+        modifier      = modifier.fillMaxWidth().height(52.dp)   // altura fija compacta
+    )
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviChips — fila de chips seleccionables (solo uno activo a la vez)
+//  Uso: VerviChips(opciones = listOf("Todos","Limpieza"), selected = cat,
+//           onSelect = { cat = it })
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviChips(
+    opciones: List<String>,
+    selected: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier              = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        opciones.forEach { opcion ->
+            val isSelected = opcion == selected
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isSelected) VerviColors.Blue else Color.White)
+                    .clickable { onSelect(opcion) }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text       = opcion,
+                    fontSize   = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color      = if (isSelected) Color.White else VerviColors.TextDark
+                )
+            }
+        }
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviBadge — chip/badge informativo NO seleccionable
+//
+//  Dos variantes:
+//  - filled:   fondo de color, texto blanco  (ej: precio "$50.000 COP")
+//  - outlined: fondo transparente, borde+texto de color  (ej: "URGENTE")
+//
+//  Uso filled:   VerviBadge(text = "$50.000 COP", color = VerviColors.Blue)
+//  Uso outlined: VerviBadge(text = "URGENTE", color = VerviColors.Blue, outlined = true)
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviBadge(
+    text: String,
+    color: Color = VerviColors.Blue,
+    outlined: Boolean = false,              // false = fondo de color | true = solo borde
+    fontSize: TextUnit = 11.sp
+) {
+    val bgColor   = if (outlined) Color.Transparent else Color.White
+    val borderMod = if (outlined)
+        Modifier.border(1.dp, color, RoundedCornerShape(6.dp))
+    else
+        Modifier
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(bgColor)
+            .then(borderMod)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(text, fontSize = fontSize, fontWeight = FontWeight.Bold, color = color)
+    }
 }
 
 // ════════════════════════════════════════════════════════════
