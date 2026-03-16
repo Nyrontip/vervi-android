@@ -50,7 +50,6 @@ class PrestadoresActivity : ComponentActivity() {
 @Composable
 fun PrestadoresScreen(onBack: () -> Unit = {}) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedTab by remember { mutableStateOf(0) }
     var selectedCat by remember { mutableStateOf("Todos") }
 
     val categorias   = listOf("Todos", "Carpinteros", "Plomeros", "Electricistas")
@@ -64,7 +63,7 @@ fun PrestadoresScreen(onBack: () -> Unit = {}) {
 
     Scaffold(
         topBar    = { VerviTopBar(title = "Directorio de Prestadores", onBack = onBack) },
-        bottomBar = { VerviBottomBar(selectedIndex = selectedTab, onItemSelected = { selectedTab = it }) },
+        bottomBar = { VerviBottomBar() },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -102,7 +101,6 @@ fun PrestadoresScreen(onBack: () -> Unit = {}) {
     }
 }
 
-// ── PrestadorCard —
 @Composable
 private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
     Card(
@@ -147,12 +145,7 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
 
                     // Badge especialidad + rating en la misma fila
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        VerviBadge(
-                            text     = prestador.especialidad,
-                            color    = VerviColors.Blue,
-                            outlined = true,
-                            fontSize = 10.sp
-                        )
+                        VerviBadge(text     = prestador.especialidad,  color    = VerviColors.TextDark, fontSize = 10.sp, outlined = true)
 
                         Spacer(modifier = Modifier.width(8.dp))
 
@@ -169,17 +162,7 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Botón outlined "Ver Perfil" — OutlinedButton nativo de Material3
-            // No se usa VerviButton porque este es outlined, no filled
-            OutlinedButton(
-                onClick  = onVerPerfil,
-                shape    = RoundedCornerShape(10.dp),
-                border   = BorderStroke(1.dp, VerviColors.Blue),
-                modifier = Modifier.fillMaxWidth().height(46.dp)
-            ) {
-                Text("Ver Perfil", fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold, color = VerviColors.Blue)
-            }
+            VerviOutlinedButton(text = "Ver Perfil", onClick = onVerPerfil)
         }
     }
 }
