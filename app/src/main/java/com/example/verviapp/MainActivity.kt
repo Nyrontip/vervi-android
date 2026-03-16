@@ -30,6 +30,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.verviapp.ui.screens.NotificationsScreen
+import com.example.verviapp.ui.screens.RequestsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +60,9 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("notifications") {
                     NotificationsScreen(navController)
+                }
+                composable("request/management") {
+                    RequestsScreen(navController)
                 }
 
             }

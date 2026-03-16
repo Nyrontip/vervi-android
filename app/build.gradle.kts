@@ -51,6 +51,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.navigation)
+    implementation(libs.coil)
+    implementation(libs.androidx.compose.ui.text)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
