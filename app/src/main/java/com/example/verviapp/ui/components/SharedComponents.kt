@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,8 +36,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.verviapp.HomeActivity
-import com.example.verviapp.ProfileActivity
+import androidx.navigation.NavController
+import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import com.example.verviapp.ui.theme.VerviColors
 
 // ════════════════════════════════════════════════════════════
@@ -84,21 +85,27 @@ fun VerviTopBar(
 private data class BottomNavItem(
     val label: String,
     val icon: ImageVector,
-    val activityClass: Class<out Activity>  // Activity destino de cada tab
+    val route: String
 )
 @Composable
-fun VerviBottomBar() {
-    val context = LocalContext.current;
-
+fun VerviBottomBar(navController: NavController) {
     val items = listOf(
-        BottomNavItem("Inicio",       Icons.Default.Home, HomeActivity::class.java),
-        BottomNavItem("Solicitudes",  Icons.Default.ListAlt,  HomeActivity::class.java),  // TODO: SolicitudesActivity
-        BottomNavItem("Historial",    Icons.Default.History,  HomeActivity::class.java),  // TODO: HistorialActivity
-        BottomNavItem("Perfil",       Icons.Default.Person, ProfileActivity::class.java)
+        BottomNavItem("Inicio",      Icons.Default.Home, "home"),
+        BottomNavItem("Solicitudes", Icons.Default.ListAlt, ""),
+        BottomNavItem("Historial",   Icons.Default.History, ""),
+        BottomNavItem("Perfil",      Icons.Default.Person, "profile")
     )
-    // Detecta en qué Activity está parado comparando el nombre de la clase actual
-    val selectedIndex = items.indexOfFirst { it.activityClass == context::class.java }
-        .takeIf { it >= 0 } ?: 0   // fallback a Inicio si no matchea ninguno
+
+// Observa el backStack del NavController
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+// Obtiene la ruta de la pantalla actual
+    val currentRoute = navBackStackEntry?.destination?.route
+
+// Busca el índice del item que coincide con la ruta actual
+    val selectedIndex = items.indexOfFirst {
+        it.route.lowercase() == currentRoute?.lowercase()  // lowercase moderno y seguro con null
+    }.takeIf { it >= 0 } ?: 0  // fallback a Inicio si no coincide ninguno
 
     NavigationBar(
             containerColor = Color.White,
@@ -107,13 +114,15 @@ fun VerviBottomBar() {
             items.forEachIndexed { index, item ->
                 NavigationBarItem(
                     selected  = selectedIndex == index,
-                    onClick         = {
-                        if (index != selectedIndex) {// No navega si ya está en ese Activity
-                            context.startActivity(
-                                Intent(context, item.activityClass).apply {
-                                    flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT // Evita apilar Activities — trae al frente si ya existe
-                                }
-                            )
+                    onClick = {
+                        val route = items.get(index).route
+                        if (index == selectedIndex || route == "") {// No navega si ya está en ese Activity o no hay ruta
+                            return@NavigationBarItem
+                        }
+                        navController.navigate(route) {
+                        // Configuraciones equivalentes al FLAG
+                            launchSingleTop = true      // Evita duplicar la pantalla en el backstack
+                            restoreState = true         // Trae la pantalla del backstack si ya existe
                         }
                     },
                     icon      = { Icon(item.icon, contentDescription = item.label) },

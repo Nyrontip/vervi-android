@@ -26,25 +26,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
 
-class ProfileActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent { VerviAppTheme { ProfileScreen(onBack = { finish() }) } }
-    }
-}
-
 @Composable
-fun ProfileScreen(onBack: () -> Unit = {}) {
+fun ProfileScreen(navController: NavController) {
     Scaffold(
         topBar = {
             VerviTopBar(
                 title   = "Mi Perfil",
-                onBack  = onBack,
+                onBack  = { navController.popBackStack() },
                 actions = {
                     IconButton(onClick = { /* TODO: ajustes */ }) {
                         Icon(Icons.Default.Settings, contentDescription = "Ajustes",
@@ -54,7 +47,7 @@ fun ProfileScreen(onBack: () -> Unit = {}) {
             )
         },
         bottomBar = {
-            VerviBottomBar()
+            VerviBottomBar(navController)
         },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->

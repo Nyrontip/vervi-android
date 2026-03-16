@@ -23,26 +23,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
 
-class LoginActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent { VerviAppTheme  { LoginScreen(onBack = { finish() }) } }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onBack: () -> Unit = {}) {
+fun LoginScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf(0) } // Tab seleccionado (0 es login, 1 registro)
 
     Scaffold(
         // VerviTopBar compartido — mismo estilo en toda la app, solo cambia el título
-        topBar = { VerviTopBar(title = "Vervi", onBack = onBack) },
+        topBar = { VerviTopBar(title = "Vervi", onBack = { navController.popBackStack()}) },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(

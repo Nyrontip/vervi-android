@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
+import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
@@ -38,17 +39,8 @@ data class Prestador(
     val reviews: Int,
     val imagen: Int
 )
-
-class PrestadoresActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent { VerviAppTheme { PrestadoresScreen(onBack = { finish() }) } }
-    }
-}
-
 @Composable
-fun PrestadoresScreen(onBack: () -> Unit = {}) {
+fun PrestadoresScreen(navController: NavController) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCat by remember { mutableStateOf("Todos") }
 
@@ -62,8 +54,8 @@ fun PrestadoresScreen(onBack: () -> Unit = {}) {
     )
 
     Scaffold(
-        topBar    = { VerviTopBar(title = "Directorio de Prestadores", onBack = onBack) },
-        bottomBar = { VerviBottomBar() },
+        topBar    = { VerviTopBar(title = "Directorio de Prestadores", onBack = { navController.popBackStack()}) },
+        bottomBar = { VerviBottomBar(navController) },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(

@@ -1,7 +1,6 @@
 package com.example.verviapp
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
@@ -39,17 +39,8 @@ data class Servicio(
     val imagen: Int,
     val categoria: String
 )
-
-class HomeActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent { VerviAppTheme { HomeScreen() } }
-    }
-}
-
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCat by remember { mutableStateOf("Todos") }
 
@@ -63,20 +54,21 @@ fun HomeScreen() {
 
     val categorias = listOf("Todos", "Carpintería", "Limpieza", "Electricidad")
     
-    val context = LocalContext.current;
-
     Scaffold(
         topBar = {
             VerviTopBar(
                 title   = "Vervi",
                 onBack  = null,
                 actions = {
-                    IconButton(onClick        = { context.startActivity(Intent(context,
-                        LoginActivity::class.java)) }) {
+                    IconButton(onClick        = {
+                        navController.navigate("login")
+                    }) {
                         Icon(Icons.Default.Person, contentDescription = "Perfil",
                             tint = VerviColors.TextDark)
                     }
-                    IconButton(onClick = { /* TODO: notificaciones */ }) {
+                    IconButton(onClick = {
+                        navController.navigate("notifications")
+                    }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notificaciones",
                             tint = VerviColors.TextDark)
                     }
@@ -84,9 +76,9 @@ fun HomeScreen() {
             )
         },
         bottomBar = {
-            VerviBottomBar()
+            VerviBottomBar(navController)
         },
-        floatingActionButton = { HomeFabs(context) },
+        floatingActionButton = { HomeFabs(navController) },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -211,11 +203,11 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
 
 // ── HomeFabs — dos FABs mismo tamaño apilados ─────────────
 @Composable
-private fun HomeFabs(context: Context) {
+private fun HomeFabs(navController: NavController) {
     Column(horizontalAlignment = Alignment.End) {
         // FAB perfil — tamaño intermedio fijo
         FloatingActionButton(
-            onClick        = { context.startActivity(Intent(context, PrestadoresActivity::class.java)) },
+            onClick        = { navController.navigate("prestadores")},
             containerColor = VerviColors.Blue,
             contentColor   = Color.White,
             modifier       = Modifier.size(52.dp)    // mismo tamaño que el naranja

@@ -31,18 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.verviapp.ui.theme.VerviAppTheme
 
-class ChatActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            VerviAppTheme {
-                ChatScreen()
-            }
-        }
-    }
-}
-
 @Composable
 fun ChatScreen () {
     Scaffold() {
