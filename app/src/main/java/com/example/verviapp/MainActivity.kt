@@ -26,106 +26,41 @@ import com.example.verviapp.ui.components.VerviFooterText
 import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
 import kotlinx.coroutines.delay
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { VerviAppTheme { SplashScreen() }}
-    }
-}
+        setContent {
+            val navController = rememberNavController()
 
-@Composable
-fun SplashScreen() {
-    var progress by remember { mutableStateOf(0f) }
-    val context = LocalContext.current
-
-    // Anima el progreso suavemente al valor objetivo
-    val animatedProgress by animateFloatAsState(
-        targetValue   = progress,
-        animationSpec = tween(durationMillis = 500, easing = LinearEasing),
-        label         = "progressAnimation"
-    )
-
-    // Arranca la animación y al terminar abre LoginActivity
-    LaunchedEffect(Unit) {
-        progress = 1f
-        delay(500) // espera que termine la animación
-        context.startActivity(Intent(context, HomeActivity::class.java))
-        (context as MainActivity).finish() // cierra el splash para que no quede en la pila
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Spacer(modifier = Modifier.weight(0.8f))
-
-        // ── Bloque central: logo, nombre, subtítulo, barra ──
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter            = painterResource(id = R.drawable.logo_vervi),
-                contentDescription = "Logo Vervi",
-                modifier           = Modifier.size(150.dp)
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text          = "Vervi",
-                fontSize      = 36.sp,
-                fontWeight    = FontWeight.Bold,
-                color         = VerviColors.TextDark,
-                letterSpacing = 0.5.sp
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text          = "COLOMBIA",
-                fontSize      = 13.sp,
-                fontWeight    = FontWeight.Medium,
-                color         = VerviColors.TextGray,
-                letterSpacing = 3.sp
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Texto "Cargando..." alineado a la izquierda
-            Text(
-                text     = "Cargando...",
-                fontSize = 14.sp,
-                color    = VerviColors.TextMid,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // Barra de progreso: fondo gris + relleno azul animado
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .background(VerviColors.ProgressBg, RoundedCornerShape(3.dp))
+            NavHost(
+                navController = navController,
+                startDestination = "splash"
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(animatedProgress)
-                        .fillMaxHeight()
-                        .background(VerviColors.Blue, RoundedCornerShape(3.dp))
-                )
+                composable("splash") {
+                    SplashScreen(navController)
+                }
+                composable("login") {
+                    LoginScreen(navController)
+                }
+                composable("home") {
+                    HomeScreen(navController)
+                }
+                composable("prestadores") {
+                    PrestadoresScreen(navController)
+                }
+                composable("profile") {
+                    ProfileScreen(navController)
+                }
+
             }
-        }
 
-        Spacer(modifier = Modifier.weight(1f))
+            VerviAppTheme {
 
-        // Footer global — navigationBarsPadding y padding bottom ya están en el componente
-        VerviFooterText(
-            text     = "Conectando servicios en Colombia",
-            modifier = Modifier.navigationBarsPadding().padding(bottom = 16.dp)
-        )
+        }}
     }
 }
