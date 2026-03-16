@@ -1,5 +1,8 @@
 package com.example.verviapp.ui.components
 
+import android.app.Activity
+import android.content.Intent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ListAlt
@@ -16,18 +20,23 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.verviapp.HomeActivity
+import com.example.verviapp.ProfileActivity
 import com.example.verviapp.ui.theme.VerviColors
 
 // ════════════════════════════════════════════════════════════
@@ -70,27 +79,43 @@ fun VerviTopBar(
 
 // ════════════════════════════════════════════════════════════
 //  VerviBottomBar — barra de navegación inferior global
-//
 //  Items fijos de la app — quemados aquí para no repetirlos en cada pantalla.
-//  Uso: VerviBottomBar(selectedIndex = tab, onItemSelected = { tab = it })
 // ════════════════════════════════════════════════════════════
-private data class BottomNavItem(val label: String, val icon: ImageVector)
+private data class BottomNavItem(
+    val label: String,
+    val icon: ImageVector,
+    val activityClass: Class<out Activity>  // Activity destino de cada tab
+)
 @Composable
-fun VerviBottomBar(selectedIndex: Int, onItemSelected: (Int) -> Unit) {
+fun VerviBottomBar() {
+    val context = LocalContext.current;
+
     val items = listOf(
-        BottomNavItem("Inicio",          Icons.Default.Home),
-        BottomNavItem("Solicitudes", Icons.Default.ListAlt),
-        BottomNavItem("Historial",       Icons.Default.History),
-        BottomNavItem("Perfil",          Icons.Default.Person)
+        BottomNavItem("Inicio",       Icons.Default.Home, HomeActivity::class.java),
+        BottomNavItem("Solicitudes",  Icons.Default.ListAlt,  HomeActivity::class.java),  // TODO: SolicitudesActivity
+        BottomNavItem("Historial",    Icons.Default.History,  HomeActivity::class.java),  // TODO: HistorialActivity
+        BottomNavItem("Perfil",       Icons.Default.Person, ProfileActivity::class.java)
     )
-        NavigationBar(
+    // Detecta en qué Activity está parado comparando el nombre de la clase actual
+    val selectedIndex = items.indexOfFirst { it.activityClass == context::class.java }
+        .takeIf { it >= 0 } ?: 0   // fallback a Inicio si no matchea ninguno
+
+    NavigationBar(
             containerColor = Color.White,
             tonalElevation = 0.dp
-        ) {
+    ) {
             items.forEachIndexed { index, item ->
                 NavigationBarItem(
                     selected  = selectedIndex == index,
-                    onClick   = { onItemSelected(index) },
+                    onClick         = {
+                        if (index != selectedIndex) {// No navega si ya está en ese Activity
+                            context.startActivity(
+                                Intent(context, item.activityClass).apply {
+                                    flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT // Evita apilar Activities — trae al frente si ya existe
+                                }
+                            )
+                        }
+                    },
                     icon      = { Icon(item.icon, contentDescription = item.label) },
                     label     = { Text(item.label, fontSize = 11.sp) },
                     alwaysShowLabel = true,
@@ -285,15 +310,99 @@ fun VerviButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = VerviColors.Blue     // azul por defecto, personalizable
+    color: Color = VerviColors.Blue,
+    fillWidth: Boolean = true,        // false para usarlo dentro de rows/cards
+    height: Dp = 52.dp,               // altura personalizable
+    fontSize: TextUnit = 16.sp        // tamaño de texto personalizable
 ) {
     Button(
         onClick  = onClick,
         shape    = RoundedCornerShape(12.dp),
         colors   = ButtonDefaults.buttonColors(containerColor = color),
-        modifier = modifier.fillMaxWidth().height(52.dp)
+        modifier = modifier
+            .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier)
+            .height(height)
     ) {
-        Text(text, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(text, fontSize = fontSize, fontWeight = FontWeight.Bold)
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviOutlinedButton — botón con borde, sin relleno
+//  Uso: VerviOutlinedButton(text = "Ver Perfil", onClick = { ... })
+//       VerviOutlinedButton(text = "Cancelar", color = Color.Red, height = 40.dp)
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviOutlinedButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    color: Color = VerviColors.Blue,  // color del borde y texto
+    height: Dp = 46.dp,
+    fontSize: TextUnit = 14.sp
+) {
+    OutlinedButton(
+        onClick  = onClick,
+        shape    = RoundedCornerShape(10.dp),
+        border   = BorderStroke(1.dp, color),
+        modifier = modifier.fillMaxWidth().height(height)
+    ) {
+        Text(text, fontSize = fontSize, fontWeight = FontWeight.Bold, color = color)
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviActivityItem — fila de actividad con ícono, textos y flecha
+//  Uso:
+//    VerviActivityItem(
+//        icon      = Icons.Default.ListAlt,
+//        titulo    = "Mis Solicitudes",
+//        subtitulo = "Ver tus pedidos pendientes",
+//        onClick   = { }
+//    )
+//    // Color del ícono personalizable:
+//    VerviActivityItem(..., iconColor = VerviColors.OrangeSecondary)
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviActivityItem(
+    icon: ImageVector,
+    titulo: String,
+    subtitulo: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    iconColor: Color = VerviColors.Blue         // color del ícono personalizable
+) {
+    Row(
+        modifier          = modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Ícono con fondo redondeado azul suave
+        Box(
+            modifier          = Modifier
+                .size(42.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(VerviColors.BgColor),
+            contentAlignment  = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null,
+                tint = iconColor, modifier = Modifier.size(22.dp))
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // Textos ocupan el espacio restante
+        Column(modifier = Modifier.weight(1f)) {
+            Text(titulo, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                color = VerviColors.TextDark)
+            Text(subtitulo, fontSize = 12.sp, color = VerviColors.TextGray)
+        }
+
+        // Flecha de navegación
+        Icon(Icons.Default.ChevronRight, contentDescription = null,
+            tint = VerviColors.TextGray, modifier = Modifier.size(20.dp))
     }
 }
 

@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.VerviApp">
         <activity
+            android:name=".ProfileActivity"
+            android:exported="false"
+            android:label="@string/title_activity_profile"
+            android:theme="@style/Theme.VerviApp" />
+        <activity
             android:name=".PrestadoresActivity"
             android:exported="false"
             android:label="@string/title_activity_prestadores"

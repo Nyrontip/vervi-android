@@ -1,5 +1,6 @@
 package com.example.verviapp
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -50,7 +51,6 @@ class HomeActivity : ComponentActivity() {
 @Composable
 fun HomeScreen() {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedTab by remember { mutableStateOf(0) }
     var selectedCat by remember { mutableStateOf("Todos") }
 
     // Datos quemados — 2 servicios de ejemplo
@@ -62,6 +62,8 @@ fun HomeScreen() {
     )
 
     val categorias = listOf("Todos", "Carpintería", "Limpieza", "Electricidad")
+    
+    val context = LocalContext.current;
 
     Scaffold(
         topBar = {
@@ -69,7 +71,8 @@ fun HomeScreen() {
                 title   = "Vervi",
                 onBack  = null,
                 actions = {
-                    IconButton(onClick = { /* TODO: perfil */ }) {
+                    IconButton(onClick        = { context.startActivity(Intent(context,
+                        LoginActivity::class.java)) }) {
                         Icon(Icons.Default.Person, contentDescription = "Perfil",
                             tint = VerviColors.TextDark)
                     }
@@ -81,9 +84,9 @@ fun HomeScreen() {
             )
         },
         bottomBar = {
-            VerviBottomBar(selectedIndex = selectedTab, onItemSelected = { selectedTab = it })
+            VerviBottomBar()
         },
-        floatingActionButton = { HomeFabs() },
+        floatingActionButton = { HomeFabs(context) },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -151,12 +154,7 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
                 )
                 // Badge precio — fondo blanco, texto azul (usa VerviBadge global)
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)) {
-                    VerviBadge(
-                        text     = servicio.precio,
-                        color    = VerviColors.Blue,
-                        outlined = false,               // fondo azul suave, texto azul
-                        fontSize = 13.sp
-                        )
+                    VerviBadge(text     = servicio.precio, color    = VerviColors.Blue, fontSize = 13.sp,)
                 }
             }
 
@@ -201,14 +199,10 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
                         Text("${servicio.postulaciones} Postulaciones",
                             fontSize = 13.sp, color = VerviColors.TextGray)
                     }
-                    Button(
-                        onClick        = onDetalle,
-                        shape          = RoundedCornerShape(10.dp),
-                        colors         = ButtonDefaults.buttonColors(containerColor = VerviColors.Blue),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Text("Ver detalle", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    }
+                    VerviButton(
+                        text      = "Ver detalle",
+                        onClick   = onDetalle, fillWidth = false, height    = 38.dp, fontSize  = 13.sp
+                    )
                 }
             }
         }
@@ -217,8 +211,7 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
 
 // ── HomeFabs — dos FABs mismo tamaño apilados ─────────────
 @Composable
-private fun HomeFabs() {
-    val context = LocalContext.current;
+private fun HomeFabs(context: Context) {
     Column(horizontalAlignment = Alignment.End) {
         // FAB perfil — tamaño intermedio fijo
         FloatingActionButton(
