@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.wear.compose.navigation.currentBackStackEntryAsState
+import coil.compose.AsyncImage
+import com.example.verviapp.ui.screens.RequestItem
 import com.example.verviapp.ui.theme.VerviColors
 
 // ════════════════════════════════════════════════════════════
@@ -91,7 +95,7 @@ private data class BottomNavItem(
 fun VerviBottomBar(navController: NavController) {
     val items = listOf(
         BottomNavItem("Inicio",      Icons.Default.Home, "home"),
-        BottomNavItem("Solicitudes", Icons.Default.ListAlt, ""),
+        BottomNavItem("Solicitudes", Icons.Default.ListAlt, "request/management"),
         BottomNavItem("Historial",   Icons.Default.History, ""),
         BottomNavItem("Perfil",      Icons.Default.Person, "profile")
     )
@@ -235,7 +239,9 @@ fun VerviSearchField(
         }) else null,
         colors          = verviFieldColors(),
         textStyle     = LocalTextStyle.current.copy(fontSize = 14.sp),
-        modifier      = modifier.fillMaxWidth().height(52.dp)   // altura fija compacta
+        modifier      = modifier
+            .fillMaxWidth()
+            .height(52.dp)   // altura fija compacta
     )
 }
 
@@ -354,7 +360,9 @@ fun VerviOutlinedButton(
         onClick  = onClick,
         shape    = RoundedCornerShape(10.dp),
         border   = BorderStroke(1.dp, color),
-        modifier = modifier.fillMaxWidth().height(height)
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
     ) {
         Text(text, fontSize = fontSize, fontWeight = FontWeight.Bold, color = color)
     }
@@ -444,3 +452,220 @@ private fun verviFieldColors() = OutlinedTextFieldDefaults.colors(
     unfocusedContainerColor = Color.White,
     focusedContainerColor   = Color.White
 )
+
+// ════════════════════════════════════════════════════════════
+//  VerviSmallButton — botón compacto para cards y acciones secundarias
+//
+//  Variante ligera de VerviButton, optimizada para espacios reducidos
+//  como tarjetas, listas o acciones inline.
+//
+//  - Usa fondo con alpha (no sólido)
+//  - Altura reducida
+//  - Texto más pequeño
+//
+//  Uso:
+//    VerviSmallButton(
+//        text = "Cancelar",
+//        color = VerviColors.CancelRed,
+//        onClick = { }
+//    )
+//
+//    VerviSmallButton(
+//        text = "Confirmar",
+//        color = VerviColors.Primary,
+//        onClick = { },
+//        modifier = Modifier.weight(1f)
+//    )
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviSmallButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    color: Color = VerviColors.Blue,
+    backgroundAlpha: Float = 0.1f,
+    height: Dp = 36.dp,
+    fontSize: TextUnit = 12.sp
+) {
+    Button(
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = color.copy(alpha = backgroundAlpha)
+        ),
+        contentPadding = PaddingValues(vertical = 6.dp),
+        modifier = modifier
+            .then(if (modifier == Modifier) Modifier.fillMaxWidth() else Modifier)
+            .height(height)
+    ) {
+        Text(
+            text = text,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviStatusBadge — indicador de estado con punto + texto
+//
+//  Reemplaza combinaciones manuales como:
+//  StatusDot + TextSmall
+//
+//  Incluye:
+//  - Punto de color (estado visual)
+//  - Texto en mayúscula
+//  - Fondo suave con alpha
+//
+//  Ideal para estados como:
+//  "En curso", "Pendiente", "Borrador"
+//
+//  Uso:
+//    VerviStatusBadge(
+//        text = "En curso",
+//        color = Color(0xFF10B981)
+//    )
+//
+//    VerviStatusBadge(
+//        text = request.status,
+//        color = request.statusColor
+//    )
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviStatusBadge(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(color.copy(alpha = 0.1f))
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(6.dp)
+                .background(color, CircleShape)
+        )
+
+        Text(
+            text = text.uppercase(),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviRequestCard — tarjeta reutilizable de solicitud
+//
+//  Representa una solicitud del usuario con:
+//  - Estado (badge)
+//  - Título
+//  - Fecha + postulaciones
+//  - Imagen
+//  - Acciones (botones dinámicos)
+//
+//  Lógica:
+//  - "Borrador" → botón "Eliminar"
+//  - Otros estados → "Cancelar" + "Confirmar"
+//
+//  Diseñada para ser reutilizada en:
+//  - RequestsScreen
+//  - Home
+//  - Historial
+//
+//  Uso:
+//    VerviRequestCard(
+//        navController = navController,
+//        request = requestItem
+//    )
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviRequestCard(
+    navController: NavController,
+    request: RequestItem,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(VerviColors.CardBackground, RoundedCornerShape(12.dp))
+            .border(1.dp, VerviColors.BorderGray, RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+
+                VerviStatusBadge(
+                    text = request.status,
+                    color = request.statusColor
+                )
+
+                Text(
+                    text = request.title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = VerviColors.TextPrimary
+                )
+
+                Text(
+                    text = "${request.date} • ${request.applications}",
+                    fontSize = 12.sp,
+                    color = VerviColors.Primary
+                )
+            }
+
+            Row(
+                modifier = Modifier.padding(top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                if (request.status == "Borrador") {
+                    VerviSmallButton(
+                        text = "Eliminar",
+                        color = VerviColors.CancelRed,
+                        onClick = { navController.navigate("request/details") },
+                        modifier = Modifier.weight(1f)
+                    )
+                } else {
+
+                    VerviSmallButton(
+                        text = "Cancelar",
+                        color = VerviColors.CancelRed,
+                        onClick = { navController.navigate("request/details") },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    VerviSmallButton(
+                        text = "Confirmar",
+                        color = VerviColors.Primary,
+                        onClick = { navController.navigate("request/details") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+
+        AsyncImage(
+            model = request.imageUrl,
+            contentDescription = request.title,
+            contentScale = ContentScale.Crop,
+
+            modifier = Modifier
+                .size(96.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
+    }
+}
