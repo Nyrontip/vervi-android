@@ -281,6 +281,7 @@ fun StarRatingSelector(
 
 @Composable
 fun RatingBottomSheet(
+    navController: NavController,
     provider: Provider,
     modifier: Modifier = Modifier
 ) {
@@ -336,7 +337,7 @@ fun RatingBottomSheet(
 
         SecondaryTextButton(
             text = "Omitir por ahora",
-            onClick = { }
+            onClick = { navController.popBackStack() }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -378,7 +379,7 @@ fun RateServiceScreen(navController: NavController) {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
             ) {
-                RatingBottomSheet(provider)
+                RatingBottomSheet(navController,provider)
             }
         }
     }

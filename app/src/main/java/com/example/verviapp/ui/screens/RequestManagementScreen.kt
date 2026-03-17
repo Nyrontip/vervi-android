@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.VerviBottomBar
@@ -134,6 +133,7 @@ fun RequestCard(navController: NavController, request: RequestItem, modifier: Mo
             .border(1.dp, VerviColors.BorderGray, RoundedCornerShape(12.dp))
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween
+
     ) {
         Column(
             modifier = Modifier.weight(1f),
@@ -153,7 +153,7 @@ fun RequestCard(navController: NavController, request: RequestItem, modifier: Mo
 
             Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = {},
+                    onClick = {navController.navigate("request/details")},
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = VerviColors.Primary.copy(alpha = 0.1f)),
                     contentPadding = PaddingValues(vertical = 8.dp)
