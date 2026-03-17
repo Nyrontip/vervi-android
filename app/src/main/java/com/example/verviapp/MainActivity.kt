@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.verviapp.ui.screens.NotificationsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
+import com.example.verviapp.ui.screens.ServiceHistoryScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,35 +19,38 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
 
-            NavHost(
-                navController = navController,
-                startDestination = "splash"
-            ) {
-                composable("splash") {
-                    SplashScreen(navController)
-                }
-                composable("login") {
-                    LoginScreen(navController)
-                }
-                composable("home") {
-                    HomeScreen(navController)
-                }
-                composable("prestadores") {
-                    PrestadoresScreen(navController)
-                }
-                composable("profile") {
-                    ProfileScreen(navController)
-                }
-                composable("notifications") {
-                    NotificationsScreen(navController)
-                }
-                composable("request/management") {
-                    RequestsScreen(navController)
+            VerviAppTheme {
+                NavHost(
+                    navController = navController,
+                    startDestination = "splash"
+                ) {
+                    composable("splash") {
+                        SplashScreen(navController)
+                    }
+                    composable("login") {
+                        LoginScreen(navController)
+                    }
+                    composable("home") {
+                        HomeScreen(navController)
+                    }
+                    composable("prestadores") {
+                        PrestadoresScreen(navController)
+                    }
+                    composable("profile") {
+                        ProfileScreen(navController)
+                    }
+                    composable("notifications") {
+                        NotificationsScreen(navController)
+                    }
+                    composable("requests/management") {
+                        RequestsScreen(navController)
+                    }
+                    composable("services/history") {
+                        ServiceHistoryScreen(navController)
+                    }
+
                 }
             }
-
-            VerviAppTheme {
-
-        }}
+        }
     }
 }
