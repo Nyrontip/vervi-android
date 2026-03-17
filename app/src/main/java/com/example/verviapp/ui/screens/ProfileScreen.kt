@@ -1,9 +1,5 @@
 package com.example.verviapp
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
 
 @Composable
@@ -101,9 +96,9 @@ fun ProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Botones Editar / Cerrar sesión ──────────────────
-            VerviOutlinedButton(text = "Editar Perfil", onClick = { /* TODO */ })
+            VerviOutlinedButton(text = "Editar Perfil", onClick = { navController.navigate("editProfile") })
             Spacer(modifier = Modifier.height(8.dp))
-            VerviOutlinedButton(text = "Cerrar Sesión", onClick = { /* TODO */ },
+            VerviOutlinedButton(text = "Cerrar Sesión", onClick = { navController.navigate("login") },
                 color = Color(0xFFD32F2F))  // rojo para acción destructiva
 
             Spacer(modifier = Modifier.height(16.dp))

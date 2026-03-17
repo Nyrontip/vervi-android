@@ -153,8 +153,9 @@ fun VerviTextField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    labelSize: TextUnit = 14.sp,                    // tamaño del label personalizable
-    keyboardType: KeyboardType = KeyboardType.Text  // tipo de teclado: Text, Email, Number...
+    labelSize: TextUnit = 14.sp,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    leadingIcon: ImageVector? = null          // ícono izquierdo opcional
 ) {
     Text(label, fontWeight = FontWeight.Bold, fontSize = labelSize, color = VerviColors.TextDark)
     Spacer(modifier = Modifier.height(8.dp))
@@ -165,8 +166,43 @@ fun VerviTextField(
         singleLine      = true,
         shape           = RoundedCornerShape(12.dp),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        leadingIcon     = if (leadingIcon != null) ({
+            Icon(leadingIcon, contentDescription = null,
+                tint = Color(0xFFAAAAAA), modifier = Modifier.size(18.dp))
+        }) else null,
         colors          = verviFieldColors(),
         modifier        = modifier.fillMaxWidth()
+    )
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviTextArea — input de texto multilínea con label
+//  Uso: VerviTextArea(label = "Biografía", value = bio,
+//           onValueChange = { bio = it }, placeholder = "Cuéntanos...")
+//       VerviTextArea(..., minLines = 6)
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviTextArea(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    labelSize: TextUnit = 14.sp,
+    minLines: Int = 4,
+    maxLines: Int = 8
+) {
+    Text(label, fontWeight = FontWeight.Bold, fontSize = labelSize, color = VerviColors.TextDark)
+    Spacer(modifier = Modifier.height(8.dp))
+    OutlinedTextField(
+        value         = value,
+        onValueChange = onValueChange,
+        placeholder   = { Text(placeholder, color = Color(0xFFAAAAAA)) },
+        shape         = RoundedCornerShape(12.dp),
+        minLines      = minLines,
+        maxLines      = maxLines,
+        colors        = verviFieldColors(),
+        modifier      = modifier.fillMaxWidth()
     )
 }
 
@@ -320,9 +356,10 @@ fun VerviButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     color: Color = VerviColors.Blue,
-    fillWidth: Boolean = true,        // false para usarlo dentro de rows/cards
-    height: Dp = 52.dp,               // altura personalizable
-    fontSize: TextUnit = 16.sp        // tamaño de texto personalizable
+    fillWidth: Boolean = true,
+    height: Dp = 52.dp,
+    fontSize: TextUnit = 16.sp,
+    icon: ImageVector? = null             // ícono izquierdo opcional
 ) {
     Button(
         onClick  = onClick,
@@ -332,6 +369,10 @@ fun VerviButton(
             .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier)
             .height(height)
     ) {
+        if (icon != null) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+        }
         Text(text, fontSize = fontSize, fontWeight = FontWeight.Bold)
     }
 }

@@ -1,9 +1,5 @@
 package com.example.verviapp
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -25,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
 
 @OptIn(ExperimentalMaterial3Api::class)
