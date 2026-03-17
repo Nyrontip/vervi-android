@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.verviapp.ui.screens.NotificationsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
+import com.example.verviapp.ui.screens.RateServiceScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +48,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("services/history") {
                         ServiceHistoryScreen(navController)
+                    }
+                    composable("service/rate") {
+                        RateServiceScreen(navController)
                     }
 
                 }
