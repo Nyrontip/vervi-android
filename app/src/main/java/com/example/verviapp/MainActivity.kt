@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.verviapp.ui.screens.NotificationsScreen
+import com.example.verviapp.ui.screens.RequestDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
 
@@ -51,6 +52,10 @@ class MainActivity : ComponentActivity() {
                     composable("chat") {
                         ChatScreen(navController)
                     }
+                    composable("request/details") {
+                        RequestDetailsScreen(navController)
+                    }
+
                 }
             }
         }
