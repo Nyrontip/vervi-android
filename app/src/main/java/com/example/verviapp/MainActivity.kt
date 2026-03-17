@@ -29,7 +29,6 @@ import kotlinx.coroutines.delay
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.verviapp.ui.screens.HistorialScreen
 import com.example.verviapp.ui.screens.NotificationsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 
@@ -64,9 +63,6 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("request/management") {
                     RequestsScreen(navController)
-                }
-                composable("historial") {
-                    HistorialScreen(navController)
                 }
 
             }

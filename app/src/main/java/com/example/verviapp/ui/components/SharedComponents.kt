@@ -92,7 +92,7 @@ fun VerviBottomBar(navController: NavController) {
     val items = listOf(
         BottomNavItem("Inicio",      Icons.Default.Home, "home"),
         BottomNavItem("Solicitudes", Icons.Default.ListAlt, "request/management"),
-        BottomNavItem("Historial",   Icons.Default.History, "historial"),
+        BottomNavItem("Historial",   Icons.Default.History, ""),
         BottomNavItem("Perfil",      Icons.Default.Person, "profile")
     )
 
