@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.VerviBottomBar
+import com.example.verviapp.ui.components.VerviTopBar
 import com.example.verviapp.ui.theme.VerviColors
 
 /// -----------------------------
@@ -181,34 +182,13 @@ fun RequestCard(request: RequestItem, modifier: Modifier = Modifier) {
 }
 
 // -----------------------------
-// ORGANISMS
-// -----------------------------
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HeaderBar(navController: NavController) {
-    CenterAlignedTopAppBar(
-        title = {
-            Text("Solicitudes", color = VerviColors.TextPrimary)
-        },
-
-        navigationIcon = {
-            IconButton(onClick = {
-                navController.popBackStack()
-            }) {
-                Icon(Icons.Default.ArrowBack, null, tint = VerviColors.TextPrimary)
-            }
-        }
-    )
-}
-
-// -----------------------------
 // SCREEN / TEMPLATE
 // -----------------------------
 @Composable
 fun RequestsScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf(0) }
     Scaffold(
-        topBar = { HeaderBar(navController) },
+        topBar = { VerviTopBar("Solicitudes", { navController.popBackStack()}) },
         bottomBar = {
             VerviBottomBar(navController)
         },

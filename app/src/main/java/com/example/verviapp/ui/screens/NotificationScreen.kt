@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.verviapp.ui.components.VerviTopBar
 import com.example.verviapp.ui.theme.VerviColors
 
 // ---------- DATA ----------
@@ -253,22 +254,7 @@ fun NotificationsScreen(navController: NavController) {
         modifier = Modifier.systemBarsPadding(),
 
         topBar = {
-
-            CenterAlignedTopAppBar(
-
-                title = {
-                    Text("Notificaciones", color = VerviColors.TextPrimary)
-                },
-
-                navigationIcon = {
-
-                    IconButton(onClick = {
-                        navController.popBackStack()
-                    }) {
-                        Icon(Icons.Default.ArrowBack, null, tint = VerviColors.TextPrimary)
-                    }
-                }
-            )
+            VerviTopBar("Notificaciones", { navController.popBackStack()})
         },
 
         bottomBar = {}
@@ -279,7 +265,7 @@ fun NotificationsScreen(navController: NavController) {
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(VerviColors.BackgroundLight)
+                .background(VerviColors.BgColor)
         ) {
 
             Row(
