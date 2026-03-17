@@ -48,7 +48,9 @@ class MainActivity : ComponentActivity() {
                     composable("services/history") {
                         ServiceHistoryScreen(navController)
                     }
-
+                    composable("chat") {
+                        ChatScreen(navController)
+                    }
                 }
             }
         }

@@ -126,7 +126,7 @@ fun IconButtonAtom(
 // MOLECULES
 // -----------------------------
 @Composable
-fun RequestCard(request: RequestItem, modifier: Modifier = Modifier) {
+fun RequestCard(navController: NavController, request: RequestItem, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -153,7 +153,7 @@ fun RequestCard(request: RequestItem, modifier: Modifier = Modifier) {
 
             Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = {},
+                    onClick = { navController.navigate("")},
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = VerviColors.Primary.copy(alpha = 0.1f)),
                     contentPadding = PaddingValues(vertical = 8.dp)
@@ -235,7 +235,7 @@ fun RequestsScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(sampleRequests.size) { index ->
-                RequestCard(request = sampleRequests[index])
+                RequestCard(navController,request = sampleRequests[index])
             }
         }
     }
