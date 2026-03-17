@@ -372,7 +372,9 @@ fun RequestDetailsScreen(navController: NavController) {
                 PrimaryButton(
                     "Calificar Servicio",
                     Icons.Outlined.Grade
-                ) {}
+                ) {
+                    navController.navigate("service/rate")
+                }
             }
         }
 
