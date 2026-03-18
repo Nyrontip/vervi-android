@@ -22,12 +22,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
+
     Scaffold(
         topBar = {
             VerviTopBar(
@@ -74,7 +78,7 @@ fun ProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(12.dp))
 
             // ── Nombre ──────────────────────────────────────────
-            Text("Juan Pérez", fontSize = 22.sp, fontWeight = FontWeight.Bold,
+            Text(state.user.name, fontSize = 22.sp, fontWeight = FontWeight.Bold,
                 color = VerviColors.TextDark)
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -84,14 +88,14 @@ fun ProfileScreen(navController: NavController) {
                 Icon(Icons.Default.Star, contentDescription = null,
                     tint = VerviColors.OrangeSecondary, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("4.9", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                Text("${state.user.rating}", fontSize = 14.sp, fontWeight = FontWeight.Bold,
                     color = VerviColors.TextDark)
-                Text(" (124 reseñas)", fontSize = 13.sp, color = VerviColors.TextGray)
+                Text(" (${state.user.reviewCount} reseñas)", fontSize = 13.sp, color = VerviColors.TextGray)
             }
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            Text("Bogotá, Colombia", fontSize = 13.sp, color = VerviColors.TextGray)
+            Text(state.user.location, fontSize = 13.sp, color = VerviColors.TextGray)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -104,10 +108,9 @@ fun ProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Badges de rol — Cliente / Prestador ─────────────
-            // VerviBadge outlined reutilizado, no es chip seleccionable
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                VerviBadge(text = "Cliente",   color = VerviColors.Blue, outlined = true)
-                VerviBadge(text = "Prestador", color = VerviColors.Blue, outlined = true)
+                VerviBadge(text = "Cliente",   color = VerviColors.Blue, outlined = true, fontSize= 12.sp)
+                VerviBadge(text = "Prestador", color = VerviColors.Blue, outlined = true, fontSize= 12.sp)
             }
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -140,8 +143,9 @@ fun ProfileScreen(navController: NavController) {
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                VerviBadge(text = "Plomería",   color = VerviColors.TextDark, outlined = true)
-                VerviBadge(text = "Carpintería", color = VerviColors.TextDark, outlined = true)
+                state.user.categories.forEach { category ->
+                    VerviBadge(text = category, color = VerviColors.TextDark, outlined = true, fontSize=13.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -194,8 +198,8 @@ fun ProfileScreen(navController: NavController) {
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard(numero = "24", label = "PROYECTOS",  modifier = Modifier.weight(1f))
-                StatCard(numero = "12", label = "SOLICITUDES", modifier = Modifier.weight(1f))
+                StatCard(numero = "${state.user.projectCount}", label = "PROYECTOS",  modifier = Modifier.weight(1f))
+                StatCard(numero = "${state.user.requestCount}", label = "SOLICITUDES", modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(24.dp))

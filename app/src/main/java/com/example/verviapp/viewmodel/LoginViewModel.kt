@@ -1,34 +1,49 @@
 package com.example.verviapp.viewmodel
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Image
 import androidx.lifecycle.ViewModel
-import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviAppTheme
-import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.model.AuthState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
 class LoginViewModel : ViewModel() {
 
+    // _state es privado — solo el ViewModel puede modificarlo
+    private val _state = MutableStateFlow(AuthState())
+    // state es público — la UI solo puede leerlo con collectAsState()
+    val state: StateFlow<AuthState> = _state.asStateFlow()
+
+    fun login(email: String, password: String) {
+        if (email.isBlank() || password.isBlank()) {
+            _state.value = _state.value.copy(errorMessage = "Complete all fields")
+            return
+        }
+        _state.value = _state.value.copy(isLoading = true, errorMessage = null)
+
+        // TODO: reemplazar con llamada a API real
+        if (email == "test@vervi.com" && password == "123456") {
+            _state.value = _state.value.copy(isLoading = false, loginSuccess = true)
+        } else {
+            _state.value = _state.value.copy(isLoading = false,
+                errorMessage = "Invalid email or password")
+        }
+    }
+
+    fun register(name: String, email: String, password: String, confirm: String) {
+        if (name.isBlank() || email.isBlank() || password.isBlank()) {
+            _state.value = _state.value.copy(errorMessage = "Complete all fields")
+            return
+        }
+        if (password != confirm) {
+            _state.value = _state.value.copy(errorMessage = "Passwords do not match")
+            return
+        }
+        _state.value = _state.value.copy(isLoading = true, errorMessage = null)
+
+        // TODO: reemplazar con llamada a API real
+        _state.value = _state.value.copy(isLoading = false, registerSuccess = true)
+    }
+
+    // Resetea el estado al valor inicial — se llama después de navegar
+    fun resetState() { _state.value = AuthState() }
 }
