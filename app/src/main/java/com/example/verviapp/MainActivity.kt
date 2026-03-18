@@ -8,6 +8,7 @@ import com.example.verviapp.ui.theme.VerviAppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.verviapp.ui.screens.EditProfileScreen
 import com.example.verviapp.ui.screens.NotificationsScreen
 import com.example.verviapp.ui.screens.RateServiceScreen
 import com.example.verviapp.ui.screens.RequestDetailsScreen
@@ -40,6 +41,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("profile") {
                         ProfileScreen(navController)
+                    }
+                    composable("editProfile") {
+                        EditProfileScreen(navController)
                     }
                     composable("notifications") {
                         NotificationsScreen(navController)

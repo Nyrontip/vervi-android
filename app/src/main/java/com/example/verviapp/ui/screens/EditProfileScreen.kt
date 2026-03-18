@@ -26,16 +26,20 @@ import androidx.navigation.NavController
 import com.example.verviapp.R
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.verviapp.viewmodel.EditProfileViewModel
 
 @Composable
-fun EditProfileScreen(navController: NavController) {
-    // ── Estado del formulario ────────────────────────────────
-    var nombre        by remember { mutableStateOf("Juan Pérez") }
-    var bio           by remember { mutableStateOf("") }
-    var precio        by remember { mutableStateOf("50.000") }
-    var ubicacion     by remember { mutableStateOf("Bogotá") }
-    var modoPrestador by remember { mutableStateOf(true) }
-    var categorias    by remember { mutableStateOf(listOf("Tutorías", "Diseño")) }
+fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
+
+    // Vuelve atrás al guardar exitosamente
+    LaunchedEffect(state.saveSuccess) {
+        if (state.saveSuccess) {
+            navController.popBackStack()
+            viewModel.resetSaveSuccess()
+        }
+    }
 
     Scaffold(
         topBar         = { VerviTopBar(title = "Editar Perfil", onBack = { navController.popBackStack() }) },
@@ -83,8 +87,8 @@ fun EditProfileScreen(navController: NavController) {
             // ── Nombre completo ──────────────────────────────────
             VerviTextField(
                 label         = "Nombre Completo",
-                value         = nombre,
-                onValueChange = { nombre = it },
+                value         = state.name,
+                onValueChange = { viewModel.onNameChange(it) },
                 placeholder   = "Tu nombre completo"
             )
 
@@ -93,8 +97,8 @@ fun EditProfileScreen(navController: NavController) {
             // ── Biografía — VerviTextArea multilínea ─────────────
             VerviTextArea(
                 label         = "Biografía",
-                value         = bio,
-                onValueChange = { bio = it },
+                value         = state.bio,
+                onValueChange = { viewModel.onBioChange(it) },
                 placeholder   = "Cuéntanos un poco sobre tus servicios..."
             )
 
@@ -120,8 +124,8 @@ fun EditProfileScreen(navController: NavController) {
                             fontSize = 12.sp, color = VerviColors.TextSecondary)
                     }
                     Switch(
-                        checked         = modoPrestador,
-                        onCheckedChange = { modoPrestador = it },
+                        checked         = state.isProvider ,
+                        onCheckedChange = { viewModel.onProviderToggle(it) },
                         colors          = SwitchDefaults.colors(
                             checkedThumbColor   = Color.White,
                             checkedTrackColor   = VerviColors.Primary,
@@ -144,7 +148,7 @@ fun EditProfileScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier              = Modifier.fillMaxWidth()
             ) {
-                categorias.forEach { cat ->
+                state.categories.forEach { cat ->
                     InputChip(
                         selected     = true,
                         onClick      = { },
@@ -154,7 +158,7 @@ fun EditProfileScreen(navController: NavController) {
                             Icon(Icons.Default.Close, contentDescription = "Eliminar $cat",
                                 modifier = Modifier
                                     .size(16.dp)
-                                    .clickable { categorias = categorias - cat })
+                                    .clickable { viewModel.removeCategory(cat) })
                         },
                         colors = InputChipDefaults.inputChipColors(
                             selectedContainerColor    = VerviColors.Primary,
@@ -171,7 +175,7 @@ fun EditProfileScreen(navController: NavController) {
                 }
                 FilterChip(
                     selected = false,
-                    onClick  = { /* TODO: selector de categorías */ },
+                    onClick  = { viewModel.addCategory("OTraa") },
                     label    = { Text("+ Añadir", fontSize = 13.sp) },
                     colors   = FilterChipDefaults.filterChipColors(
                         containerColor = Color.White,
@@ -195,8 +199,8 @@ fun EditProfileScreen(navController: NavController) {
                 Column(modifier = Modifier.weight(1f)) {
                     VerviTextField(
                         label         = "Precio (COP)",
-                        value         = precio,
-                        onValueChange = { precio = it },
+                        value         = state.price,
+                        onValueChange = { viewModel.onPriceChange(it) },
                         placeholder   = "50.000",
                         keyboardType  = androidx.compose.ui.text.input.KeyboardType.Number,
                         leadingIcon   = Icons.Default.AttachMoney
@@ -205,8 +209,8 @@ fun EditProfileScreen(navController: NavController) {
                 Column(modifier = Modifier.weight(1f)) {
                     VerviTextField(
                         label         = "Ubicación",
-                        value         = ubicacion,
-                        onValueChange = { ubicacion = it },
+                        value         = state.location,
+                        onValueChange = { viewModel.onLocationChange(it) },
                         placeholder   = "Bogotá",
                         leadingIcon   = Icons.Default.LocationOn
                     )
@@ -218,7 +222,7 @@ fun EditProfileScreen(navController: NavController) {
             // ── Guardar con ícono ────────────────────────────────
             VerviButton(
                 text    = "Guardar Cambios",
-                onClick = { /* TODO: guardar y volver */ },
+                onClick = { viewModel.save() },
                 icon    = Icons.Default.Save
             )
 

@@ -23,6 +23,9 @@ import androidx.compose.foundation.Image
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.verviapp.model.Provider
+import com.example.verviapp.viewmodel.PrestadoresViewModel
 
 // ── Modelo de datos local ──────────────────────────────────
 data class Prestador(
@@ -34,7 +37,8 @@ data class Prestador(
     val imagen: Int
 )
 @Composable
-fun PrestadoresScreen(navController: NavController) {
+fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var selectedCat by remember { mutableStateOf("Todos") }
 
@@ -77,8 +81,8 @@ fun PrestadoresScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            prestadores.forEach { prestador ->
-                PrestadorCard(prestador = prestador, onVerPerfil = { /* TODO: ir a perfil */ })
+            state.providers.forEach { prestador ->
+                PrestadorCard(prestador = prestador, onVerPerfil = { navController.navigate("profile") })
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -88,7 +92,7 @@ fun PrestadoresScreen(navController: NavController) {
 }
 
 @Composable
-private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
+private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
     Card(
         shape    = RoundedCornerShape(16.dp),
         colors   = CardDefaults.cardColors(containerColor = Color.White),
@@ -99,8 +103,8 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // Foto del prestador con esquinas redondeadas
                 Image(
-                    painter            = painterResource(id = prestador.imagen),
-                    contentDescription = prestador.nombre,
+                    painter            = painterResource(id = prestador.imageRes),
+                    contentDescription = prestador.name,
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier
                         .size(80.dp)
@@ -116,13 +120,13 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment     = Alignment.Top
                     ) {
-                        Text(prestador.nombre, fontSize = 16.sp,
+                        Text(prestador.name, fontSize = 16.sp,
                             fontWeight = FontWeight.Bold, color = VerviColors.TextDark)
 
                         // Precio alineado a la derecha con "Desde" encima
                         Column(horizontalAlignment = Alignment.End) {
                             Text("Desde", fontSize = 11.sp, color = VerviColors.TextGray)
-                            Text(prestador.precio, fontSize = 14.sp,
+                            Text(prestador.price, fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold, color = VerviColors.OrangeSecondary)
                         }
                     }
@@ -131,7 +135,7 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
 
                     // Badge especialidad + rating en la misma fila
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        VerviBadge(text     = prestador.especialidad,  color    = VerviColors.TextDark, fontSize = 10.sp, outlined = true)
+                        VerviBadge(text     = prestador.specialty,  color    = VerviColors.TextDark, fontSize = 10.sp, outlined = true)
 
                         Spacer(modifier = Modifier.width(8.dp))
 
@@ -141,7 +145,7 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
                         Spacer(modifier = Modifier.width(2.dp))
                         Text("${prestador.rating}", fontSize = 13.sp,
                             fontWeight = FontWeight.Bold, color = VerviColors.TextDark)
-                        Text(" (${prestador.reviews})", fontSize = 12.sp, color = VerviColors.TextGray)
+                        Text(" (${prestador.reviewCount})", fontSize = 12.sp, color = VerviColors.TextGray)
                     }
                 }
             }
