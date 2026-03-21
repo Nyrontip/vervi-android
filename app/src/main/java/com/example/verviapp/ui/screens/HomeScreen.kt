@@ -196,7 +196,7 @@ private fun HomeFabs(navController: NavController) {
         Spacer(modifier = Modifier.height(10.dp))
         // FAB crear solicitud — naranja secundario, mismo tamaño
         FloatingActionButton(
-            onClick        = { /* TODO: nueva solicitud */ },
+            onClick        = { navController.navigate("request/new") },
             containerColor = VerviColors.OrangeSecondary,
             contentColor   = Color.White,
             modifier       = Modifier.size(52.dp)

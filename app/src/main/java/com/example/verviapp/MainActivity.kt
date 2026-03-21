@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.verviapp.ui.screens.EditProfileScreen
+import com.example.verviapp.ui.screens.NewRequestScreen
 import com.example.verviapp.ui.screens.NotificationsScreen
 import com.example.verviapp.ui.screens.RateServiceScreen
 import com.example.verviapp.ui.screens.RequestDetailsScreen
@@ -50,6 +51,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("requests/management") {
                         RequestsScreen(navController)
+                    }
+                    composable("request/new") {
+                        NewRequestScreen(navController)
                     }
                     composable("services/history") {
                         ServiceHistoryScreen(navController)
