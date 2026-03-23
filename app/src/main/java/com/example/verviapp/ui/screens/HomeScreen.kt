@@ -96,7 +96,10 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             Spacer(modifier = Modifier.height(12.dp))
 
             state.services.forEach { servicio ->
-                ServiceCard(servicio = servicio, onDetalle = { /* TODO: detalle */ })
+                ServiceCard(
+                    servicio = servicio,
+                    onDetalle = { navController.navigate("request/details") }
+                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -196,7 +199,7 @@ private fun HomeFabs(navController: NavController) {
         Spacer(modifier = Modifier.height(10.dp))
         // FAB crear solicitud — naranja secundario, mismo tamaño
         FloatingActionButton(
-            onClick        = { /* TODO: nueva solicitud */ },
+            onClick        = { navController.navigate("request/new") },
             containerColor = VerviColors.OrangeSecondary,
             contentColor   = Color.White,
             modifier       = Modifier.size(52.dp)

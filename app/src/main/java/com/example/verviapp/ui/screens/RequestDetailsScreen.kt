@@ -1,21 +1,46 @@
 package com.example.verviapp.ui.screens
 
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Today
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -23,404 +48,325 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.verviapp.ui.components.VerviTopBar
+import com.example.verviapp.ui.components.VerviButton
 import com.example.verviapp.ui.theme.VerviColors
 
-
-// -----------------------------------------------------
-// ATOMS
-// -----------------------------------------------------
-
-@Composable
-fun AppIcon(
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onBackground
-) {
-    Icon(
-        imageVector = icon,
-        contentDescription = null,
-        modifier = modifier.size(24.dp),
-        tint = tint
-    )
-}
-
-@Composable
-fun TitleText(text: String) {
-    Text(
-        text,
-        fontWeight = FontWeight.Bold,
-        fontSize = 24.sp
-    )
-}
-
-@Composable
-fun SectionTitle(text: String) {
-    Text(
-        text,
-        fontWeight = FontWeight.Bold,
-        fontSize = 18.sp
-    )
-}
-
-@Composable
-fun StatusBadge(text: String, color: androidx.compose.ui.graphics.Color) {
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(color.copy(alpha = 0.15f))
-            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(50))
-            .padding(horizontal = 14.dp, vertical = 6.dp)
-    ) {
-        Text(
-            text,
-            color = color,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 13.sp
-        )
-    }
-}
-
-@Composable
-fun Avatar(url: String) {
-
-    AsyncImage(
-        model = url,
-        contentDescription = null,
-        modifier = Modifier
-            .size(48.dp)
-            .clip(CircleShape)
-            .border(2.dp, VerviColors.Primary.copy(.2f), CircleShape),
-        contentScale = ContentScale.Crop
-    )
-}
-
-@Composable
-fun PrimaryButton(
-    text: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
-
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = VerviColors.Primary
-        ),
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-    ) {
-
-        Icon(icon, null)
-
-        Spacer(Modifier.width(8.dp))
-
-        Text(text, fontWeight = FontWeight.Bold)
-    }
-}
-
-
-// -----------------------------------------------------
-// MOLECULES
-// -----------------------------------------------------
-
-@Composable
-fun ServiceHeader() {
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-
-        Column {
-
-            TitleText("Reparación Aire Acondicionado")
-
-            Spacer(Modifier.height(4.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-
-                AppIcon(Icons.Outlined.CalendarToday, Modifier.size(16.dp))
-
-                Spacer(Modifier.width(4.dp))
-
-                Text(
-                    "14 de Octubre, 2023 • 10:30 AM",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        Column(horizontalAlignment = Alignment.End) {
-
-            Text(
-                "$125.000",
-                fontWeight = FontWeight.Bold,
-                color = VerviColors.Primary,
-                fontSize = 20.sp
-            )
-
-            Text(
-                "COP TOTAL",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-fun ChatCard(navController: NavController) {
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(VerviColors.CardBackground)
-    ) {
-
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(VerviColors.OrangeSecondary.copy(.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Outlined.Chat, null, tint = VerviColors.OrangeSecondary)
-            }
-
-            Spacer(Modifier.width(12.dp))
-
-            Column(Modifier.weight(1f)) {
-
-                Text("Resumen de Chat", fontWeight = FontWeight.SemiBold)
-
-                Text(
-                    "Ver conversación con el cliente",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(
-                { navController.navigate("chat")}
-            ) {
-                AppIcon(Icons.Outlined.ChevronRight)
-            }
-        }
-    }
-}
-
-@Composable
-fun ClientRow() {
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-
-        Avatar(
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuA4proU8h62Ta-hxlsKb4sn_tOVh71LEFwXcF5QBLhKrk3B8tPVOoHJSCGLo_DkCMtADx2mppfKT4TZv0R6MWuwCQCV_oBhvsm6q5Hlfq34SpwsGriembr4OPEOAcMQ7LcO_l9JAJKuAYBLQD1xa_EeXC1ZIW8GNbE8849OHo1Zjc_bAQ2AEy5Wg2-UQ52fUWLEs_uE5oBWnEpKRC9JNIVIr9gErPZTq8OXH10b_ShLLTG1Q3xet0_s2RZNtrK5OX3S5GUHjSCZP_QP"
-        )
-
-        Spacer(Modifier.width(12.dp))
-
-        Column(Modifier.weight(1f)) {
-
-            Text("Mariana Restrepo", fontWeight = FontWeight.Bold)
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-
-                Icon(
-                    Icons.Outlined.Star,
-                    null,
-                    tint = VerviColors.StarFilled,
-                    modifier = Modifier.size(16.dp)
-                )
-
-                Text("4.9", fontSize = 13.sp)
-
-                Spacer(Modifier.width(4.dp))
-
-                Text(
-                    "• Medellín, Antioquia",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        IconButton(onClick = {}) {
-            Icon(Icons.Outlined.Call, null, tint = VerviColors.OrangeSecondary)
-        }
-    }
-}
-
-
-// -----------------------------------------------------
-// ORGANISMS
-// -----------------------------------------------------
-
-@Composable
-fun WorkSummarySection() {
-
-    Column {
-
-        SectionTitle("Resumen del Trabajo")
-
-        Spacer(Modifier.height(8.dp))
-
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = VerviColors.CardBackground
-            )
-        ) {
-
-            Text(
-                "Se realizó la revisión técnica completa del sistema central. Se identificó fuga en el serpentín, se procedió a sellado y recarga de gas refrigerante R-410A. Limpieza profunda de filtros y drenaje incluida.",
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun EvidenceGallery() {
-
-    val images = listOf(
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAqSS5a-xrrQHgeG8aJRjhsQjmDnhoVgSqV7xk7-tl8uWw91Us660y-5igqlR-FCKR9CtUdB_YyNZP6ezIqaznemYPwVGwKxWoBzNq2HUKzD4ibp1kS4_q5uTA9ehFv4Mrg_kEZXA5k7Ifx6PX1A6Q-O3F6d2yIBMOSUg3qScu4KvuHxzw2LwSXZkel36bsovDutGxTznsGPsVPIBGlC60wJ-rf9dWxtWtfvbCVhkl4Vtn1HhSo1onmosKKltJLoTYm31tu0dKBNsWv",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDhZBU2xxX1oJm7TDWGMbzXqkH12m4QfnmI8vRo5bu5qCy16P3F70yxnwPsZ1UQzfVNc_RcV6UR5nBVUGlCYoI21hnq_q4pMZXuZiiKa63eDka09BRZvq2vQllKMZ2r8g9_XuoSe88f_tCqiMXBiz-9vMK_l27P7zHkTSSA-0wauDkYIWWwZqQWMrd243CtvJnAZBRrO2nvbnF-_noXA1bbuwEOoVn_steHIOf249lWdMMyD4-Ic9-KWSTgCyXWmSpSTb61SOLAa5uZ",
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBjAV7UadivynJLQcW0ZCie0huPCq5-NgOsEUKoIixEJv_cQx9QyFr0ZAeV84se42IPISvVAeVfST19okT8dhlxRd_SNrS0Ja0kAforSZ8ItFM1xxUEZGQ12UaaNekxVTioulr46maivNSO05w7naHieBStO7kQee2Vi5137VfqTxCn1xQMGKPitZAu9GclF6BF5ymob3ewjysuuFkdwCi2bKrb_5V9WJ4CSaCRT6chQXRkGX0vdXF-Kvp5rKXEfeOIqlpA6iq4u7VQ"
-    )
-
-    Column {
-
-        SectionTitle("Evidencia del Servicio")
-
-        Spacer(Modifier.height(8.dp))
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.height(120.dp)
-        ) {
-
-            items(images.size) {
-
-                AsyncImage(
-                    model = images[it],
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(2.dp)
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ClientSection() {
-
-    Column {
-
-        SectionTitle("Cliente")
-
-        Spacer(Modifier.height(8.dp))
-
-        Card(
-            colors = CardDefaults.cardColors(VerviColors.CardBackground)
-        ) {
-            Box(Modifier.padding(16.dp)) {
-                ClientRow()
-            }
-        }
-    }
-}
-
-
-// -----------------------------------------------------
-// SCREEN
-// -----------------------------------------------------
+/**
+ * Detail screen for a **request / solicitud** (open job): hero, budget, apply flow.
+ * For completed **service** detail (prestador, evidencia, calificar), use [ServiceDetailsScreen].
+ */
+private val headerImages = listOf(
+    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&h=900&fit=crop",
+    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop",
+    "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&h=900&fit=crop"
+)
 
 @Composable
 fun RequestDetailsScreen(navController: NavController) {
+    val scrollState = rememberScrollState()
+    var selectedCarouselIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
-
-        topBar = {
-            VerviTopBar("Detalles del servicio", { navController.popBackStack()})
-        },
-
+        containerColor = VerviColors.BackgroundLight,
         bottomBar = {
-
-            Box(
+            Column(
                 modifier = Modifier
-                    .navigationBarsPadding()
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .background(Color.White)
+                    .navigationBarsPadding()
             ) {
-                PrimaryButton(
-                    "Calificar Servicio",
-                    Icons.Outlined.Grade
-                ) {
-                    navController.navigate("service/rate")
-                }
+                HorizontalDivider(color = VerviColors.BorderGray)
+                VerviButton(
+                    text = "Postularse",
+                    onClick = { navController.navigate("service/apply") },
+                    color = VerviColors.OrangeSecondary,
+                    icon = Icons.AutoMirrored.Filled.Send,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                    height = 54.dp
+                )
             }
         }
-
-    ) { padding ->
-
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .background(VerviColors.BgColor)
-                .padding(padding)
-                .padding(horizontal = 16.dp)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .background(VerviColors.BackgroundLight)
+                .padding(innerPadding)
+                .verticalScroll(scrollState)
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(305.dp)
+            ) {
+                AsyncImage(
+                    model = headerImages[selectedCarouselIndex],
+                    contentDescription = "Imagen solicitud",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
 
-            Spacer(Modifier.height(12.dp))
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .padding(start = 16.dp, top = 16.dp)
+                        .size(34.dp)
+                        .align(Alignment.TopStart)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.28f))
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = Color.White
+                    )
+                }
 
-            Row {
-
-                StatusBadge("Como: Prestador", VerviColors.Primary)
-
-                Spacer(Modifier.width(8.dp))
-
-                StatusBadge("Completado", VerviColors.StatusSuccess)
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    headerImages.indices.forEach { index ->
+                        Box(
+                            modifier = Modifier
+                                .height(6.dp)
+                                .width(if (index == selectedCarouselIndex) 22.dp else 6.dp)
+                                .clip(RoundedCornerShape(50))
+                                .background(
+                                    if (index == selectedCarouselIndex) Color.White
+                                    else Color.White.copy(alpha = 0.5f)
+                                )
+                                .clickable { selectedCarouselIndex = index }
+                        )
+                    }
+                }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp),
+                colors = CardDefaults.cardColors(containerColor = VerviColors.CardBackground)
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Reparación de tubería",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = VerviColors.TextDark
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(Color(0xFFE3F8EA))
+                                .padding(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "ABIERTO",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2A8B4B)
+                            )
+                        }
+                    }
 
-            ServiceHeader()
+                    Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(Modifier.height(24.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.Today,
+                            contentDescription = null,
+                            tint = VerviColors.Primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "$50.000 COP",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = VerviColors.TextDark
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Presupuesto sugerido",
+                            fontSize = 14.sp,
+                            color = VerviColors.TextSecondary
+                        )
+                    }
 
-            WorkSummarySection()
+                    Spacer(modifier = Modifier.height(18.dp))
 
-            Spacer(Modifier.height(24.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        RequestInfoPill(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Outlined.Today,
+                            label = "FECHA",
+                            value = "Hoy, 14:00"
+                        )
+                        RequestInfoPill(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Outlined.LocationOn,
+                            label = "UBICACIÓN",
+                            value = "Bogotá, DC"
+                        )
+                    }
 
-            EvidenceGallery()
+                    Spacer(modifier = Modifier.height(24.dp))
 
-            Spacer(Modifier.height(24.dp))
+                    Text(
+                        text = "Descripción",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = VerviColors.TextDark
+                    )
 
-            ChatCard(navController)
+                    Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(Modifier.height(24.dp))
+                    Text(
+                        text = "Se requiere reparación urgente de una fuga en la tubería principal de la cocina. El agua se está filtrando por debajo del mueble. Necesito a alguien con experiencia previa en plomería residencial. Cuento con algunas herramientas pero prefiero que traigan las suyas.",
+                        fontSize = 16.sp,
+                        lineHeight = 25.sp,
+                        color = Color(0xFF4B5563)
+                    )
 
-            ClientSection()
+                    Spacer(modifier = Modifier.height(26.dp))
 
-            Spacer(Modifier.height(80.dp))
+                    Text(
+                        text = "PUBLICADO POR",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF9AA2AF),
+                        letterSpacing = 1.2.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    RequestPublisherCard(
+                        name = "Carlos J. Martinez",
+                        ratingLine = "4.8 (12 servicios)",
+                        avatarUrl = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop",
+                        onChatClick = { navController.navigate("chat") }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun RequestInfoPill(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFFF3F5F8))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = VerviColors.Primary,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF697384)
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = VerviColors.TextDark
+        )
+    }
+}
+
+@Composable
+private fun RequestPublisherCard(
+    name: String,
+    ratingLine: String,
+    avatarUrl: String,
+    onChatClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .border(1.dp, VerviColors.BorderGray, RoundedCornerShape(14.dp))
+            .background(Color.White)
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box {
+            AsyncImage(
+                model = avatarUrl,
+                contentDescription = "Publicador",
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .align(Alignment.BottomEnd)
+                    .clip(CircleShape)
+                    .background(Color(0xFF22C55E))
+                    .border(2.dp, Color.White, CircleShape)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = name,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = VerviColors.TextDark
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = ratingLine,
+                color = VerviColors.TextSecondary,
+                fontSize = 14.sp
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFF0F4F8))
+                .clickable { onChatClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.Chat,
+                contentDescription = "Chat",
+                tint = VerviColors.Primary
+            )
         }
     }
 }

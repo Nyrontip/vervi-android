@@ -194,7 +194,7 @@ fun RequestsScreen(navController: NavController) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
+                onClick = { navController.navigate("request/new") },
                 containerColor = VerviColors.FabOrange,
                 contentColor = VerviColors.TextWhite
             ) {
