@@ -22,11 +22,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.Today
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -35,10 +33,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,6 +51,10 @@ import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.VerviButton
 import com.example.verviapp.ui.theme.VerviColors
 
+/**
+ * Detail screen for a **request / solicitud** (open job): hero, budget, apply flow.
+ * For completed **service** detail (prestador, evidencia, calificar), use [ServiceDetailsScreen].
+ */
 private val headerImages = listOf(
     "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&h=900&fit=crop",
     "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop",
@@ -57,7 +64,7 @@ private val headerImages = listOf(
 @Composable
 fun RequestDetailsScreen(navController: NavController) {
     val scrollState = rememberScrollState()
-    val selectedDot = 0
+    var selectedCarouselIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
         containerColor = VerviColors.BackgroundLight,
@@ -71,7 +78,7 @@ fun RequestDetailsScreen(navController: NavController) {
                 HorizontalDivider(color = VerviColors.BorderGray)
                 VerviButton(
                     text = "Postularse",
-                    onClick = { },
+                    onClick = { navController.navigate("service/apply") },
                     color = VerviColors.OrangeSecondary,
                     icon = Icons.AutoMirrored.Filled.Send,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
@@ -93,8 +100,8 @@ fun RequestDetailsScreen(navController: NavController) {
                     .height(305.dp)
             ) {
                 AsyncImage(
-                    model = headerImages.first(),
-                    contentDescription = "Imagen servicio",
+                    model = headerImages[selectedCarouselIndex],
+                    contentDescription = "Imagen solicitud",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -121,24 +128,24 @@ fun RequestDetailsScreen(navController: NavController) {
                         .padding(bottom = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    repeat(headerImages.size) { index ->
+                    headerImages.indices.forEach { index ->
                         Box(
                             modifier = Modifier
                                 .height(6.dp)
-                                .width(if (index == selectedDot) 22.dp else 6.dp)
+                                .width(if (index == selectedCarouselIndex) 22.dp else 6.dp)
                                 .clip(RoundedCornerShape(50))
                                 .background(
-                                    if (index == selectedDot) Color.White else Color.White.copy(alpha = 0.5f)
+                                    if (index == selectedCarouselIndex) Color.White
+                                    else Color.White.copy(alpha = 0.5f)
                                 )
+                                .clickable { selectedCarouselIndex = index }
                         )
                     }
                 }
             }
 
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 0.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp),
                 colors = CardDefaults.cardColors(containerColor = VerviColors.CardBackground)
             ) {
@@ -150,8 +157,7 @@ fun RequestDetailsScreen(navController: NavController) {
                     ) {
                         Text(
                             text = "Reparación de tubería",
-                            fontSize = 40.sp / 2,
-                            lineHeight = 48.sp / 2,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = VerviColors.TextDark
                         )
@@ -182,7 +188,7 @@ fun RequestDetailsScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "$50.000 COP",
-                            fontSize = 35.sp / 2,
+                            fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = VerviColors.TextDark
                         )
@@ -200,13 +206,13 @@ fun RequestDetailsScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        InfoPill(
+                        RequestInfoPill(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Outlined.Today,
                             label = "FECHA",
                             value = "Hoy, 14:00"
                         )
-                        InfoPill(
+                        RequestInfoPill(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Outlined.LocationOn,
                             label = "UBICACIÓN",
@@ -244,21 +250,23 @@ fun RequestDetailsScreen(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    PublisherCard(
+                    RequestPublisherCard(
                         name = "Carlos J. Martinez",
-                        rating = "4.8 (12 servicios)",
+                        ratingLine = "4.8 (12 servicios)",
                         avatarUrl = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop",
                         onChatClick = { navController.navigate("chat") }
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-private fun InfoPill(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+private fun RequestInfoPill(
+    icon: ImageVector,
     label: String,
     value: String,
     modifier: Modifier = Modifier
@@ -287,7 +295,7 @@ private fun InfoPill(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
-            fontSize = 28.sp / 2,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = VerviColors.TextDark
         )
@@ -295,9 +303,9 @@ private fun InfoPill(
 }
 
 @Composable
-private fun PublisherCard(
+private fun RequestPublisherCard(
     name: String,
-    rating: String,
+    ratingLine: String,
     avatarUrl: String,
     onChatClick: () -> Unit
 ) {
@@ -313,7 +321,7 @@ private fun PublisherCard(
         Box {
             AsyncImage(
                 model = avatarUrl,
-                contentDescription = "Proveedor",
+                contentDescription = "Publicador",
                 modifier = Modifier
                     .size(54.dp)
                     .clip(CircleShape),
@@ -335,24 +343,15 @@ private fun PublisherCard(
             Text(
                 text = name,
                 fontWeight = FontWeight.Bold,
-                fontSize = 31.sp / 2,
+                fontSize = 15.sp,
                 color = VerviColors.TextDark
             )
             Spacer(modifier = Modifier.height(2.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.Star,
-                    contentDescription = null,
-                    tint = VerviColors.StarFilled,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = rating,
-                    color = VerviColors.TextSecondary,
-                    fontSize = 14.sp
-                )
-            }
+            Text(
+                text = ratingLine,
+                color = VerviColors.TextSecondary,
+                fontSize = 14.sp
+            )
         }
 
         Box(
@@ -364,7 +363,7 @@ private fun PublisherCard(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Outlined.ChatBubbleOutline,
+                imageVector = Icons.AutoMirrored.Outlined.Chat,
                 contentDescription = "Chat",
                 tint = VerviColors.Primary
             )

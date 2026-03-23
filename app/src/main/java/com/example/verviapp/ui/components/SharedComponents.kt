@@ -59,7 +59,8 @@ import com.example.verviapp.ui.theme.VerviColors
 fun VerviTopBar(
     title: String,
     onBack: (() -> Unit)? = null,                           // null = sin flecha
-    actions: @Composable RowScope.() -> Unit = {}           // iconos derechos opcionales
+    actions: @Composable RowScope.() -> Unit = {},          // iconos derechos opcionales
+    barContainerColor: Color = VerviColors.BgColor           // fondo de la barra (pantallas con otro tono)
 ) {
     CenterAlignedTopAppBar(
         title = { Text(title, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
@@ -73,7 +74,7 @@ fun VerviTopBar(
         },
         actions = actions,
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = VerviColors.BgColor
+            containerColor = barContainerColor
         )
     )
 }

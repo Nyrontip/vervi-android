@@ -158,6 +158,7 @@ fun ServiceInfo(
 @Composable
 fun RatingSection(
     item: ServiceHistoryItem,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
 
@@ -174,6 +175,13 @@ fun RatingSection(
         }
 
         Row(
+            modifier = Modifier.clickable {
+                if (item.rating != null) {
+                    navController.navigate("service/details")
+                } else {
+                    navController.navigate("service/rate")
+                }
+            },
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -207,6 +215,7 @@ fun RatingSection(
 @Composable
 fun ServiceHistoryCard(
     item: ServiceHistoryItem,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
 
@@ -241,7 +250,7 @@ fun ServiceHistoryCard(
 
         Spacer(Modifier.height(8.dp))
 
-        RatingSection(item)
+        RatingSection(item = item, navController = navController)
     }
 }
 
@@ -402,8 +411,8 @@ fun ServiceHistoryScreen(navController: NavController) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(services) {
-                ServiceHistoryCard(it)
+            items(services) { service ->
+                ServiceHistoryCard(item = service, navController = navController)
             }
         }
     }
