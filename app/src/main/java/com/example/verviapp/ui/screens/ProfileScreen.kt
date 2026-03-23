@@ -29,8 +29,12 @@ import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = viewModel()) {
+fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(userId) {
+        viewModel.loadProfile(userId)     // null carga el perfil local
+    }
 
     Scaffold(
         topBar = {
@@ -38,7 +42,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = vi
                 title   = "Mi Perfil",
                 onBack  = { navController.popBackStack() },
                 actions = {
-                    IconButton(onClick = { /* TODO: ajustes */ }) {
+                    IconButton(onClick = { navController.navigate("editProfile") }) {
                         Icon(Icons.Default.Settings, contentDescription = "Ajustes",
                             tint = VerviColors.TextDark)
                     }
@@ -124,7 +128,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = vi
                     .padding(14.dp)
             ) {
                 Text(
-                    text      = "\"Estudiante de Ingeniería apasionado por el servicio técnico y la academia. Comprometido con brindar soluciones rápidas y eficientes en la comunidad de Vervi.\"",
+                    text      = "\"${state.user.bio}\"",
                     fontSize  = 13.sp,
                     color     = VerviColors.TextDark,
                     textAlign = TextAlign.Center,
@@ -154,7 +158,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = vi
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text("Precio sugerido: ", fontSize = 14.sp, color = VerviColors.TextDark,
                     fontWeight = FontWeight.Medium)
-                Text("\$50.000 COP/hora", fontSize = 14.sp, color = VerviColors.Blue,
+                Text("${state.user.suggestedPrice} COP/hora", fontSize = 14.sp, color = VerviColors.Blue,
                     fontWeight = FontWeight.Bold)
             }
 
@@ -176,7 +180,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = vi
                     icon       = Icons.Default.ListAlt,
                     titulo     = "Mis Solicitudes",
                     subtitulo  = "Ver tus pedidos pendientes",
-                    onClick    = { /* TODO */ }
+                    onClick    = { navController.navigate("requests/management") }
                 )
                 HorizontalDivider(
                     modifier  = Modifier.padding(horizontal = 16.dp),
@@ -187,7 +191,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = vi
                     icon      = Icons.Default.History,
                     titulo    = "Historial de Servicios",
                     subtitulo = "Servicios completados y recibos",
-                    onClick   = { /* TODO */ }
+                    onClick   = { navController.navigate("services/history") }
                 )
             }
 

@@ -27,15 +27,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.verviapp.model.Provider
 import com.example.verviapp.viewmodel.PrestadoresViewModel
 
-// ── Modelo de datos local ──────────────────────────────────
-data class Prestador(
-    val nombre: String,
-    val especialidad: String,
-    val precio: String,
-    val rating: Float,
-    val reviews: Int,
-    val imagen: Int
-)
 @Composable
 fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
@@ -43,13 +34,6 @@ fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewMod
     var selectedCat by remember { mutableStateOf("Todos") }
 
     val categorias   = listOf("Todos", "Carpinteros", "Plomeros", "Electricistas")
-
-    // Datos quemados — 3 prestadores de ejemplo
-    val prestadores = listOf(
-        Prestador("Carlos Ruiz",     "PLOMERO",      "$80.000 COP", 4.9f, 48, R.drawable.login_hero),
-        Prestador("Mateo Gómez",     "CARPINTERO",   "$75.000 COP", 4.7f, 32, R.drawable.login_hero),
-        Prestador("Andrés Restrepo", "ELECTRICISTA", "$95.000 COP", 4.9f, 15, R.drawable.login_hero)
-    )
 
     Scaffold(
         topBar    = { VerviTopBar(title = "Directorio de Prestadores", onBack = { navController.popBackStack()}) },
@@ -82,7 +66,7 @@ fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewMod
             Spacer(modifier = Modifier.height(16.dp))
 
             state.providers.forEach { prestador ->
-                PrestadorCard(prestador = prestador, onVerPerfil = { navController.navigate("profile") })
+                PrestadorCard(prestador = prestador, onVerPerfil = { navController.navigate("profile?userId=${prestador.id}") })
                 Spacer(modifier = Modifier.height(12.dp))
             }
 

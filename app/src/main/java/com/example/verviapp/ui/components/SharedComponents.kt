@@ -1,7 +1,5 @@
 package com.example.verviapp.ui.components
 
-import android.app.Activity
-import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

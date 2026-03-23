@@ -1,5 +1,10 @@
 package com.example.verviapp.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,6 +33,7 @@ import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.verviapp.viewmodel.EditProfileViewModel
+import com.example.verviapp.viewmodel.ProfileViewModel
 
 @Composable
 fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = viewModel()) {
@@ -40,6 +46,25 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
             viewModel.resetSaveSuccess()
         }
     }
+
+    // Obtener el ProfileViewModel para leer el usuario actual
+    val profileViewModel: ProfileViewModel = viewModel()
+    val profileState by profileViewModel.state.collectAsState()
+    // Inicializar con los datos reales al entrar a la pantalla
+    LaunchedEffect(profileState.user) {
+        if (profileState.user.id.isNotEmpty()) {
+            viewModel.initWithUser(profileState.user)
+        }
+    }
+
+    // URI de la foto seleccionada — estado local de UI, no va al ViewModel
+    // Cuando haya API, se enviará junto con el save()
+    var photoUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Launcher del selector de imágenes del sistema — no requiere permisos
+    val pickPhoto = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri -> if (uri != null) photoUri = uri }
 
     Scaffold(
         topBar         = { VerviTopBar(title = "Editar Perfil", onBack = { navController.popBackStack() }) },
@@ -55,17 +80,35 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Foto circular + ícono de cámara superpuesto ─────
-            Box(contentAlignment = Alignment.BottomEnd) {
-                Image(
-                    painter            = painterResource(id = R.drawable.login_hero),
-                    contentDescription = "Foto de perfil",
-                    contentScale       = ContentScale.Crop,
-                    modifier           = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(3.dp, Color.White, CircleShape)
-                )
+            // ── Foto circular + ícono de cámara — toca para cambiar ─────
+            Box(
+                modifier         = Modifier.clickable {
+                    pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                },
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                // Muestra la foto seleccionada si hay URI, o la foto actual del perfil
+                if (photoUri != null) {
+                    AsyncImage(
+                        model              = photoUri,
+                        contentDescription = "Foto de perfil",
+                        contentScale       = ContentScale.Crop,
+                        modifier           = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .border(3.dp, Color.White, CircleShape)
+                    )
+                } else {
+                    Image(
+                        painter            = painterResource(id = R.drawable.login_hero),
+                        contentDescription = "Foto de perfil",
+                        contentScale       = ContentScale.Crop,
+                        modifier           = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .border(3.dp, Color.White, CircleShape)
+                    )
+                }
                 Box(
                     modifier         = Modifier
                         .size(28.dp)
@@ -222,7 +265,7 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
             // ── Guardar con ícono ────────────────────────────────
             VerviButton(
                 text    = "Guardar Cambios",
-                onClick = { viewModel.save() },
+                onClick = { viewModel.save(photoUri) },
                 icon    = Icons.Default.Save
             )
 

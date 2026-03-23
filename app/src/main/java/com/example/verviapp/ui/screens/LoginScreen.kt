@@ -139,7 +139,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
 
 // ── LoginForm — STATELESS ──────────
 @Composable
-private fun LoginForm(viewModel: LoginViewModel = viewModel() ) {
+private fun LoginForm(viewModel: LoginViewModel) {
     var email           by remember { mutableStateOf("") }
     var password        by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -158,7 +158,7 @@ private fun LoginForm(viewModel: LoginViewModel = viewModel() ) {
 
 // ── RegisterForm — STATELESS: mismo patrón que LoginForm ───
 @Composable
-private fun RegisterForm(viewModel: LoginViewModel = viewModel()) {
+private fun RegisterForm(viewModel: LoginViewModel) {
     var nombre             by remember { mutableStateOf("") }
     var regEmail           by remember { mutableStateOf("") }
     var regPassword        by remember { mutableStateOf("") }

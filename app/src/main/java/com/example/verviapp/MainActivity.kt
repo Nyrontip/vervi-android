@@ -42,8 +42,12 @@ class MainActivity : ComponentActivity() {
                     composable("prestadores") {
                         PrestadoresScreen(navController)
                     }
-                    composable("profile") {
-                        ProfileScreen(navController)
+                    // Ruta con parámetro opcional — el ? hace que sea nullable
+                    // Sin parámetro → perfil del usuario logueado
+                    // Con parámetro → perfil del prestador con ese ID
+                    composable("profile?userId={userId}") { backStackEntry ->
+                        val userId = backStackEntry.arguments?.getString("userId")
+                        ProfileScreen(navController, userId)
                     }
                     composable("editProfile") {
                         EditProfileScreen(navController)
