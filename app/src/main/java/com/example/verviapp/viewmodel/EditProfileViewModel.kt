@@ -1,5 +1,6 @@
 package com.example.verviapp.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import com.example.verviapp.model.EditProfileState
 import com.example.verviapp.model.User
@@ -41,7 +42,7 @@ class EditProfileViewModel : ViewModel() {
         _state.value = _state.value.copy(categories = _state.value.categories + cat)
     }
 
-    fun save() {
+    fun save(photoUri: Uri? = null) {
         _state.value = _state.value.copy(isSaving = true, errorMessage = null)
         // TODO: reemplazar con llamada a API real
         _state.value = _state.value.copy(isSaving = false, saveSuccess = true)

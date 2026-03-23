@@ -42,7 +42,7 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 title   = "Mi Perfil",
                 onBack  = { navController.popBackStack() },
                 actions = {
-                    IconButton(onClick = { /* TODO: ajustes */ }) {
+                    IconButton(onClick = { navController.navigate("editProfile") }) {
                         Icon(Icons.Default.Settings, contentDescription = "Ajustes",
                             tint = VerviColors.TextDark)
                     }
@@ -180,7 +180,7 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                     icon       = Icons.Default.ListAlt,
                     titulo     = "Mis Solicitudes",
                     subtitulo  = "Ver tus pedidos pendientes",
-                    onClick    = { /* TODO */ }
+                    onClick    = { navController.navigate("requests/management") }
                 )
                 HorizontalDivider(
                     modifier  = Modifier.padding(horizontal = 16.dp),
@@ -191,7 +191,7 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                     icon      = Icons.Default.History,
                     titulo    = "Historial de Servicios",
                     subtitulo = "Servicios completados y recibos",
-                    onClick   = { /* TODO */ }
+                    onClick   = { navController.navigate("services/history") }
                 )
             }
 
