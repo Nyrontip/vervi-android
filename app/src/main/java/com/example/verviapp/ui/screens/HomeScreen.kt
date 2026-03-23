@@ -96,7 +96,10 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             Spacer(modifier = Modifier.height(12.dp))
 
             state.services.forEach { servicio ->
-                ServiceCard(servicio = servicio, onDetalle = { /* TODO: detalle */ })
+                ServiceCard(
+                    servicio = servicio,
+                    onDetalle = { navController.navigate("request/details") }
+                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
