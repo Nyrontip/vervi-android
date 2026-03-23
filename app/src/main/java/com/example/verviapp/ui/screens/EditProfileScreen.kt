@@ -28,6 +28,7 @@ import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.verviapp.viewmodel.EditProfileViewModel
+import com.example.verviapp.viewmodel.ProfileViewModel
 
 @Composable
 fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = viewModel()) {
@@ -38,6 +39,16 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
         if (state.saveSuccess) {
             navController.popBackStack()
             viewModel.resetSaveSuccess()
+        }
+    }
+
+    // Obtener el ProfileViewModel para leer el usuario actual
+    val profileViewModel: ProfileViewModel = viewModel()
+    val profileState by profileViewModel.state.collectAsState()
+    // Inicializar con los datos reales al entrar a la pantalla
+    LaunchedEffect(profileState.user) {
+        if (profileState.user.id.isNotEmpty()) {
+            viewModel.initWithUser(profileState.user)
         }
     }
 
