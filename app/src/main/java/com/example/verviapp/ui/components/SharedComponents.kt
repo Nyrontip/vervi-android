@@ -155,10 +155,11 @@ fun VerviTextField(
     modifier: Modifier = Modifier,
     labelSize: TextUnit = 14.sp,
     keyboardType: KeyboardType = KeyboardType.Text,
-    leadingIcon: ImageVector? = null          // ícono izquierdo opcional
+    leadingIcon: ImageVector? = null,         // ícono izquierdo opcional
+    labelToFieldSpacing: Dp = 4.dp             // espacio label → campo (antes 8.dp)
 ) {
     Text(label, fontWeight = FontWeight.Bold, fontSize = labelSize, color = VerviColors.TextDark)
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(labelToFieldSpacing))
     OutlinedTextField(
         value           = value,
         onValueChange   = onValueChange,
@@ -190,10 +191,11 @@ fun VerviTextArea(
     modifier: Modifier = Modifier,
     labelSize: TextUnit = 14.sp,
     minLines: Int = 4,
-    maxLines: Int = 8
+    maxLines: Int = 8,
+    labelToFieldSpacing: Dp = 4.dp
 ) {
     Text(label, fontWeight = FontWeight.Bold, fontSize = labelSize, color = VerviColors.TextDark)
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(labelToFieldSpacing))
     OutlinedTextField(
         value         = value,
         onValueChange = onValueChange,
@@ -219,10 +221,11 @@ fun VerviPasswordField(
     visible: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
-    labelSize: TextUnit = 14.sp                     // tamaño del label personalizable
+    labelSize: TextUnit = 14.sp,                    // tamaño del label personalizable
+    labelToFieldSpacing: Dp = 4.dp
 ) {
     Text(label, fontWeight = FontWeight.Bold, fontSize = labelSize, color = VerviColors.TextDark)
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(labelToFieldSpacing))
     OutlinedTextField(
         value         = value,
         onValueChange = onValueChange,
