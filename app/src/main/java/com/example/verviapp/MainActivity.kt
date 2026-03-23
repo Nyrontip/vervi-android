@@ -8,6 +8,7 @@ import com.example.verviapp.ui.theme.VerviAppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.verviapp.ui.screens.ApplyForServiceScreen
 import com.example.verviapp.ui.screens.EditProfileScreen
 import com.example.verviapp.ui.screens.NewRequestScreen
 import com.example.verviapp.ui.screens.NotificationsScreen
@@ -66,6 +67,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("request/details") {
                         RequestDetailsScreen(navController)
+                    }
+                    composable("service/apply") {
+                        ApplyForServiceScreen(navController)
                     }
 
                 }

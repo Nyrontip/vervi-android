@@ -71,7 +71,7 @@ fun RequestDetailsScreen(navController: NavController) {
                 HorizontalDivider(color = VerviColors.BorderGray)
                 VerviButton(
                     text = "Postularse",
-                    onClick = { },
+                    onClick = { navController.navigate("service/apply") },
                     color = VerviColors.OrangeSecondary,
                     icon = Icons.AutoMirrored.Filled.Send,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
