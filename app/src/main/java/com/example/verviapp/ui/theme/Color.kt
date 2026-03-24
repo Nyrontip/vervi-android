@@ -75,4 +75,6 @@ object VerviColors {
     //Chat
     val MessageUserBackground = VerviColors.Primary          // azul del usuario
     val MessageOtherBackground = VerviColors.BackgroundOther // blanco para el otro
+    // ---------- CANCEL BUTTON ----------
+    val CancelRed = Color(0xFFDC2626)
 }

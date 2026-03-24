@@ -1,32 +1,42 @@
 package com.example.verviapp.viewmodel
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
-import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviAppTheme
-import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.R
+import com.example.verviapp.model.HomeState
+import com.example.verviapp.model.Service
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
 class HomeViewModel : ViewModel() {
 
+    private val _state = MutableStateFlow(HomeState())
+    val state: StateFlow<HomeState> = _state.asStateFlow()
+
+    // init se ejecuta automáticamente al crear el ViewModel
+    init { loadServices() }
+
+    private fun loadServices() {
+        _state.value = _state.value.copy(isLoading = true)
+        // TODO: reemplazar con llamada a API real
+        _state.value = _state.value.copy(isLoading = false, services = hardcodedServices())
+    }
+
+    // Búsqueda y filtro por categoría los maneja el backend
+    // Estos métodos actualizan el estado y luego llamarán a la API con los parámetros
+    fun onCategoryChange(category: String) {
+        // TODO: loadServices(category = category) cuando haya API
+    }
+
+    fun onSearchChange(query: String) {
+        // TODO: loadServices(search = query) cuando haya API
+    }
+
+    // Datos quemados — se eliminan cuando haya API
+    private fun hardcodedServices() = listOf(
+        Service("1", "Reparación de tubería cocina", "Bogotá, Chapinero",
+            "\$50.000 COP", 3, true, R.drawable.login_hero, "Plomería"),
+        Service("2", "Limpieza profunda de apartamento", "Bogotá, Cedritos",
+            "\$85.000 COP", 8, false, R.drawable.login_hero, "Limpieza")
+    )
 }

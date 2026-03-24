@@ -1,5 +1,10 @@
 package com.example.verviapp.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,16 +31,40 @@ import androidx.navigation.NavController
 import com.example.verviapp.R
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.verviapp.viewmodel.EditProfileViewModel
+import com.example.verviapp.viewmodel.ProfileViewModel
 
 @Composable
-fun EditProfileScreen(navController: NavController) {
-    // ── Estado del formulario ────────────────────────────────
-    var nombre        by remember { mutableStateOf("Juan Pérez") }
-    var bio           by remember { mutableStateOf("") }
-    var precio        by remember { mutableStateOf("50.000") }
-    var ubicacion     by remember { mutableStateOf("Bogotá") }
-    var modoPrestador by remember { mutableStateOf(true) }
-    var categorias    by remember { mutableStateOf(listOf("Tutorías", "Diseño")) }
+fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
+
+    // Vuelve atrás al guardar exitosamente
+    LaunchedEffect(state.saveSuccess) {
+        if (state.saveSuccess) {
+            navController.popBackStack()
+            viewModel.resetSaveSuccess()
+        }
+    }
+
+    // Obtener el ProfileViewModel para leer el usuario actual
+    val profileViewModel: ProfileViewModel = viewModel()
+    val profileState by profileViewModel.state.collectAsState()
+    // Inicializar con los datos reales al entrar a la pantalla
+    LaunchedEffect(profileState.user) {
+        if (profileState.user.id.isNotEmpty()) {
+            viewModel.initWithUser(profileState.user)
+        }
+    }
+
+    // URI de la foto seleccionada — estado local de UI, no va al ViewModel
+    // Cuando haya API, se enviará junto con el save()
+    var photoUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Launcher del selector de imágenes del sistema — no requiere permisos
+    val pickPhoto = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri -> if (uri != null) photoUri = uri }
 
     Scaffold(
         topBar         = { VerviTopBar(title = "Editar Perfil", onBack = { navController.popBackStack() }) },
@@ -51,17 +80,35 @@ fun EditProfileScreen(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Foto circular + ícono de cámara superpuesto ─────
-            Box(contentAlignment = Alignment.BottomEnd) {
-                Image(
-                    painter            = painterResource(id = R.drawable.login_hero),
-                    contentDescription = "Foto de perfil",
-                    contentScale       = ContentScale.Crop,
-                    modifier           = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(3.dp, Color.White, CircleShape)
-                )
+            // ── Foto circular + ícono de cámara — toca para cambiar ─────
+            Box(
+                modifier         = Modifier.clickable {
+                    pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                },
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                // Muestra la foto seleccionada si hay URI, o la foto actual del perfil
+                if (photoUri != null) {
+                    AsyncImage(
+                        model              = photoUri,
+                        contentDescription = "Foto de perfil",
+                        contentScale       = ContentScale.Crop,
+                        modifier           = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .border(3.dp, Color.White, CircleShape)
+                    )
+                } else {
+                    Image(
+                        painter            = painterResource(id = R.drawable.login_hero),
+                        contentDescription = "Foto de perfil",
+                        contentScale       = ContentScale.Crop,
+                        modifier           = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .border(3.dp, Color.White, CircleShape)
+                    )
+                }
                 Box(
                     modifier         = Modifier
                         .size(28.dp)
@@ -83,8 +130,8 @@ fun EditProfileScreen(navController: NavController) {
             // ── Nombre completo ──────────────────────────────────
             VerviTextField(
                 label         = "Nombre Completo",
-                value         = nombre,
-                onValueChange = { nombre = it },
+                value         = state.name,
+                onValueChange = { viewModel.onNameChange(it) },
                 placeholder   = "Tu nombre completo"
             )
 
@@ -93,8 +140,8 @@ fun EditProfileScreen(navController: NavController) {
             // ── Biografía — VerviTextArea multilínea ─────────────
             VerviTextArea(
                 label         = "Biografía",
-                value         = bio,
-                onValueChange = { bio = it },
+                value         = state.bio,
+                onValueChange = { viewModel.onBioChange(it) },
                 placeholder   = "Cuéntanos un poco sobre tus servicios..."
             )
 
@@ -120,8 +167,8 @@ fun EditProfileScreen(navController: NavController) {
                             fontSize = 12.sp, color = VerviColors.TextSecondary)
                     }
                     Switch(
-                        checked         = modoPrestador,
-                        onCheckedChange = { modoPrestador = it },
+                        checked         = state.isProvider ,
+                        onCheckedChange = { viewModel.onProviderToggle(it) },
                         colors          = SwitchDefaults.colors(
                             checkedThumbColor   = Color.White,
                             checkedTrackColor   = VerviColors.Primary,
@@ -144,7 +191,7 @@ fun EditProfileScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier              = Modifier.fillMaxWidth()
             ) {
-                categorias.forEach { cat ->
+                state.categories.forEach { cat ->
                     InputChip(
                         selected     = true,
                         onClick      = { },
@@ -154,7 +201,7 @@ fun EditProfileScreen(navController: NavController) {
                             Icon(Icons.Default.Close, contentDescription = "Eliminar $cat",
                                 modifier = Modifier
                                     .size(16.dp)
-                                    .clickable { categorias = categorias - cat })
+                                    .clickable { viewModel.removeCategory(cat) })
                         },
                         colors = InputChipDefaults.inputChipColors(
                             selectedContainerColor    = VerviColors.Primary,
@@ -171,7 +218,7 @@ fun EditProfileScreen(navController: NavController) {
                 }
                 FilterChip(
                     selected = false,
-                    onClick  = { /* TODO: selector de categorías */ },
+                    onClick  = { viewModel.addCategory("OTraa") },
                     label    = { Text("+ Añadir", fontSize = 13.sp) },
                     colors   = FilterChipDefaults.filterChipColors(
                         containerColor = Color.White,
@@ -195,8 +242,8 @@ fun EditProfileScreen(navController: NavController) {
                 Column(modifier = Modifier.weight(1f)) {
                     VerviTextField(
                         label         = "Precio (COP)",
-                        value         = precio,
-                        onValueChange = { precio = it },
+                        value         = state.price,
+                        onValueChange = { viewModel.onPriceChange(it) },
                         placeholder   = "50.000",
                         keyboardType  = androidx.compose.ui.text.input.KeyboardType.Number,
                         leadingIcon   = Icons.Default.AttachMoney
@@ -205,8 +252,8 @@ fun EditProfileScreen(navController: NavController) {
                 Column(modifier = Modifier.weight(1f)) {
                     VerviTextField(
                         label         = "Ubicación",
-                        value         = ubicacion,
-                        onValueChange = { ubicacion = it },
+                        value         = state.location,
+                        onValueChange = { viewModel.onLocationChange(it) },
                         placeholder   = "Bogotá",
                         leadingIcon   = Icons.Default.LocationOn
                     )
@@ -218,7 +265,7 @@ fun EditProfileScreen(navController: NavController) {
             // ── Guardar con ícono ────────────────────────────────
             VerviButton(
                 text    = "Guardar Cambios",
-                onClick = { /* TODO: guardar y volver */ },
+                onClick = { viewModel.save(photoUri) },
                 icon    = Icons.Default.Save
             )
 
