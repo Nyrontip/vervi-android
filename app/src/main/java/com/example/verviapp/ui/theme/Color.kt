@@ -22,7 +22,9 @@ object VerviColors {
     val BackgroundDark = Color(0xFF14181E)
     val CardBackground = Color.White
     val BottomSheetBackground = Color.White
-    val CommentInputBackground = Color(0xFFF8FAFC)
+
+    val InputBackground = Color(0xFFE9EEF5)
+    val CommentInputBackground = Color(0xFFEFF3F8)
     val CommentBackground = Color(0xFFF1F5F9)
     val NotificationBackgroundLight = Color(0xFFF1F5F9)
     val BgColor = Color(0xFFF2F4F8)           // fondo general de algunas pantallas
