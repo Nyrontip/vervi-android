@@ -71,4 +71,7 @@ object VerviColors {
 
     // ---------- PROGRESS / LOADING ----------
     val ProgressBg = Color(0xFFE0E0E0)
+
+    // ---------- CANCEL BUTTON ----------
+    val CancelRed = Color(0xFFDC2626)
 }
