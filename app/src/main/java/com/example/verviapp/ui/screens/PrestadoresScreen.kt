@@ -1,10 +1,5 @@
 package com.example.verviapp
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -27,31 +22,18 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.verviapp.model.Provider
+import com.example.verviapp.viewmodel.PrestadoresViewModel
 
-// ── Modelo de datos local ──────────────────────────────────
-data class Prestador(
-    val nombre: String,
-    val especialidad: String,
-    val precio: String,
-    val rating: Float,
-    val reviews: Int,
-    val imagen: Int
-)
 @Composable
-fun PrestadoresScreen(navController: NavController) {
+fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var selectedCat by remember { mutableStateOf("Todos") }
 
     val categorias   = listOf("Todos", "Carpinteros", "Plomeros", "Electricistas")
-
-    // Datos quemados — 3 prestadores de ejemplo
-    val prestadores = listOf(
-        Prestador("Carlos Ruiz",     "PLOMERO",      "$80.000 COP", 4.9f, 48, R.drawable.login_hero),
-        Prestador("Mateo Gómez",     "CARPINTERO",   "$75.000 COP", 4.7f, 32, R.drawable.login_hero),
-        Prestador("Andrés Restrepo", "ELECTRICISTA", "$95.000 COP", 4.9f, 15, R.drawable.login_hero)
-    )
 
     Scaffold(
         topBar    = { VerviTopBar(title = "Directorio de Prestadores", onBack = { navController.popBackStack()}) },
@@ -83,8 +65,8 @@ fun PrestadoresScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            prestadores.forEach { prestador ->
-                PrestadorCard(prestador = prestador, onVerPerfil = { /* TODO: ir a perfil */ })
+            state.providers.forEach { prestador ->
+                PrestadorCard(prestador = prestador, onVerPerfil = { navController.navigate("profile?userId=${prestador.id}") })
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -94,7 +76,7 @@ fun PrestadoresScreen(navController: NavController) {
 }
 
 @Composable
-private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
+private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
     Card(
         shape    = RoundedCornerShape(16.dp),
         colors   = CardDefaults.cardColors(containerColor = Color.White),
@@ -105,8 +87,8 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // Foto del prestador con esquinas redondeadas
                 Image(
-                    painter            = painterResource(id = prestador.imagen),
-                    contentDescription = prestador.nombre,
+                    painter            = painterResource(id = prestador.imageRes),
+                    contentDescription = prestador.name,
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier
                         .size(80.dp)
@@ -122,13 +104,13 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment     = Alignment.Top
                     ) {
-                        Text(prestador.nombre, fontSize = 16.sp,
+                        Text(prestador.name, fontSize = 16.sp,
                             fontWeight = FontWeight.Bold, color = VerviColors.TextDark)
 
                         // Precio alineado a la derecha con "Desde" encima
                         Column(horizontalAlignment = Alignment.End) {
                             Text("Desde", fontSize = 11.sp, color = VerviColors.TextGray)
-                            Text(prestador.precio, fontSize = 14.sp,
+                            Text(prestador.price, fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold, color = VerviColors.OrangeSecondary)
                         }
                     }
@@ -137,7 +119,7 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
 
                     // Badge especialidad + rating en la misma fila
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        VerviBadge(text     = prestador.especialidad,  color    = VerviColors.TextDark, fontSize = 10.sp, outlined = true)
+                        VerviBadge(text     = prestador.specialty,  color    = VerviColors.TextDark, fontSize = 10.sp, outlined = true)
 
                         Spacer(modifier = Modifier.width(8.dp))
 
@@ -147,7 +129,7 @@ private fun PrestadorCard(prestador: Prestador, onVerPerfil: () -> Unit) {
                         Spacer(modifier = Modifier.width(2.dp))
                         Text("${prestador.rating}", fontSize = 13.sp,
                             fontWeight = FontWeight.Bold, color = VerviColors.TextDark)
-                        Text(" (${prestador.reviews})", fontSize = 12.sp, color = VerviColors.TextGray)
+                        Text(" (${prestador.reviewCount})", fontSize = 12.sp, color = VerviColors.TextGray)
                     }
                 }
             }

@@ -1,9 +1,5 @@
 package com.example.verviapp
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,15 +19,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
     var selectedTab by remember { mutableStateOf(0) } // Tab seleccionado (0 es login, 1 registro)
+    val state by viewModel.state.collectAsState()
+
+    // Navega cuando login es exitoso — LaunchedEffect se ejecuta cuando loginSuccess cambia
+    LaunchedEffect(state.loginSuccess) {
+        if (state.loginSuccess) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true } // elimina login del backstack
+            }
+            viewModel.resetState()
+        }
+    }
+
+    // Navega cuando registro es exitoso
+    LaunchedEffect(state.registerSuccess) {
+        if (state.registerSuccess) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+            viewModel.resetState()
+        }
+    }
 
     Scaffold(
         // VerviTopBar compartido — mismo estilo en toda la app, solo cambia el título
@@ -84,12 +102,19 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(22.dp))
 
             if (selectedTab == 0) {
-                LoginForm(
-                    onLogin          = { /* TODO: lógica de login */ }
-                )
+                LoginForm(viewModel)
             } else {
-                RegisterForm(
-                    onRegister       = { /* TODO: lógica de registro */ }
+                RegisterForm(viewModel)
+            }
+
+            // Mensaje de error debajo de los forms
+            if (state.errorMessage != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text     = state.errorMessage!!,
+                    color    = androidx.compose.ui.graphics.Color.Red,
+                    fontSize = 13.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -114,9 +139,7 @@ fun LoginScreen(navController: NavController) {
 
 // ── LoginForm — STATELESS ──────────
 @Composable
-private fun LoginForm(
-    onLogin: () -> Unit
-) {
+private fun LoginForm(viewModel: LoginViewModel) {
     var email           by remember { mutableStateOf("") }
     var password        by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -130,14 +153,12 @@ private fun LoginForm(
         visible = passwordVisible, onToggle = { passwordVisible = !passwordVisible})
 
     Spacer(modifier = Modifier.height(28.dp))
-    VerviButton(text = "Ingresar  →", onClick = onLogin)
+    VerviButton(text = "Ingresar  →", onClick = { viewModel.login(email, password) })
 }
 
 // ── RegisterForm — STATELESS: mismo patrón que LoginForm ───
 @Composable
-private fun RegisterForm(
-    onRegister: () -> Unit
-) {
+private fun RegisterForm(viewModel: LoginViewModel) {
     var nombre             by remember { mutableStateOf("") }
     var regEmail           by remember { mutableStateOf("") }
     var regPassword        by remember { mutableStateOf("") }
@@ -164,5 +185,5 @@ private fun RegisterForm(
         onValueChange = {regConfirm = it}, visible = regConfirmVisible, onToggle = {regConfirmVisible = !regConfirmVisible})
 
     Spacer(modifier = Modifier.height(28.dp))
-    VerviButton(text = "Registrarse  →", onClick = onRegister)
+    VerviButton(text = "Registrarse  →", onClick = {viewModel.register(nombre, regEmail, regPassword, regConfirm)})
 }

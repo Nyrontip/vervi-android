@@ -1,36 +1,22 @@
 package com.example.verviapp
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.verviapp.ui.components.VerviFooterText
 import com.example.verviapp.ui.theme.VerviAppTheme
-import com.example.verviapp.ui.theme.VerviColors
-import kotlinx.coroutines.delay
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.verviapp.ui.screens.ApplyForServiceScreen
+import com.example.verviapp.ui.screens.EditProfileScreen
+import com.example.verviapp.ui.screens.NewRequestScreen
 import com.example.verviapp.ui.screens.NotificationsScreen
+import com.example.verviapp.ui.screens.RateServiceScreen
+import com.example.verviapp.ui.screens.RequestDetailsScreen
+import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
+import com.example.verviapp.ui.screens.ServiceHistoryScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,36 +25,63 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
 
-            NavHost(
-                navController = navController,
-                startDestination = "splash"
-            ) {
-                composable("splash") {
-                    SplashScreen(navController)
-                }
-                composable("login") {
-                    LoginScreen(navController)
-                }
-                composable("home") {
-                    HomeScreen(navController)
-                }
-                composable("prestadores") {
-                    PrestadoresScreen(navController)
-                }
-                composable("profile") {
-                    ProfileScreen(navController)
-                }
-                composable("notifications") {
-                    NotificationsScreen(navController)
-                }
-                composable("request/management") {
-                    RequestsScreen(navController)
-                }
-
-            }
-
             VerviAppTheme {
+                NavHost(
+                    navController = navController,
+                    startDestination = "splash"
+                ) {
+                    composable("splash") {
+                        SplashScreen(navController)
+                    }
+                    composable("login") {
+                        LoginScreen(navController)
+                    }
+                    composable("home") {
+                        HomeScreen(navController)
+                    }
+                    composable("prestadores") {
+                        PrestadoresScreen(navController)
+                    }
+                    // Ruta con parámetro opcional — el ? hace que sea nullable
+                    // Sin parámetro → perfil del usuario logueado
+                    // Con parámetro → perfil del prestador con ese ID
+                    composable("profile?userId={userId}") { backStackEntry ->
+                        val userId = backStackEntry.arguments?.getString("userId")
+                        ProfileScreen(navController, userId)
+                    }
+                    composable("editProfile") {
+                        EditProfileScreen(navController)
+                    }
+                    composable("notifications") {
+                        NotificationsScreen(navController)
+                    }
+                    composable("requests/management") {
+                        RequestsScreen(navController)
+                    }
+                    composable("request/new") {
+                        NewRequestScreen(navController)
+                    }
+                    composable("services/history") {
+                        ServiceHistoryScreen(navController)
+                    }
+                    composable("service/rate") {
+                        RateServiceScreen(navController)
+                    }
+                    composable("chat") {
+                        ChatScreen(navController)
+                    }
+                    composable("request/details") {
+                        RequestDetailsScreen(navController)
+                    }
+                    composable("service/details") {
+                        ServiceDetailsScreen(navController)
+                    }
+                    composable("service/apply") {
+                        ApplyForServiceScreen(navController)
+                    }
 
-        }}
+                }
+            }
+        }
     }
 }

@@ -1,10 +1,5 @@
 package com.example.verviapp
 
-import android.content.Context
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -19,39 +14,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.verviapp.model.Service
+import com.example.verviapp.viewmodel.HomeViewModel
 
-// ── Modelo de datos local ──────────────────────────────────
-data class Servicio(
-    val titulo: String,
-    val ubicacion: String,
-    val precio: String,
-    val postulaciones: Int,
-    val esUrgente: Boolean,
-    val imagen: Int,
-    val categoria: String
-)
 @Composable
-fun HomeScreen(navController: NavController) {
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedCat by remember { mutableStateOf("Todos") }
-
-    // Datos quemados — 2 servicios de ejemplo
-    val servicios = listOf(
-        Servicio("Reparación de tubería cocina", "Bogotá, Chapinero",
-            "$50.000 COP", 3, true,  R.drawable.login_hero, "Plomería"),
-        Servicio("Limpieza profunda de apartamento", "Bogotá, Cedritos",
-            "$85.000 COP", 8, false, R.drawable.login_hero, "Limpieza")
-    )
-
+fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }  // estado local de UI
+    var selectedCat by remember { mutableStateOf("Todos") }  // estado local de UI
     val categorias = listOf("Todos", "Carpintería", "Limpieza", "Electricidad")
     
     Scaffold(
@@ -93,7 +71,7 @@ fun HomeScreen(navController: NavController) {
             // Buscador con ícono de lupa
             VerviSearchField(
                 value         = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { searchQuery = it; viewModel.onSearchChange(it) },
                 placeholder   = "¿Qué servicio necesitas?",
                 leadingIcon   = Icons.Default.Search
             )
@@ -105,7 +83,7 @@ fun HomeScreen(navController: NavController) {
                 VerviChips(
                     opciones  = categorias,
                     selected  = selectedCat,
-                    onSelect  = { selectedCat = it }
+                    onSelect = { selectedCat = it; viewModel.onCategoryChange(it) }
                 )
             }
 
@@ -117,8 +95,11 @@ fun HomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            servicios.forEach { servicio ->
-                ServiceCard(servicio = servicio, onDetalle = { /* TODO: detalle */ })
+            state.services.forEach { servicio ->
+                ServiceCard(
+                    servicio = servicio,
+                    onDetalle = { navController.navigate("request/details") }
+                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -129,7 +110,7 @@ fun HomeScreen(navController: NavController) {
 
 // ── ServiceCard — exclusivo de Home ───────────────────────
 @Composable
-private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
+private fun ServiceCard(servicio: Service, onDetalle: () -> Unit) {
     Card(
         shape    = RoundedCornerShape(16.dp),
         colors   = CardDefaults.cardColors(containerColor = Color.White),
@@ -139,14 +120,14 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
             // Imagen con badge de precio superpuesto
             Box {
                 Image(
-                    painter            = painterResource(id = servicio.imagen),
-                    contentDescription = servicio.titulo,
+                    painter            = painterResource(id = servicio.imageRes),
+                    contentDescription = servicio.title,
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier.fillMaxWidth().height(160.dp)
                 )
                 // Badge precio — fondo blanco, texto azul (usa VerviBadge global)
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)) {
-                    VerviBadge(text     = servicio.precio, color    = VerviColors.Blue, fontSize = 13.sp,)
+                    VerviBadge(text     = servicio.price, color    = VerviColors.Blue, fontSize = 13.sp,)
                 }
             }
 
@@ -157,9 +138,9 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment     = Alignment.CenterVertically
                 ) {
-                    Text(servicio.titulo, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                    Text(servicio.title, fontSize = 15.sp, fontWeight = FontWeight.Bold,
                         color = VerviColors.TextDark, modifier = Modifier.weight(1f))
-                    if (servicio.esUrgente) {
+                    if (servicio.isUrgent) {
                         Spacer(modifier = Modifier.width(8.dp))
                         // Badge URGENTE outlined — borde azul, sin fondo
                         VerviBadge(text = "URGENTE", color = VerviColors.Blue, outlined = true)
@@ -173,7 +154,7 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
                     Icon(Icons.Default.LocationOn, contentDescription = null,
                         tint = VerviColors.TextGray, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(2.dp))
-                    Text(servicio.ubicacion, fontSize = 13.sp, color = VerviColors.TextGray)
+                    Text(servicio.location, fontSize = 13.sp, color = VerviColors.TextGray)
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -188,7 +169,7 @@ private fun ServiceCard(servicio: Servicio, onDetalle: () -> Unit) {
                         Icon(Icons.Default.Group, contentDescription = null,
                             tint = VerviColors.TextGray, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("${servicio.postulaciones} Postulaciones",
+                        Text("${servicio.applicationCount} Postulaciones",
                             fontSize = 13.sp, color = VerviColors.TextGray)
                     }
                     VerviButton(
@@ -218,7 +199,7 @@ private fun HomeFabs(navController: NavController) {
         Spacer(modifier = Modifier.height(10.dp))
         // FAB crear solicitud — naranja secundario, mismo tamaño
         FloatingActionButton(
-            onClick        = { /* TODO: nueva solicitud */ },
+            onClick        = { navController.navigate("request/new") },
             containerColor = VerviColors.OrangeSecondary,
             contentColor   = Color.White,
             modifier       = Modifier.size(52.dp)

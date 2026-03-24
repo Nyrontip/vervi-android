@@ -1,9 +1,5 @@
 package com.example.verviapp
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,20 +22,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviAppTheme
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = viewModel()) {
+    val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(userId) {
+        viewModel.loadProfile(userId)     // null carga el perfil local
+    }
+
     Scaffold(
         topBar = {
             VerviTopBar(
                 title   = "Mi Perfil",
                 onBack  = { navController.popBackStack() },
                 actions = {
-                    IconButton(onClick = { /* TODO: ajustes */ }) {
+                    IconButton(onClick = { navController.navigate("editProfile") }) {
                         Icon(Icons.Default.Settings, contentDescription = "Ajustes",
                             tint = VerviColors.TextDark)
                     }
@@ -79,7 +82,7 @@ fun ProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(12.dp))
 
             // ── Nombre ──────────────────────────────────────────
-            Text("Juan Pérez", fontSize = 22.sp, fontWeight = FontWeight.Bold,
+            Text(state.user.name, fontSize = 22.sp, fontWeight = FontWeight.Bold,
                 color = VerviColors.TextDark)
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -89,30 +92,29 @@ fun ProfileScreen(navController: NavController) {
                 Icon(Icons.Default.Star, contentDescription = null,
                     tint = VerviColors.OrangeSecondary, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("4.9", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                Text("${state.user.rating}", fontSize = 14.sp, fontWeight = FontWeight.Bold,
                     color = VerviColors.TextDark)
-                Text(" (124 reseñas)", fontSize = 13.sp, color = VerviColors.TextGray)
+                Text(" (${state.user.reviewCount} reseñas)", fontSize = 13.sp, color = VerviColors.TextGray)
             }
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            Text("Bogotá, Colombia", fontSize = 13.sp, color = VerviColors.TextGray)
+            Text(state.user.location, fontSize = 13.sp, color = VerviColors.TextGray)
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Botones Editar / Cerrar sesión ──────────────────
-            VerviOutlinedButton(text = "Editar Perfil", onClick = { /* TODO */ })
+            VerviOutlinedButton(text = "Editar Perfil", onClick = { navController.navigate("editProfile") })
             Spacer(modifier = Modifier.height(8.dp))
-            VerviOutlinedButton(text = "Cerrar Sesión", onClick = { /* TODO */ },
+            VerviOutlinedButton(text = "Cerrar Sesión", onClick = { navController.navigate("login") },
                 color = Color(0xFFD32F2F))  // rojo para acción destructiva
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Badges de rol — Cliente / Prestador ─────────────
-            // VerviBadge outlined reutilizado, no es chip seleccionable
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                VerviBadge(text = "Cliente",   color = VerviColors.Blue, outlined = true)
-                VerviBadge(text = "Prestador", color = VerviColors.Blue, outlined = true)
+                VerviBadge(text = "Cliente",   color = VerviColors.Blue, outlined = true, fontSize= 12.sp)
+                VerviBadge(text = "Prestador", color = VerviColors.Blue, outlined = true, fontSize= 12.sp)
             }
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -126,7 +128,7 @@ fun ProfileScreen(navController: NavController) {
                     .padding(14.dp)
             ) {
                 Text(
-                    text      = "\"Estudiante de Ingeniería apasionado por el servicio técnico y la academia. Comprometido con brindar soluciones rápidas y eficientes en la comunidad de Vervi.\"",
+                    text      = "\"${state.user.bio}\"",
                     fontSize  = 13.sp,
                     color     = VerviColors.TextDark,
                     textAlign = TextAlign.Center,
@@ -145,8 +147,9 @@ fun ProfileScreen(navController: NavController) {
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                VerviBadge(text = "Plomería",   color = VerviColors.TextDark, outlined = true)
-                VerviBadge(text = "Carpintería", color = VerviColors.TextDark, outlined = true)
+                state.user.categories.forEach { category ->
+                    VerviBadge(text = category, color = VerviColors.TextDark, outlined = true, fontSize=13.sp)
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -155,7 +158,7 @@ fun ProfileScreen(navController: NavController) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text("Precio sugerido: ", fontSize = 14.sp, color = VerviColors.TextDark,
                     fontWeight = FontWeight.Medium)
-                Text("\$50.000 COP/hora", fontSize = 14.sp, color = VerviColors.Blue,
+                Text("${state.user.suggestedPrice} COP/hora", fontSize = 14.sp, color = VerviColors.Blue,
                     fontWeight = FontWeight.Bold)
             }
 
@@ -177,7 +180,7 @@ fun ProfileScreen(navController: NavController) {
                     icon       = Icons.Default.ListAlt,
                     titulo     = "Mis Solicitudes",
                     subtitulo  = "Ver tus pedidos pendientes",
-                    onClick    = { /* TODO */ }
+                    onClick    = { navController.navigate("requests/management") }
                 )
                 HorizontalDivider(
                     modifier  = Modifier.padding(horizontal = 16.dp),
@@ -188,7 +191,7 @@ fun ProfileScreen(navController: NavController) {
                     icon      = Icons.Default.History,
                     titulo    = "Historial de Servicios",
                     subtitulo = "Servicios completados y recibos",
-                    onClick   = { /* TODO */ }
+                    onClick   = { navController.navigate("services/history") }
                 )
             }
 
@@ -199,8 +202,8 @@ fun ProfileScreen(navController: NavController) {
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard(numero = "24", label = "PROYECTOS",  modifier = Modifier.weight(1f))
-                StatCard(numero = "12", label = "SOLICITUDES", modifier = Modifier.weight(1f))
+                StatCard(numero = "${state.user.projectCount}", label = "PROYECTOS",  modifier = Modifier.weight(1f))
+                StatCard(numero = "${state.user.requestCount}", label = "SOLICITUDES", modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
