@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -41,6 +42,7 @@ import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.example.verviapp.ui.screens.RequestItem
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.model.ServiceHistoryItem
 
 // ════════════════════════════════════════════════════════════
 //  VerviTopBar — barra superior con título centrado
@@ -710,5 +712,230 @@ fun VerviRequestCard(
                 .size(96.dp)
                 .clip(RoundedCornerShape(12.dp))
         )
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviServiceHistoryCard — tarjeta de historial de servicios
+//
+//  Representa un servicio ya realizado con:
+//  - Imagen
+//  - Título
+//  - Proveedor + fecha
+//  - Precio (badge)
+//  - Estado de calificación (rating o "SIN CALIFICAR")
+//  - Acción (ver detalles / calificar)
+//
+//  Lógica:
+//  - Si rating != null → muestra estrellas + "Ver detalles"
+//  - Si rating == null → muestra badge "SIN CALIFICAR" + "Calificar ahora"
+//
+//  Diseñada para ser reutilizada en:
+//  - ServiceHistoryScreen
+//  - Perfil (historial)
+//  - Dashboard usuario
+//
+//  Uso:
+//    VerviServiceHistoryCard(
+//        item = service,
+//        onClick = { },
+//        onRate = { }
+//    )
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviServiceHistoryCard(
+    item: ServiceHistoryItem,
+    onClick: () -> Unit,
+    onRate: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier
+            .fillMaxWidth()
+            .background(VerviColors.CardBackground, RoundedCornerShape(12.dp))
+            .border(1.dp, VerviColors.BorderGray, RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+
+        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+
+                Text(
+                    text = item.title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = VerviColors.TextDark
+                )
+
+                Text(
+                    text = "${item.provider} • ${item.date}",
+                    fontSize = 12.sp,
+                    color = VerviColors.TextGray
+                )
+
+                VerviBadge(
+                    text = item.price,
+                    color = VerviColors.Blue
+                )
+            }
+
+            Spacer(Modifier.width(12.dp))
+
+            AsyncImage(
+                model = item.imageUrl,
+                contentDescription = item.title,
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(10.dp))
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Divider()
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            if (item.rating != null) {
+                VerviRatingStars(item.rating)
+            } else {
+                VerviBadge(
+                    text = "SIN CALIFICAR",
+                    color = VerviColors.TextGray,
+                    outlined = true
+                )
+            }
+
+            Row(
+                modifier = Modifier.clickable {
+                    if (item.rating != null) onClick() else onRate()
+                },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (item.rating != null) "Ver detalles" else "Calificar ahora",
+                    color = VerviColors.Blue,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp
+                )
+
+                Spacer(Modifier.width(4.dp))
+
+                Icon(
+                    imageVector =
+                        if (item.rating != null)
+                            Icons.Default.ChevronRight
+                        else
+                            Icons.Default.Star,
+                    contentDescription = null,
+                    tint = VerviColors.Blue,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviRatingStars — visualización de calificación con estrellas
+//
+//  Muestra:
+//  - 5 estrellas (rellenas según rating)
+//  - Valor numérico al lado
+//
+//  Uso:
+//    VerviRatingStars(4.5f)
+//    VerviRatingStars(rating = item.rating)
+//
+//  Nota:
+//  - Soporta valores decimales (visual simplificado por ahora)
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviRatingStars(
+    rating: Float,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        repeat(5) { index ->
+            val filled = index < rating.toInt()
+
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = if (filled) Color(0xFFFFC107) else Color.LightGray,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        Spacer(Modifier.width(4.dp))
+
+        Text(
+            text = rating.toString(),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = VerviColors.TextDark
+        )
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  VerviTabs — tabs reutilizables de la app
+//
+//  Basado en TabRow de Material3, estilizado con VerviColors
+//
+//  Uso:
+//    VerviTabs(
+//        tabs = listOf("Activas", "Finalizadas"),
+//        selectedIndex = selected,
+//        onTabSelected = { selected = it }
+//    )
+//
+//    VerviTabs(
+//        tabs = listOf("Como cliente", "Como prestador"),
+//        selectedIndex = selected,
+//        onTabSelected = { selected = it }
+//    )
+// ════════════════════════════════════════════════════════════
+@Composable
+fun VerviTabs(
+    tabs: List<String>,
+    selectedIndex: Int,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TabRow(
+        selectedTabIndex = selectedIndex,
+        containerColor = VerviColors.BgColor,
+        contentColor = VerviColors.Blue,
+        modifier = modifier
+    ) {
+        tabs.forEachIndexed { index, title ->
+            Tab(
+                selected = selectedIndex == index,
+                onClick = { onTabSelected(index) },
+                text = {
+                    Text(
+                        text = title,
+                        fontSize = 15.sp,
+                        fontWeight = if (selectedIndex == index)
+                            FontWeight.Bold else FontWeight.Normal
+                    )
+                }
+            )
+        }
     }
 }
