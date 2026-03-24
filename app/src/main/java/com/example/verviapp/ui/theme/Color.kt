@@ -71,4 +71,8 @@ object VerviColors {
 
     // ---------- PROGRESS / LOADING ----------
     val ProgressBg = Color(0xFFE0E0E0)
+
+    //Chat
+    val MessageUserBackground = VerviColors.Primary          // azul del usuario
+    val MessageOtherBackground = VerviColors.BackgroundOther // blanco para el otro
 }
