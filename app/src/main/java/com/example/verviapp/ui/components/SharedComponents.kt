@@ -689,7 +689,7 @@ fun VerviRequestCard(
                     VerviSmallButton(
                         text = "Cancelar",
                         color = VerviColors.CancelRed,
-                        onClick = { navController.navigate("request/details") },
+                        onClick = { navController.navigate("request/cancel") },
                         modifier = Modifier.weight(1f)
                     )
 
