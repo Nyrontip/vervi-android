@@ -11,6 +11,12 @@ import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.verviapp.viewmodel.RateServiceViewModel
+import com.example.verviapp.repository.RatingsRepositoryImpl
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -141,11 +147,11 @@ fun VerviInteractiveRating(
 fun RatingBottomSheet(
     navController: NavController,
     provider: Provider,
-    launcher: ManagedActivityResultLauncher<String, Uri?>
+    launcher: ManagedActivityResultLauncher<String, Uri?>,
+    viewModel: RateServiceViewModel
 ) {
 
-    var rating by remember { mutableStateOf(4) }
-    var comment by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -198,8 +204,8 @@ fun RatingBottomSheet(
 
         // Rating
         VerviInteractiveRating(
-            rating = rating,
-            onRatingSelected = { rating = it }
+            rating = uiState.rating,
+            onRatingSelected = { viewModel.onRatingSelected(it) }
         )
 
         Spacer(Modifier.height(24.dp))
@@ -207,8 +213,8 @@ fun RatingBottomSheet(
         // Comentario
         VerviTextArea(
             label = "Comentario opcional",
-            value = comment,
-            onValueChange = { comment = it },
+            value = uiState.comment,
+            onValueChange = { viewModel.onCommentChange(it) },
             placeholder = "Escribe tu experiencia..."
         )
 
@@ -227,8 +233,11 @@ fun RatingBottomSheet(
 
         // Botón principal
         VerviButton(
-            text = "Enviar calificación",
-            onClick = { navController.popBackStack() }
+            text = if (uiState.isSubmitting) "Enviando..." else "Enviar calificación",
+            onClick = {
+                viewModel.submitRating(provider.name)
+                navController.popBackStack()
+            }
         )
 
         // Omitir
@@ -252,13 +261,23 @@ fun RatingBottomSheet(
 
 @Composable
 fun RateServiceScreen(navController: NavController) {
-    val imageUri = remember { mutableStateOf<Uri?>(null) }
-
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri.value = uri
+        // actualizar el viewModel con la Uri como string
+        uri?.let { _uri ->
+            // veremos inyectado el viewModel más abajo
+        }
     }
+
+    val viewModel: RateServiceViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return RateServiceViewModel(RatingsRepositoryImpl()) as T
+            }
+        }
+    )
 
     val provider = Provider(
         name = "Juan Pérez",
@@ -283,11 +302,11 @@ fun RateServiceScreen(navController: NavController) {
             )
 
             // BottomSheet
-            Box(
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ) {
-                RatingBottomSheet(navController, provider, launcher)
-            }
+                Box(
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                ) {
+                    RatingBottomSheet(navController, provider, launcher, viewModel)
+                }
         }
     }
 }

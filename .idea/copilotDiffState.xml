@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/model/ChatMessage.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/model/ChatMessage.kt" />
+              <option name="updatedContent" value="package com.example.verviapp.model&#10;&#10;data class ChatMessage(&#10;    val text: String,&#10;    val time: String,&#10;    val isUser: Boolean,&#10;    val avatar: String? = null&#10;)&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/repository/ChatRepository.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/repository/ChatRepository.kt" />
+              <option name="updatedContent" value="package com.example.verviapp.repository&#10;&#10;import com.example.verviapp.model.ChatMessage&#10;&#10;interface ChatRepository {&#10;&#9;fun getHistory(): List&lt;ChatMessage&gt;&#10;&#9;fun send(message: ChatMessage)&#10;&#9;fun update(message: ChatMessage)&#10;}&#10;&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/repository/ChatRepositoryImpl.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/repository/ChatRepositoryImpl.kt" />
+              <option name="updatedContent" value="package com.example.verviapp.repository&#10;&#10;import com.example.verviapp.model.ChatMessage&#10;&#10;class ChatRepositoryImpl : ChatRepository {&#10;&#10;    private val messages = mutableListOf(&#10;        ChatMessage(&#10;            &quot;Hola, ¿en qué puedo ayudarte hoy?&quot;,&#10;            &quot;09:12 AM&quot;,&#10;            false,&#10;            &quot;https://lh3.googleusercontent.com/aida-public/AB6AXuDRoJbuz12pcHLb_QstqeS_pEkfsnOEmftV2Ed727AU3t7bOSHjkSfmCY2JfVePqvopofXX7vTDuvAtMCWbilnFLg_UteSicoAczML_D9PBjI0u3D_lCZ-2105dT2Mwv4OwMnkAO0CpuprG8o6wkdVqagwkTNqWhUPtwj3dZv7Vrx1mEuxbBl4UEjgLoTuGsL33f_JCbYv5gu00GBxBjHtqO18o4EutH2iWhrnjS8BqynnfujcsdMGAbM7C8sUbaRuSwpja0lZrAMUJ&quot;&#10;        ),&#10;        ChatMessage(&#10;            &quot;Hola Carlos, necesito una cotización para limpieza.&quot;,&#10;            &quot;09:15 AM&quot;,&#10;            true&#10;        )&#10;    )&#10;&#10;    override fun getHistory(): List&lt;ChatMessage&gt; = messages.toList()&#10;&#10;    override fun send(message: ChatMessage) {&#10;        messages.add(message)&#10;    }&#10;&#10;    override fun update(message: ChatMessage) {&#10;        val idx = messages.indexOfFirst { it.hashCode() == message.hashCode() }&#10;        if (idx &gt;= 0) messages[idx] = message&#10;    }&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/viewmodel/ChatViewModel.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/viewmodel/ChatViewModel.kt" />
+              <option name="originalContent" value="package com.example.verviapp&#10;&#10;import android.os.Bundle&#10;import androidx.activity.ComponentActivity&#10;import androidx.activity.compose.setContent&#10;import androidx.activity.enableEdgeToEdge&#10;import androidx.compose.foundation.Image&#10;import androidx.compose.foundation.layout.Column&#10;import androidx.compose.foundation.layout.Row&#10;import androidx.compose.foundation.layout.Spacer&#10;import androidx.compose.foundation.layout.fillMaxSize&#10;import androidx.compose.foundation.layout.fillMaxWidth&#10;import androidx.compose.foundation.layout.padding&#10;import androidx.compose.foundation.layout.size&#10;import androidx.compose.foundation.layout.width&#10;import androidx.compose.foundation.shape.CircleShape&#10;import androidx.compose.material.icons.Icons&#10;import androidx.compose.material.icons.automirrored.filled.ArrowBack&#10;import androidx.compose.material3.Icon&#10;import androidx.compose.material3.IconButton&#10;import androidx.compose.material3.Scaffold&#10;import androidx.compose.material3.Text&#10;import androidx.compose.runtime.Composable&#10;import androidx.compose.ui.Alignment&#10;import androidx.compose.ui.Modifier&#10;import androidx.compose.ui.draw.clip&#10;import androidx.compose.ui.graphics.Color&#10;import androidx.compose.ui.res.painterResource&#10;import androidx.compose.ui.text.font.FontWeight&#10;import androidx.compose.ui.unit.dp&#10;import androidx.compose.ui.unit.sp&#10;import androidx.lifecycle.ViewModel&#10;import com.example.verviapp.ui.theme.VerviAppTheme&#10;&#10;class ChatViewModel : ViewModel() {&#10;&#10;}&#10;" />
+              <option name="updatedContent" value="package com.example.verviapp.viewmodel&#10;&#10;import androidx.lifecycle.ViewModel&#10;import androidx.lifecycle.viewModelScope&#10;import com.example.verviapp.model.ChatMessage&#10;import com.example.verviapp.repository.ChatRepository&#10;import kotlinx.coroutines.flow.MutableStateFlow&#10;import kotlinx.coroutines.flow.StateFlow&#10;import kotlinx.coroutines.flow.asStateFlow&#10;import kotlinx.coroutines.launch&#10;&#10;data class ChatUiState(&#10;&#9;val messages: List&lt;ChatMessage&gt; = emptyList(),&#10;&#9;val inputText: String = &quot;&quot;,&#10;&#9;val showAttachments: Boolean = false,&#10;&#9;val isSending: Boolean = false,&#10;&#9;val error: String? = null&#10;)&#10;&#10;class ChatViewModel(&#10;&#9;private val repository: ChatRepository&#10;) : ViewModel() {&#10;&#10;&#9;private val _uiState = MutableStateFlow(ChatUiState())&#10;&#9;val uiState: StateFlow&lt;ChatUiState&gt; = _uiState.asStateFlow()&#10;&#10;&#9;init {&#10;&#9;&#9;loadHistory()&#10;&#9;}&#10;&#10;&#9;fun loadHistory() {&#10;&#9;&#9;viewModelScope.launch {&#10;&#9;&#9;&#9;_uiState.value = _uiState.value.copy(messages = repository.getHistory())&#10;&#9;&#9;}&#10;&#9;}&#10;&#10;&#9;fun onInputChange(text: String) {&#10;&#9;&#9;_uiState.value = _uiState.value.copy(inputText = text)&#10;&#9;}&#10;&#10;&#9;fun toggleAttachments() {&#10;&#9;&#9;_uiState.value = _uiState.value.copy(showAttachments = !_uiState.value.showAttachments)&#10;&#9;}&#10;&#10;&#9;fun sendMessage() {&#10;&#9;&#9;val text = _uiState.value.inputText.trim()&#10;&#9;&#9;if (text.isEmpty()) return&#10;&#10;&#9;&#9;viewModelScope.launch {&#10;&#9;&#9;&#9;_uiState.value = _uiState.value.copy(isSending = true)&#10;&#9;&#9;&#9;val msg = ChatMessage(text, &quot;Ahora&quot;, true)&#10;&#9;&#9;&#9;repository.send(msg)&#10;&#9;&#9;&#9;_uiState.value = _uiState.value.copy(&#10;&#9;&#9;&#9;&#9;messages = repository.getHistory(),&#10;&#9;&#9;&#9;&#9;inputText = &quot;&quot;,&#10;&#9;&#9;&#9;&#9;isSending = false&#10;&#9;&#9;&#9;)&#10;&#9;&#9;}&#10;&#9;}&#10;&#10;&#9;fun refresh() {&#10;&#9;&#9;loadHistory()&#10;&#9;}&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
