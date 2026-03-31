@@ -22,6 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.verviapp.viewmodel.RequestDetailsViewModel
+import com.example.verviapp.viewmodel.RequestDetailsUiState
 import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.VerviTopBar
 import com.example.verviapp.ui.theme.VerviColors
@@ -353,7 +356,7 @@ fun ClientSection() {
 // -----------------------------------------------------
 
 @Composable
-fun RequestDetailsScreen(navController: NavController) {
+fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewModel = viewModel()) {
 
     Scaffold(
 
@@ -389,34 +392,60 @@ fun RequestDetailsScreen(navController: NavController) {
 
             Spacer(Modifier.height(12.dp))
 
-            Row {
+            val state by vm.uiState.collectAsState()
 
-                StatusBadge("Como: Prestador", VerviColors.Primary)
+            Row {
+                StatusBadge(state.request?.roleLabel ?: "Como: Prestador", VerviColors.Primary)
 
                 Spacer(Modifier.width(8.dp))
 
-                StatusBadge("Completado", VerviColors.StatusSuccess)
+                StatusBadge(state.request?.status ?: "Completado", VerviColors.StatusSuccess)
             }
 
             Spacer(Modifier.height(16.dp))
 
-            ServiceHeader()
+            // Header uses request details
+            state.request?.let { req ->
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            TitleText(req.title)
+
+                            Spacer(Modifier.height(4.dp))
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                AppIcon(Icons.Outlined.CalendarToday, Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text(req.date, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(req.price, fontWeight = FontWeight.Bold, color = VerviColors.Primary, fontSize = 20.sp)
+                            Text("COP TOTAL", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            } ?: ServiceHeader()
 
             Spacer(Modifier.height(24.dp))
 
-            WorkSummarySection()
+            state.request?.let { WorkSummarySection() } ?: WorkSummarySection()
 
             Spacer(Modifier.height(24.dp))
 
-            EvidenceGallery()
+            state.request?.let { EvidenceGallery() } ?: EvidenceGallery()
 
             Spacer(Modifier.height(24.dp))
 
-            ChatCard(navController)
+            state.request?.let { ChatCard(navController) } ?: ChatCard(navController)
 
             Spacer(Modifier.height(24.dp))
 
-            ClientSection()
+            state.request?.let { ClientSection() } ?: ClientSection()
 
             Spacer(Modifier.height(80.dp))
         }
