@@ -13,6 +13,8 @@ import com.example.verviapp.ui.screens.EditProfileScreen
 import com.example.verviapp.ui.screens.NewRequestScreen
 import com.example.verviapp.ui.screens.NotificationsScreen
 import com.example.verviapp.ui.screens.RateServiceScreen
+import com.example.verviapp.ui.screens.RequestCancelScreen
+import com.example.verviapp.ui.screens.RequestConfirmScreen
 import com.example.verviapp.ui.screens.RequestDetailsScreen
 import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
@@ -73,6 +75,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("request/details") {
                         RequestDetailsScreen(navController)
+                    }
+                    composable("request/cancel") {
+                        RequestCancelScreen(navController)
+                    }
+                    composable("request/confirm") {
+                        RequestConfirmScreen(navController)
                     }
                     composable("service/details") {
                         ServiceDetailsScreen(navController)
