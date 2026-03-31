@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 data class ServiceHistoryUiState(
@@ -61,8 +62,10 @@ class ServiceHistoryViewModel(private val repository: ServiceHistoryRepository) 
 				_uiState.value = _uiState.value.copy(isLoading = true, error = null)
 				val data = repository.getHistory()
 				_uiState.value = _uiState.value.copy(services = data, isLoading = false)
-			} catch (t: Throwable) {
-				_uiState.value = _uiState.value.copy(error = t.message ?: "Error desconocido", isLoading = false)
+			} catch (e: CancellationException) {
+				throw e
+			} catch (e: Exception) {
+				_uiState.value = _uiState.value.copy(error = e.message ?: "Unknown error", isLoading = false)
 			}
 		}
 	}
