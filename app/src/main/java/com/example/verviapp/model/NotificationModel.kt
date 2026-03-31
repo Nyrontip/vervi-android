@@ -1,6 +1,7 @@
 package com.example.verviapp.model
 
 data class NotificationItem(
+    val id: String = java.util.UUID.randomUUID().toString(),
     val title: String,
     val description: String,
     val time: String,
