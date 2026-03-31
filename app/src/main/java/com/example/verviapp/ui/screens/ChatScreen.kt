@@ -13,6 +13,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.verviapp.viewmodel.ChatViewModel
+import com.example.verviapp.repository.ChatRepositoryImpl
+import com.example.verviapp.model.ChatMessage
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -92,12 +98,7 @@ fun MessageBubble(message: String, isUser: Boolean) {
 
 // ---------- MODULES ----------
 
-data class ChatMessage(
-    val text: String,
-    val time: String,
-    val isUser: Boolean,
-    val avatar: String? = null
-)
+// ChatMessage data class moved to com.example.verviapp.model.ChatMessage
 
 @Composable
 fun AttachmentMenu(
@@ -358,25 +359,21 @@ fun ChatMessagesList(messages: List<ChatMessage>, modifier: Modifier = Modifier)
 // ---------- SCREEN ----------
 
 @Composable
-fun ChatScreen(navController: NavController) {
-    var showAttachments by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
+fun ChatScreen(
+    navController: NavController,
+    viewModel: ChatViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return ChatViewModel(ChatRepositoryImpl()) as T
+            }
+        }
+    )
+) {
 
-    val messages = remember {
-        mutableStateListOf(
-            ChatMessage(
-                "Hola, ¿en qué puedo ayudarte hoy?",
-                "09:12 AM",
-                false,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuDRoJbuz12pcHLb_QstqeS_pEkfsnOEmftV2Ed727AU3t7bOSHjkSfmCY2JfVePqvopofXX7vTDuvAtMCWbilnFLg_UteSicoAczML_D9PBjI0u3D_lCZ-2105dT2Mwv4OwMnkAO0CpuprG8o6wkdVqagwkTNqWhUPtwj3dZv7Vrx1mEuxbBl4UEjgLoTuGsL33f_JCbYv5gu00GBxBjHtqO18o4EutH2iWhrnjS8BqynnfujcsdMGAbM7C8sUbaRuSwpja0lZrAMUJ"
-            ),
-            ChatMessage(
-                "Hola Carlos, necesito una cotización para limpieza.",
-                "09:15 AM",
-                true
-            )
-        )
-    }
+    val uiState by viewModel.uiState.collectAsState()
+
+    val messages = uiState.messages
 
     Column(
         modifier = Modifier
@@ -387,24 +384,17 @@ fun ChatScreen(navController: NavController) {
         ChatTopBar { navController.popBackStack() }
         ChatMessagesList(messages = messages, modifier = Modifier.weight(1f))
         AttachmentMenu(
-            expanded = showAttachments,
-            onDismiss = { showAttachments = false },
-            onGallery = { showAttachments = false },
-            onCamera = { showAttachments = false },
-            onFile = { showAttachments = false }
+            expanded = uiState.showAttachments,
+            onDismiss = { viewModel.toggleAttachments() },
+            onGallery = { viewModel.toggleAttachments() },
+            onCamera = { viewModel.toggleAttachments() },
+            onFile = { viewModel.toggleAttachments() }
         )
         ChatInput(
-            text = text,
-            onTextChange = { text = it },
-            onSend = {
-                if (text.isNotBlank()) {
-                    messages.add(ChatMessage(text, "Ahora", true))
-                    text = ""
-                }
-            },
-            onAddFile = {
-                showAttachments = !showAttachments
-            }
+            text = uiState.inputText,
+            onTextChange = { viewModel.onInputChange(it) },
+            onSend = { viewModel.sendMessage() },
+            onAddFile = { viewModel.toggleAttachments() }
         )
     }
 }

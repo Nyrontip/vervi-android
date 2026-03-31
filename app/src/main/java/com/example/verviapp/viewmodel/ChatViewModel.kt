@@ -1,37 +1,64 @@
-package com.example.verviapp
+package com.example.verviapp.viewmodel
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
-import com.example.verviapp.ui.theme.VerviAppTheme
+import androidx.lifecycle.viewModelScope
+import com.example.verviapp.model.ChatMessage
+import com.example.verviapp.repository.ChatRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class ChatViewModel : ViewModel() {
+data class ChatUiState(
+	val messages: List<ChatMessage> = emptyList(),
+	val inputText: String = "",
+	val showAttachments: Boolean = false,
+	val isSending: Boolean = false,
+	val error: String? = null
+)
 
+class ChatViewModel(
+	private val repository: ChatRepository
+) : ViewModel() {
+
+	private val _uiState = MutableStateFlow(ChatUiState())
+	val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+
+	init {
+		loadHistory()
+	}
+
+	fun loadHistory() {
+		viewModelScope.launch {
+			_uiState.value = _uiState.value.copy(messages = repository.getHistory())
+		}
+	}
+
+	fun onInputChange(text: String) {
+		_uiState.value = _uiState.value.copy(inputText = text)
+	}
+
+	fun toggleAttachments() {
+		_uiState.value = _uiState.value.copy(showAttachments = !_uiState.value.showAttachments)
+	}
+
+	fun sendMessage() {
+		val text = _uiState.value.inputText.trim()
+		if (text.isEmpty()) return
+
+		viewModelScope.launch {
+			_uiState.value = _uiState.value.copy(isSending = true)
+			val msg = ChatMessage(text, "Ahora", true)
+			repository.send(msg)
+			_uiState.value = _uiState.value.copy(
+				messages = repository.getHistory(),
+				inputText = "",
+				isSending = false
+			)
+		}
+	}
+
+	fun refresh() {
+		loadHistory()
+	}
 }
