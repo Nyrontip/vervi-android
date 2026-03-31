@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -20,6 +22,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
 
     buildTypes {
         release {
@@ -53,6 +56,11 @@ dependencies {
     implementation(libs.androidx.compose.navigation)
     implementation(libs.coil)
     implementation(libs.androidx.compose.ui.text)
+
+    // Hilt
+    implementation(libs.hiltAndroid)
+    ksp(libs.hiltCompiler)
+    implementation(libs.androidxHiltNavigationCompose)
 
 
     testImplementation(libs.junit)
