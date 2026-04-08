@@ -26,7 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
-import com.example.verviapp.viewmodel.ProfileViewModel
+import com.example.verviapp.viewModel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = viewModel()) {
