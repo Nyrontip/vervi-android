@@ -10,3 +10,4 @@ data class Service(
     val imageRes: Int,       // referencia al drawable — luego será URL de API
     val category: String
 )
+
