@@ -4,23 +4,30 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.verviapp.Presentation.ui.theme.VerviAppTheme
+import dagger.hilt.android.AndroidEntryPoint
+import com.example.verviapp.ui.theme.VerviAppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.verviapp.Presentation.ui.screens.ApplyForServiceScreen
-import com.example.verviapp.Presentation.ui.screens.EditProfileScreen
-import com.example.verviapp.Presentation.ui.screens.NewRequestScreen
-import com.example.verviapp.Presentation.ui.screens.NotificationsScreen
-import com.example.verviapp.Presentation.ui.screens.RateServiceScreen
-import com.example.verviapp.Presentation.ui.screens.RequestCancelScreen
-import com.example.verviapp.Presentation.ui.screens.RequestConfirmScreen
-import com.example.verviapp.Presentation.ui.screens.RequestDetailsScreen
-import com.example.verviapp.Presentation.ui.screens.ServiceDetailsScreen
-import com.example.verviapp.Presentation.ui.screens.RequestsScreen
-import com.example.verviapp.Presentation.ui.screens.ServiceHistoryScreen
-import com.example.verviapp.Presentation.ui.screens.ChatScreen
+import com.example.verviapp.ui.screens.ApplyForServiceScreen
+import com.example.verviapp.ui.screens.EditProfileScreen
+import com.example.verviapp.ui.screens.NewRequestScreen
+import com.example.verviapp.ui.screens.NotificationsScreen
+import com.example.verviapp.ui.screens.RateServiceScreen
+import com.example.verviapp.ui.screens.RequestCancelScreen
+import com.example.verviapp.ui.screens.RequestConfirmScreen
+import com.example.verviapp.ui.screens.RequestDetailsScreen
+import com.example.verviapp.ui.screens.ServiceDetailsScreen
+import com.example.verviapp.ui.screens.RequestsScreen
+import com.example.verviapp.ui.screens.ServiceHistoryScreen
+import com.example.verviapp.ui.screens.ChatScreen
+import com.example.verviapp.ui.screens.LoginScreen
+import com.example.verviapp.ui.screens.ProfileScreen
+import com.example.verviapp.ui.screens.SplashScreen
+import com.example.verviapp.ui.screens.HomeScreen
+import com.example.verviapp.ui.screens.PrestadoresScreen
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,89 +35,65 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
 
-            _root_ide_package_.com.example.verviapp.Presentation.ui.theme.VerviAppTheme {
+            VerviAppTheme {
                 NavHost(
                     navController = navController,
                     startDestination = "splash"
                 ) {
                     composable("splash") {
-                        _root_ide_package_.com.example.verviapp.SplashScreen(navController)
+                        SplashScreen(navController)
                     }
                     composable("login") {
-                        _root_ide_package_.com.example.verviapp.LoginScreen(navController)
+                        LoginScreen(navController)
                     }
                     composable("home") {
-                        _root_ide_package_.com.example.verviapp.HomeScreen(navController)
+                        HomeScreen(navController)
                     }
                     composable("prestadores") {
-                        _root_ide_package_.com.example.verviapp.PrestadoresScreen(navController)
+                        PrestadoresScreen(navController)
                     }
                     // Ruta con parámetro opcional — el ? hace que sea nullable
                     // Sin parámetro → perfil del usuario logueado
                     // Con parámetro → perfil del prestador con ese ID
                     composable("profile?userId={userId}") { backStackEntry ->
                         val userId = backStackEntry.arguments?.getString("userId")
-                        _root_ide_package_.com.example.verviapp.ProfileScreen(navController, userId)
+                        ProfileScreen(navController, userId)
                     }
                     composable("editProfile") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.EditProfileScreen(
-                            navController
-                        )
+                        EditProfileScreen(navController)
                     }
                     composable("notifications") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.NotificationsScreen(
-                            navController
-                        )
+                        NotificationsScreen(navController)
                     }
                     composable("requests/management") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.RequestsScreen(
-                            navController
-                        )
+                        RequestsScreen(navController)
                     }
                     composable("request/new") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.NewRequestScreen(
-                            navController
-                        )
+                        NewRequestScreen(navController)
                     }
                     composable("services/history") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.ServiceHistoryScreen(
-                            navController
-                        )
+                        ServiceHistoryScreen(navController)
                     }
                     composable("service/rate") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.RateServiceScreen(
-                            navController
-                        )
+                        RateServiceScreen(navController)
                     }
                     composable("chat") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.ChatScreen(
-                            navController
-                        )
+                        ChatScreen(navController)
                     }
                     composable("request/details") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.RequestDetailsScreen(
-                            navController
-                        )
+                        RequestDetailsScreen(navController)
                     }
                     composable("request/cancel") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.RequestCancelScreen(
-                            navController
-                        )
+                        RequestCancelScreen(navController)
                     }
                     composable("request/confirm") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.RequestConfirmScreen(
-                            navController
-                        )
+                        RequestConfirmScreen(navController)
                     }
                     composable("service/details") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.ServiceDetailsScreen(
-                            navController
-                        )
+                        ServiceDetailsScreen(navController)
                     }
                     composable("service/apply") {
-                        _root_ide_package_.com.example.verviapp.Presentation.ui.screens.ApplyForServiceScreen(
-                            navController
-                        )
+                        ApplyForServiceScreen(navController)
                     }
 
                 }
