@@ -1,13 +1,14 @@
 package com.example.verviapp.data.repository
-import com.example.verviapp.data.entity.ConversationEntity
-import com.example.verviapp.data.entity.MessageEntity
+
 import com.example.verviapp.data.entity.RequestEntity
 import com.example.verviapp.data.entity.UserEntity
+import com.example.verviapp.data.entity.ConversationEntity
+import com.example.verviapp.data.entity.MessageEntity
 /**
- * Datos de muestra para inicializar la BD en primera ejecuci�n.
- * Centralizados aqu� para f�cil mantenimiento y reutilizaci�n.
+ * Datos de muestra para inicializar la BD en primera ejecucion.
+ * Centralizados aqui para facil mantenimiento y reutilizacion.
  */
-object SampleData {
+object SampleData { 
     const val CHAT_LOCAL_USER_ID = 9001
     const val CHAT_REMOTE_USER_ID = 9002
     const val CHAT_CONVERSATION_ID = 5001
@@ -16,11 +17,19 @@ object SampleData {
 
     val sampleUsers = listOf(
         UserEntity(
+            name = "Usuario Demo",
+            email = "test@vervi.com",
+            password = "123456",
+            bio = "Usuario base para pruebas de login local.",
+            location = "Bogota, Colombia"
+        ),
+        UserEntity(
             id = CHAT_LOCAL_USER_ID,
             name = "Cliente",
             email = CHAT_LOCAL_EMAIL,
             isProvider = false,
-            isOnline = true
+            isOnline = true,
+            password = "123456"
         ),
         UserEntity(
             id = CHAT_REMOTE_USER_ID,
@@ -28,6 +37,7 @@ object SampleData {
             email = CHAT_REMOTE_EMAIL,
             isProvider = true,
             isOnline = true,
+            password = "123456",
             photoUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDRoJbuz12pcHLb_QstqeS_pEkfsnOEmftV2Ed727AU3t7bOSHjkSfmCY2JfVePqvopofXX7vTDuvAtMCWbilnFLg_UteSicoAczML_D9PBjI0u3D_lCZ-2105dT2Mwv4OwMnkAO0CpuprG8o6wkdVqagwkTNqWhUPtwj3dZv7Vrx1mEuxbBl4UEjgLoTuGsL33f_JCbYv5gu00GBxBjHtqO18o4EutH2iWhrnjS8BqynnfujcsdMGAbM7C8sUbaRuSwpja0lZrAMUJ"
         )
     )

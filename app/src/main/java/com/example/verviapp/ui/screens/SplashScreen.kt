@@ -1,4 +1,4 @@
-package com.example.verviapp
+package com.example.verviapp.ui.screens
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.VerviFooterText
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.R
 import kotlinx.coroutines.delay
 
 @Composable
