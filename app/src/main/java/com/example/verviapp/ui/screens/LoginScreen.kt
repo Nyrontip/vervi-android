@@ -1,4 +1,4 @@
-package com.example.verviapp
+package com.example.verviapp.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -19,35 +19,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.AuthEvent
 import com.example.verviapp.viewmodel.LoginViewModel
+import com.example.verviapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
     var selectedTab by remember { mutableStateOf(0) } // Tab seleccionado (0 es login, 1 registro)
     val state by viewModel.state.collectAsState()
 
-    // Navega cuando login es exitoso — LaunchedEffect se ejecuta cuando loginSuccess cambia
-    LaunchedEffect(state.loginSuccess) {
-        if (state.loginSuccess) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true } // elimina login del backstack
+    // Eventos one-shot para navegación.
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                AuthEvent.LoginSuccess,
+                AuthEvent.RegisterSuccess -> {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
             }
-            viewModel.resetState()
-        }
-    }
-
-    // Navega cuando registro es exitoso
-    LaunchedEffect(state.registerSuccess) {
-        if (state.registerSuccess) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-            }
-            viewModel.resetState()
         }
     }
 
@@ -101,7 +97,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            if (selectedTab == 0) {
+                if (selectedTab == 0) {
                 LoginForm(viewModel)
             } else {
                 RegisterForm(viewModel)

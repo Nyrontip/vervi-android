@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,6 +57,7 @@ import com.example.verviapp.ui.theme.VerviColors
 private val SheetBackdrop = Color(0xFFE2E8F0)
 private val FieldMutedBg = Color(0xFFF8FAFC)
 private val EvidenceBorder = Color(0xFFCBD5E1)
+private val ModalSurface = Color(0xFFF6F7F8)
 
 /**
  * Apply-for-service form (bottom-sheet style). UI strings in Spanish; state names in English.
@@ -77,14 +79,20 @@ fun ApplyForServiceScreen(navController: NavController) {
             .background(SheetBackdrop)
             .navigationBarsPadding()
     ) {
-        Spacer(modifier = Modifier.height(28.dp))
+        // Overlay area above the sheet (as in mockup)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .background(Color.Black.copy(alpha = 0.20f))
+        )
 
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = ModalSurface),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
             Column(
@@ -97,13 +105,13 @@ fun ApplyForServiceScreen(navController: NavController) {
 
                 Text(
                     text = "Postularse al servicio",
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = VerviColors.TextDark,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 // Required message — label with orange asterisk
                 Row(verticalAlignment = Alignment.Bottom) {
@@ -130,13 +138,13 @@ fun ApplyForServiceScreen(navController: NavController) {
                             color = Color(0xFFAAAAAA)
                         )
                     },
-                    minLines = 5,
-                    maxLines = 10,
+                    minLines = 4,
+                    maxLines = 8,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = VerviColors.BorderGray,
                         focusedBorderColor = VerviColors.Blue,
-                        unfocusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color(0xFFF8FAFC),
                         focusedContainerColor = Color.White
                     ),
                     modifier = Modifier.fillMaxWidth()
@@ -144,13 +152,26 @@ fun ApplyForServiceScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                VerviTextField(
-                    label = "Precio propuesto (COP)",
+                Text(
+                    text = "Precio propuesto (COP)",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = VerviColors.TextSecondary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                OutlinedTextField(
                     value = proposedPrice,
                     onValueChange = { proposedPrice = it },
-                    placeholder = "$ Ej: 50.000",
-                    labelSize = 12.sp,
-                    keyboardType = KeyboardType.Decimal
+                    placeholder = { Text("$ Ej: 50.000", color = Color(0xFFAAAAAA)) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = VerviColors.BorderGray,
+                        focusedBorderColor = VerviColors.Blue,
+                        unfocusedContainerColor = Color(0xFFF8FAFC),
+                        focusedContainerColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -185,8 +206,10 @@ fun ApplyForServiceScreen(navController: NavController) {
                         colors = CheckboxDefaults.colors(
                             checkedColor = VerviColors.OrangeSecondary,
                             uncheckedColor = VerviColors.TextGray
-                        )
+                        ),
+                        modifier = Modifier.size(22.dp)
                     )
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Confirmar disponibilidad inmediata",
                         fontSize = 14.sp,
@@ -209,7 +232,7 @@ fun ApplyForServiceScreen(navController: NavController) {
                     onClick = { navController.popBackStack() },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp)
+                        .padding(top = 2.dp)
                 ) {
                     Text(
                         text = "Cancelar",
@@ -218,7 +241,7 @@ fun ApplyForServiceScreen(navController: NavController) {
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -299,12 +322,14 @@ private fun EvidenceDropZone(
             )
         }
 
-        VerviOutlinedButton(
-            text = "+ Seleccionar",
-            onClick = onSelectClick,
-            color = VerviColors.TextGray,
-            height = 42.dp,
-            fontSize = 14.sp
-        )
+        Box(modifier = Modifier.widthIn(max = 170.dp)) {
+            VerviOutlinedButton(
+                text = "+ Seleccionar",
+                onClick = onSelectClick,
+                color = VerviColors.TextGray,
+                height = 42.dp,
+                fontSize = 14.sp
+            )
+        }
     }
 }

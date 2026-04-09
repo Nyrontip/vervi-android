@@ -4,20 +4,30 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import dagger.hilt.android.AndroidEntryPoint
 import com.example.verviapp.ui.theme.VerviAppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.verviapp.ui.screens.SplashScreen
+import com.example.verviapp.ui.screens.HomeScreen
+import com.example.verviapp.ui.screens.LoginScreen
+import com.example.verviapp.ui.screens.PrestadoresScreen
+import com.example.verviapp.ui.screens.ProfileScreen
 import com.example.verviapp.ui.screens.ApplyForServiceScreen
 import com.example.verviapp.ui.screens.EditProfileScreen
 import com.example.verviapp.ui.screens.NewRequestScreen
 import com.example.verviapp.ui.screens.NotificationsScreen
 import com.example.verviapp.ui.screens.RateServiceScreen
+import com.example.verviapp.ui.screens.RequestCancelScreen
+import com.example.verviapp.ui.screens.RequestConfirmScreen
 import com.example.verviapp.ui.screens.RequestDetailsScreen
 import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
+import com.example.verviapp.ui.screens.ChatScreen
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +82,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("request/details") {
                         RequestDetailsScreen(navController)
+                    }
+                    composable("request/cancel") {
+                        RequestCancelScreen(navController)
+                    }
+                    composable("request/confirm") {
+                        RequestConfirmScreen(navController)
                     }
                     composable("service/details") {
                         ServiceDetailsScreen(navController)
