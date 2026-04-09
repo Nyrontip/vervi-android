@@ -1,4 +1,4 @@
-package com.example.verviapp.model
+package com.example.verviapp.viewModel.state
 
 data class User(
     val id: String = "1",

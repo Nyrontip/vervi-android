@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -40,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import coil.compose.AsyncImage
-import com.example.verviapp.ui.screens.RequestItem
+import com.example.verviapp.viewModel.state.RequestItem
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.model.ServiceHistoryItem
 

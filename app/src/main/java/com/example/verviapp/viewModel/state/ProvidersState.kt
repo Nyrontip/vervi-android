@@ -1,4 +1,4 @@
-package com.example.verviapp.model
+package com.example.verviapp.viewModel.state
 
 // Estado completo de la pantalla de Prestadores
 data class ProvidersState(

@@ -1,4 +1,4 @@
-package com.example.verviapp.model
+package com.example.verviapp.viewModel.state
 
 // Modelo de prestador de servicios
 data class Provider(
