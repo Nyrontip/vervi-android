@@ -1,6 +1,7 @@
-package com.example.verviapp.model
+package com.example.verviapp.viewmodel.state
 
 data class NotificationItem(
+    val id: Int,
     val title: String,
     val description: String,
     val time: String,

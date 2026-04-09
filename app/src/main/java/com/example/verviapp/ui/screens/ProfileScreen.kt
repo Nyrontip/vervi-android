@@ -40,12 +40,14 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
     Scaffold(
         topBar = {
             VerviTopBar(
-                title   = "Mi Perfil",
-                onBack  = { navController.popBackStack() },
+                title = "Mi Perfil",
+                onBack = { navController.popBackStack() },
                 actions = {
                     IconButton(onClick = { navController.navigate("editProfile") }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Ajustes",
-                            tint = VerviColors.TextDark)
+                        Icon(
+                            Icons.Default.Settings, contentDescription = "Ajustes",
+                            tint = VerviColors.TextDark
+                        )
                     }
                 }
             )
@@ -105,17 +107,31 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Botones Editar / Cerrar sesión ──────────────────
-            VerviOutlinedButton(text = "Editar Perfil", onClick = { navController.navigate("editProfile") })
+            VerviOutlinedButton(
+                text = "Editar Perfil",
+                onClick = { navController.navigate("editProfile") })
             Spacer(modifier = Modifier.height(8.dp))
-            VerviOutlinedButton(text = "Cerrar Sesión", onClick = { navController.navigate("login") },
-                color = Color(0xFFD32F2F))  // rojo para acción destructiva
+            VerviOutlinedButton(
+                text = "Cerrar Sesión", onClick = { navController.navigate("login") },
+                color = Color(0xFFD32F2F)
+            )  // rojo para acción destructiva
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Badges de rol — Cliente / Prestador ─────────────
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                VerviBadge(text = "Cliente",   color = VerviColors.Blue, outlined = true, fontSize= 12.sp)
-                VerviBadge(text = "Prestador", color = VerviColors.Blue, outlined = true, fontSize= 12.sp)
+                VerviBadge(
+                    text = "Cliente",
+                    color = VerviColors.Blue,
+                    outlined = true,
+                    fontSize = 12.sp
+                )
+                VerviBadge(
+                    text = "Prestador",
+                    color = VerviColors.Blue,
+                    outlined = true,
+                    fontSize = 12.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -149,7 +165,12 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 state.user.categories.forEach { category ->
-                    VerviBadge(text = category, color = VerviColors.TextDark, outlined = true, fontSize=13.sp)
+                    VerviBadge(
+                        text = category,
+                        color = VerviColors.TextDark,
+                        outlined = true,
+                        fontSize = 13.sp
+                    )
                 }
             }
 
@@ -178,10 +199,10 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 modifier = Modifier.fillMaxWidth()
             ) {
                 VerviActivityItem(
-                    icon       = Icons.Default.ListAlt,
-                    titulo     = "Mis Solicitudes",
-                    subtitulo  = "Ver tus pedidos pendientes",
-                    onClick    = { navController.navigate("requests/management") }
+                    icon = Icons.Default.ListAlt,
+                    titulo = "Mis Solicitudes",
+                    subtitulo = "Ver tus pedidos pendientes",
+                    onClick = { navController.navigate("requests/management") }
                 )
                 HorizontalDivider(
                     modifier  = Modifier.padding(horizontal = 16.dp),
@@ -189,10 +210,10 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                     thickness = 1.dp
                 )
                 VerviActivityItem(
-                    icon      = Icons.Default.History,
-                    titulo    = "Historial de Servicios",
+                    icon = Icons.Default.History,
+                    titulo = "Historial de Servicios",
                     subtitulo = "Servicios completados y recibos",
-                    onClick   = { navController.navigate("services/history") }
+                    onClick = { navController.navigate("services/history") }
                 )
             }
 
@@ -203,8 +224,16 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard(numero = "${state.user.projectCount}", label = "PROYECTOS",  modifier = Modifier.weight(1f))
-                StatCard(numero = "${state.user.requestCount}", label = "SOLICITUDES", modifier = Modifier.weight(1f))
+                StatCard(
+                    numero = "${state.user.projectCount}",
+                    label = "PROYECTOS",
+                    modifier = Modifier.weight(1f)
+                )
+                StatCard(
+                    numero = "${state.user.requestCount}",
+                    label = "SOLICITUDES",
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -15,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.verviapp.viewmodel.ChatViewModel
-import com.example.verviapp.model.ChatMessage
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -116,9 +115,21 @@ fun AttachmentMenu(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-            AttachmentItem("Galería", Icons.Default.Image, onGallery)
-            AttachmentItem("Cámara", Icons.Default.CameraAlt, onCamera)
-            AttachmentItem("Archivo", Icons.Default.InsertDriveFile, onFile)
+            AttachmentItem(
+                "Galería",
+                Icons.Default.Image,
+                onGallery
+            )
+            AttachmentItem(
+                "Cámara",
+                Icons.Default.CameraAlt,
+                onCamera
+            )
+            AttachmentItem(
+                "Archivo",
+                Icons.Default.InsertDriveFile,
+                onFile
+            )
         }
     }
 }
@@ -144,7 +155,7 @@ fun AttachmentItem(
 }
 
 @Composable
-fun ChatMessageItem(message: ChatMessage) {
+fun ChatMessageItem(message: com.example.verviapp.model.ChatMessageState) {
 
     val alignment =
         if (message.isUser) Arrangement.End else Arrangement.Start
@@ -311,20 +322,30 @@ fun ChatTopBar(onBack: () -> Unit) {
             .padding(vertical = 4.dp, horizontal = 5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButtonCircle(Icons.Default.ArrowBack, tint = VerviColors.TextWhite) { onBack() }
+        IconButtonCircle(
+            Icons.Default.ArrowBack,
+            tint = VerviColors.TextWhite
+        ) { onBack() }
         Spacer(Modifier.width(8.dp))
         Box {
             Avatar(
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuBbXJ6mwDBe7aVLNNLYT3qvuXHAzHznWBIhM55cvQSvU3-8xDX56fHQDumSJVMqGfoYWmwPoX4mSuQWf4VALZUafhYNLfT4pb--W3VdnHpbdtPORb_0_2LyxIII_-1wFKn0AjefyIk25IPTNcdTGF-vr3HOEcEuuPyi2AW9ZjRRMgwr04DSwDnUxNB35QZ4HzznnUcv80f768GU2yLXN1lnsoOHF1yKM8_DM4NX6MSHXjeBbTTRZS2fIU5_kRzqGaM830P3vJKh7akT"
             )
-            StatusDot(modifier = Modifier.align(Alignment.BottomEnd))
+            StatusDot(
+                modifier = Modifier.align(
+                    Alignment.BottomEnd
+                )
+            )
         }
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f)) {
             Text("Carlos Ruiz", fontWeight = FontWeight.SemiBold, color = VerviColors.TextWhite)
             Text("Proveedor de Limpieza", fontSize = 12.sp, color = VerviColors.TextWhite)
         }
-        IconButtonCircle(Icons.Default.Call, tint = VerviColors.TextWhite) {}
+        IconButtonCircle(
+            Icons.Default.Call,
+            tint = VerviColors.TextWhite
+        ) {}
         //IconButtonCircle(Icons.Default.MoreVert, tint = VerviColors.TextWhite) {} No es util por ahora
     }
 }
@@ -332,7 +353,7 @@ fun ChatTopBar(onBack: () -> Unit) {
 // ---------- MESSAGES LIST ----------
 
 @Composable
-fun ChatMessagesList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
+fun ChatMessagesList(messages: List<com.example.verviapp.model.ChatMessageState>, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -368,7 +389,10 @@ fun ChatScreen(
             .background(VerviColors.BgColor)
     ) {
         ChatTopBar { navController.popBackStack() }
-        ChatMessagesList(messages = messages, modifier = Modifier.weight(1f))
+        ChatMessagesList(
+            messages = messages,
+            modifier = Modifier.weight(1f)
+        )
         AttachmentMenu(
             expanded = state.showAttachments,
             onDismiss = { viewModel.toggleAttachments() },

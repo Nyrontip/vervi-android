@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
-import com.example.verviapp.model.ServiceHistoryItem
+import com.example.verviapp.viewmodel.state.ServiceHistoryItem
 
 
 /* ------------------------------------------------ */
