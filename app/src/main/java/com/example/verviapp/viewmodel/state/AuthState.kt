@@ -1,4 +1,4 @@
-package com.example.verviapp.viewModel.state
+package com.example.verviapp.viewmodel.state
 
 // Estado de la pantalla de login/registro
 // sealed class: cada caso es un tipo distinto de resultado posible

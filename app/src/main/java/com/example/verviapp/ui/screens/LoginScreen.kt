@@ -23,8 +23,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
-import com.example.verviapp.viewModel.AuthEvent
-import com.example.verviapp.viewModel.LoginViewModel
+import com.example.verviapp.viewmodel.AuthEvent
+import com.example.verviapp.viewmodel.LoginViewModel
 import com.example.verviapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)

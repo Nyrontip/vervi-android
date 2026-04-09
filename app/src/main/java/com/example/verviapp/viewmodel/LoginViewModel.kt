@@ -1,10 +1,10 @@
-package com.example.verviapp.viewModel
+package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.UserEntity
-import com.example.verviapp.viewModel.state.AuthState
+import com.example.verviapp.viewmodel.state.AuthState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow

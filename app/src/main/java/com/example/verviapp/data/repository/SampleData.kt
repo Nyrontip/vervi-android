@@ -2,12 +2,19 @@ package com.example.verviapp.data.repository
 
 import com.example.verviapp.data.entity.RequestEntity
 import com.example.verviapp.data.entity.UserEntity
-
+import com.example.verviapp.data.entity.ConversationEntity
+import com.example.verviapp.data.entity.MessageEntity
 /**
  * Datos de muestra para inicializar la BD en primera ejecucion.
  * Centralizados aqui para facil mantenimiento y reutilizacion.
  */
-object SampleData {
+object SampleData { 
+    const val CHAT_LOCAL_USER_ID = 9001
+    const val CHAT_REMOTE_USER_ID = 9002
+    const val CHAT_CONVERSATION_ID = 5001
+    const val CHAT_LOCAL_EMAIL = "chat.local@vervi.app"
+    const val CHAT_REMOTE_EMAIL = "chat.remote@vervi.app"
+
     val sampleUsers = listOf(
         UserEntity(
             name = "Usuario Demo",
@@ -15,6 +22,50 @@ object SampleData {
             password = "123456",
             bio = "Usuario base para pruebas de login local.",
             location = "Bogota, Colombia"
+        ),
+        UserEntity(
+            id = CHAT_LOCAL_USER_ID,
+            name = "Cliente",
+            email = CHAT_LOCAL_EMAIL,
+            isProvider = false,
+            isOnline = true,
+            password = "123456"
+        ),
+        UserEntity(
+            id = CHAT_REMOTE_USER_ID,
+            name = "Carlos Ruiz",
+            email = CHAT_REMOTE_EMAIL,
+            isProvider = true,
+            isOnline = true,
+            password = "123456",
+            photoUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDRoJbuz12pcHLb_QstqeS_pEkfsnOEmftV2Ed727AU3t7bOSHjkSfmCY2JfVePqvopofXX7vTDuvAtMCWbilnFLg_UteSicoAczML_D9PBjI0u3D_lCZ-2105dT2Mwv4OwMnkAO0CpuprG8o6wkdVqagwkTNqWhUPtwj3dZv7Vrx1mEuxbBl4UEjgLoTuGsL33f_JCbYv5gu00GBxBjHtqO18o4EutH2iWhrnjS8BqynnfujcsdMGAbM7C8sUbaRuSwpja0lZrAMUJ"
+        )
+    )
+
+    val sampleConversations = listOf(
+        ConversationEntity(
+            id = CHAT_CONVERSATION_ID,
+            participantAUserId = CHAT_LOCAL_USER_ID,
+            participantBUserId = CHAT_REMOTE_USER_ID,
+            lastMessagePreview = "Hola Carlos, necesito una cotizacion para limpieza.",
+            lastMessageAt = System.currentTimeMillis() - 60_000
+        )
+    )
+
+    val sampleMessages = listOf(
+        MessageEntity(
+            id = 7001,
+            conversationId = CHAT_CONVERSATION_ID,
+            senderUserId = CHAT_REMOTE_USER_ID,
+            body = "Hola, en que puedo ayudarte hoy?",
+            sentAt = System.currentTimeMillis() - 3 * 60_000
+        ),
+        MessageEntity(
+            id = 7002,
+            conversationId = CHAT_CONVERSATION_ID,
+            senderUserId = CHAT_LOCAL_USER_ID,
+            body = "Hola Carlos, necesito una cotizacion para limpieza.",
+            sentAt = System.currentTimeMillis() - 60_000
         )
     )
 

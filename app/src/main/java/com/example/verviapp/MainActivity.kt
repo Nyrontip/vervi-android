@@ -27,7 +27,6 @@ import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
 import com.example.verviapp.ui.screens.ChatScreen
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

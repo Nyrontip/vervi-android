@@ -32,8 +32,8 @@ import com.example.verviapp.R
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.verviapp.viewModel.EditProfileViewModel
-import com.example.verviapp.viewModel.ProfileViewModel
+import com.example.verviapp.viewmodel.EditProfileViewModel
+import com.example.verviapp.viewmodel.ProfileViewModel
 
 @Composable
 fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = viewModel()) {

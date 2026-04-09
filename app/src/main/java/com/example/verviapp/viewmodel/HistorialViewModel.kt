@@ -1,4 +1,4 @@
-package com.example.verviapp.viewModel
+package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 
