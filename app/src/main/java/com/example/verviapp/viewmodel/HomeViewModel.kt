@@ -1,9 +1,9 @@
-package com.example.verviapp.viewModel
+package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.verviapp.R
-import com.example.verviapp.viewModel.state.HomeState
-import com.example.verviapp.viewModel.state.Service
+import com.example.verviapp.viewmodel.state.HomeState
+import com.example.verviapp.viewmodel.state.Service
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

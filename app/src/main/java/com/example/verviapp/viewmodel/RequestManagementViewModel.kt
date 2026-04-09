@@ -1,4 +1,4 @@
-package com.example.verviapp.viewModel
+package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,7 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.ui.graphics.Color
-import com.example.verviapp.viewModel.state.RequestItem
+import com.example.verviapp.viewmodel.state.RequestItem
 import com.example.verviapp.data.dao.RequestDao
 import com.example.verviapp.data.entity.RequestEntity
 import dagger.hilt.android.lifecycle.HiltViewModel

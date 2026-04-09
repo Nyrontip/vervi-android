@@ -1,4 +1,4 @@
-package com.example.verviapp.viewModel.state
+package com.example.verviapp.viewmodel.state
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector

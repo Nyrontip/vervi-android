@@ -22,8 +22,8 @@ import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.verviapp.viewModel.state.Service
-import com.example.verviapp.viewModel.HomeViewModel
+import com.example.verviapp.viewmodel.state.Service
+import com.example.verviapp.viewmodel.HomeViewModel
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewModel()) {

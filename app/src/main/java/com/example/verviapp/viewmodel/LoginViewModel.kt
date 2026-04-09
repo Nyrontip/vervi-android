@@ -1,7 +1,7 @@
-package com.example.verviapp.viewModel
+package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.verviapp.viewModel.state.AuthState
+import com.example.verviapp.viewmodel.state.AuthState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
