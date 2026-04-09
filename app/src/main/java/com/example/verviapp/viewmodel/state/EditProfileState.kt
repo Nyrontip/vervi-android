@@ -1,4 +1,4 @@
-package com.example.verviapp.model
+package com.example.verviapp.viewmodel.state
 
 // Estado completo del formulario de edición de perfil
 data class EditProfileState(

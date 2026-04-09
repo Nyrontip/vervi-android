@@ -2,8 +2,8 @@ package com.example.verviapp.viewmodel
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
-import com.example.verviapp.model.EditProfileState
-import com.example.verviapp.model.User
+import com.example.verviapp.viewmodel.state.EditProfileState
+import com.example.verviapp.viewmodel.state.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
