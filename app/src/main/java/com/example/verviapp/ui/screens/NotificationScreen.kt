@@ -1,51 +1,38 @@
 package com.example.verviapp.ui.screens
 
+import com.example.verviapp.model.NotificationType
+import com.example.verviapp.model.NotificationItem
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
+import com.example.verviapp.ui.components.VerviBottomBar
+import com.example.verviapp.ui.components.VerviTabs
 import com.example.verviapp.ui.components.VerviTopBar
 import com.example.verviapp.ui.theme.VerviColors
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.*
 
-// ---------- DATA ----------
-
-// ---------- DATA ----------
-
-data class NotificationItem(
-    val title: String,
-    val description: String,
-    val time: String,
-    val type: NotificationType,
-    val unread: Boolean = false
-)
-
-enum class NotificationType {
-    APPLICATION,
-    MESSAGE,
-    CONFIRMED,
-    PAYMENT,
-    REMINDER
-}
-
-// ---------- SAMPLE DATA ----------
-
+/* ------------------------------------------------ */
+/* SAMPLE DATA */
+/* ------------------------------------------------ */
 val sampleNotifications = listOf(
     NotificationItem(
         "Nueva postulación recibida",
@@ -80,11 +67,17 @@ val sampleNotifications = listOf(
     )
 )
 
-// ---------- ATOMS ----------
-
 @Composable
-fun NotificationIcon(type: NotificationType, unread: Boolean) {
+fun VerviNotificationCard(
+    title: String,
+    description: String,
+    time: String,
+    type: NotificationType,
+    unread: Boolean = false,
+    onClick: () -> Unit
+) {
 
+    // Icono y colores según tipo de notificación
     val icon = when (type) {
         NotificationType.APPLICATION -> Icons.Default.Notifications
         NotificationType.MESSAGE -> Icons.Default.ChatBubble
@@ -103,11 +96,17 @@ fun NotificationIcon(type: NotificationType, unread: Boolean) {
         else -> VerviColors.IconGray
     }
 
-    Box(
-        modifier = Modifier.size(48.dp),
-        contentAlignment = Alignment.Center
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(VerviColors.CardBackground)
+            .clickable { onClick() }
+            .padding(16.dp),
+        verticalAlignment = Alignment.Top
     ) {
 
+        // Icono de notificación
         Box(
             modifier = Modifier
                 .size(48.dp)
@@ -116,47 +115,30 @@ fun NotificationIcon(type: NotificationType, unread: Boolean) {
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = tint)
+
+            if (unread) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 2.dp, y = (-2).dp)
+                        .size(10.dp)
+                        .background(VerviColors.OrangeSecondary, CircleShape)
+                        .border(2.dp, VerviColors.TextWhite, CircleShape)
+                )
+            }
         }
 
-        if (unread) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = 2.dp, y = (-2).dp)
-                    .size(10.dp)
-                    .background(VerviColors.OrangeSecondary, CircleShape)
-                    .border(2.dp, VerviColors.TextWhite, CircleShape)
-            )
-        }
-    }
-}
+        Spacer(Modifier.width(12.dp))
 
-// ---------- MOLECULES ----------
-
-@Composable
-fun NotificationRow(item: NotificationItem) {
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-
-        NotificationIcon(item.type, item.unread)
-
-        Spacer(modifier = Modifier.width(12.dp))
-
+        // Contenido
         Column(modifier = Modifier.weight(1f)) {
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
-
                 Text(
-                    item.title,
+                    title,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
                     color = VerviColors.TextPrimary,
@@ -165,16 +147,16 @@ fun NotificationRow(item: NotificationItem) {
                 )
 
                 Text(
-                    item.time,
+                    time,
                     fontSize = 11.sp,
                     color = VerviColors.TextSecondary
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(Modifier.height(4.dp))
 
             Text(
-                item.description,
+                description,
                 fontSize = 12.sp,
                 color = VerviColors.TextSecondary,
                 maxLines = 2,
@@ -184,63 +166,12 @@ fun NotificationRow(item: NotificationItem) {
     }
 }
 
-@Composable
-fun TabButton(
-    title: String,
-    selected: Boolean,
-    modifier: Modifier,
-    onClick: () -> Unit,
-) {
-
-    Column(
-        modifier = modifier
-            .fillMaxHeight()
-            .clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Spacer(modifier = Modifier.height(12.5.dp))
-        Text(
-            title,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-            color = if (selected) VerviColors.Primary else VerviColors.TextSecondary
-        )
-        Spacer(modifier = Modifier.height(12.5.dp))
-        Box(
-            modifier = Modifier
-                .height(2.5.dp)
-                .fillMaxWidth()
-                .background(
-                    if (selected) VerviColors.Primary else VerviColors.Transparent
-                )
-        )
-    }
-}
-
-// ---------- ORGANISMS ----------
-
-@Composable
-fun NotificationsList(notifications: List<NotificationItem>) {
-
-    LazyColumn {
-
-        items(notifications) { item ->
-
-            NotificationRow(item)
-
-            Divider(
-                color = VerviColors.BorderGray,
-                thickness = 0.5.dp
-            )
-        }
-    }
-}
-
-// ---------- SCREEN ----------
-
-@OptIn(ExperimentalMaterial3Api::class)
+/* ------------------------------------------------ */
+/* SCREEN: NotificationsScreen */
+/* ------------------------------------------------ */
 @Composable
 fun NotificationsScreen(navController: NavController) {
+
     var selectedTab by remember { mutableStateOf(0) }
 
     val notifications =
@@ -250,15 +181,14 @@ fun NotificationsScreen(navController: NavController) {
             sampleNotifications.filter { it.unread }
 
     Scaffold(
-
         modifier = Modifier.systemBarsPadding(),
-
         topBar = {
-            VerviTopBar("Notificaciones", { navController.popBackStack()})
+            VerviTopBar(
+                title = "Notificaciones",
+                onBack = { navController.popBackStack() }
+            )
         },
-
-        bottomBar = {}
-
+        bottomBar = { VerviBottomBar(navController) }
     ) { padding ->
 
         Column(
@@ -268,30 +198,32 @@ fun NotificationsScreen(navController: NavController) {
                 .background(VerviColors.BgColor)
         ) {
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .border(
-                        0.5.dp,
-                        VerviColors.BorderGray
-                    )
-                    .background(VerviColors.BackgroundLight)
+            // Tabs compartidos
+            VerviTabs(
+                tabs = listOf("Todas", "No Leídas"),
+                selectedIndex = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
+
+            // Lista de notificaciones usando componente local
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                TabButton(
-                    "Todas",
-                    selectedTab == 0,
-                    modifier = Modifier.weight(1f)
-                ) { selectedTab = 0 }
-
-                TabButton(
-                    "No leídas",
-                    selectedTab == 1,
-                    modifier = Modifier.weight(1f)
-                ) { selectedTab = 1 }
+                items(notifications) { item ->
+                    VerviNotificationCard(
+                        title = item.title,
+                        description = item.description,
+                        time = item.time,
+                        type = item.type,
+                        unread = item.unread,
+                        onClick = {
+                            // Acción según tipo de notificación
+                        }
+                    )
+                }
             }
-
-            NotificationsList(notifications)
         }
     }
 }
