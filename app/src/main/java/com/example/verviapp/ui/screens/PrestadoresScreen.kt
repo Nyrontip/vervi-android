@@ -24,7 +24,7 @@ import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.verviapp.model.Provider
+import com.example.verviapp.viewmodel.state.Provider
 import com.example.verviapp.viewmodel.PrestadoresViewModel
 
 @Composable

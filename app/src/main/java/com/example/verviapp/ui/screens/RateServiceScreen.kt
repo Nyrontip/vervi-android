@@ -1,32 +1,31 @@
 package com.example.verviapp.ui.screens
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.verviapp.ui.theme.VerviAppTheme
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-
+import com.example.verviapp.ui.components.*
+import com.example.verviapp.ui.theme.VerviColors
+import android.net.Uri
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 
 // ----------------------------
 // DATA
@@ -38,148 +37,38 @@ data class Provider(
 )
 
 // ----------------------------
-// COLORS
+// 🔹 NUEVOS COMPONENTES REUTILIZABLES
 // ----------------------------
 
-val Primary = Color(0xFF32619F)
-val BackgroundLight = Color(0xFFF6F7F8)
-val StarOrange = Color(0xFFFF9800)
-val BorderGray = Color(0xFFE5E7EB)
-val TextGray = Color(0xFF64748B)
-
-// ----------------------------
-// ATOMS
-// ----------------------------
-
-// BottomSheet Handle
+// Avatar global
 @Composable
-fun BottomSheetHandle(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .width(48.dp)
-                .height(6.dp)
-                .clip(RoundedCornerShape(50))
-                .background(Color.LightGray)
-        )
-    }
-}
-
-// Avatar Image
-@Composable
-fun AvatarImage(
+fun VerviAvatar(
     imageUrl: String,
-    modifier: Modifier = Modifier
+    size: Dp = 64.dp
 ) {
     AsyncImage(
         model = imageUrl,
         contentDescription = null,
-        modifier = modifier
-            .size(56.dp)
+        modifier = Modifier
+            .size(size)
             .clip(CircleShape)
     )
 }
 
-// Star Icon
+// Upload Card reutilizable
 @Composable
-fun StarIcon(
-    filled: Boolean,
+fun VerviUploadCard(
+    title: String,
+    subtitle: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Icon(
-        imageVector = Icons.Filled.Star,
-        contentDescription = null,
-        tint = if (filled) StarOrange else Color.LightGray,
-        modifier = modifier
-            .size(40.dp)
-            .clickable { onClick() }
-    )
-}
-
-// Primary Button
-@Composable
-fun PrimaryButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = Primary),
-        shape = RoundedCornerShape(12.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp)
-    ) {
-        Text(text, fontSize = 16.sp)
-    }
-}
-
-// Secondary Text Button
-@Composable
-fun SecondaryTextButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    TextButton(onClick = onClick, modifier = modifier.fillMaxWidth()) {
-        Text(text, color = TextGray)
-    }
-}
-
-// Comment Input
-@Composable
-fun CommentInput(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-
-        Text(
-            text = "Comentario opcional",
-            fontSize = 14.sp
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            textStyle = TextStyle(fontSize = 14.sp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-                .border(
-                    1.dp,
-                    BorderGray,
-                    RoundedCornerShape(12.dp)
-                )
-                .background(Color(0xFFF8FAFC))
-                .padding(12.dp)
-        )
-    }
-}
-
-// Upload Evidence Button
-@Composable
-fun UploadEvidenceButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-
     Column(
         modifier = modifier
             .fillMaxWidth()
             .border(
-                2.dp,
-                Color.LightGray,
+                1.5.dp,
+                VerviColors.BorderGray,
                 RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
@@ -189,167 +78,187 @@ fun UploadEvidenceButton(
 
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(44.dp)
                 .clip(CircleShape)
-                .background(Primary.copy(alpha = 0.1f)),
+                .background(VerviColors.Primary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Filled.AddAPhoto,
+                imageVector = Icons.Default.AddAPhoto,
                 contentDescription = null,
-                tint = Primary
+                tint = VerviColors.Primary
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            "Adjuntar imagen de evidencia",
-            fontSize = 14.sp
-        )
-
-        Text(
-            "Sube una foto del servicio realizado (Opcional)",
-            fontSize = 12.sp,
-            color = TextGray
-        )
-    }
-}
-
-// ----------------------------
-// MOLECULES
-// ----------------------------
-
-// Provider Header
-@Composable
-fun ProviderHeader(
-    provider: Provider,
-    modifier: Modifier = Modifier
-) {
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-
-        AvatarImage(provider.avatarUrl)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "Calificar a ${provider.name}",
-            fontSize = 22.sp
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "¿Cómo fue tu experiencia con el servicio?",
+            text = title,
             fontSize = 14.sp,
-            color = TextGray
+            color = VerviColors.TextPrimary
+        )
+
+        Text(
+            text = subtitle,
+            fontSize = 12.sp,
+            color = VerviColors.TextSecondary
         )
     }
 }
 
-// Star Rating Selector
+// Rating interactivo
 @Composable
-fun StarRatingSelector(
+fun VerviInteractiveRating(
     rating: Int,
-    onRatingSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    onRatingSelected: (Int) -> Unit
 ) {
-
     Row(
-        horizontalArrangement = Arrangement.Center,
-        modifier = modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
     ) {
-
         for (i in 1..5) {
-
-            StarIcon(
-                filled = i <= rating,
-                onClick = { onRatingSelected(i) },
-                modifier = Modifier.padding(horizontal = 4.dp)
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = if (i <= rating)
+                    VerviColors.StarFilled
+                else
+                    VerviColors.StarEmpty,
+                modifier = Modifier
+                    .size(36.dp)
+                    .clickable { onRatingSelected(i) }
+                    .padding(horizontal = 4.dp)
             )
         }
     }
 }
 
 // ----------------------------
-// ORGANISM
+// 🔹 UI PRINCIPAL
 // ----------------------------
 
 @Composable
 fun RatingBottomSheet(
     navController: NavController,
     provider: Provider,
-    modifier: Modifier = Modifier
+    launcher: ManagedActivityResultLauncher<String, Uri?>
 ) {
 
     var rating by remember { mutableStateOf(4) }
     var comment by remember { mutableStateOf("") }
 
     Column(
-        modifier = modifier
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
             .fillMaxWidth()
-            .clip(
-                RoundedCornerShape(
-                    topStart = 28.dp,
-                    topEnd = 28.dp
-                )
-            )
-            .background(Color.White)
-            .padding(horizontal = 24.dp)
+            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+            .background(VerviColors.BottomSheetBackground)
+            .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
 
-        BottomSheetHandle()
+        // Handle
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(44.dp)
+                    .height(5.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(VerviColors.BorderGray)
+            )
+        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
-        ProviderHeader(provider)
+        // Header
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-        Spacer(modifier = Modifier.height(24.dp))
+            VerviAvatar(provider.avatarUrl)
 
-        StarRatingSelector(
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                text = "Calificar a ${provider.name}",
+                fontSize = 20.sp,
+                color = VerviColors.TextPrimary
+            )
+
+            Text(
+                text = "¿Cómo fue tu experiencia con el servicio?",
+                fontSize = 13.sp,
+                color = VerviColors.TextSecondary
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // Rating
+        VerviInteractiveRating(
             rating = rating,
             onRatingSelected = { rating = it }
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(24.dp))
 
-        CommentInput(
+        // Comentario
+        VerviTextArea(
+            label = "Comentario opcional",
             value = comment,
-            onValueChange = { comment = it }
+            onValueChange = { comment = it },
+            placeholder = "Escribe tu experiencia..."
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(20.dp))
 
-        UploadEvidenceButton(
-            onClick = { }
+        // Upload
+        VerviUploadCard(
+            title = "Adjuntar imagen de evidencia",
+            subtitle = "Sube una foto del servicio realizado (Opcional)",
+            onClick = {
+                launcher.launch("image/*")
+            }
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(24.dp))
 
-        PrimaryButton(
-            text = "Enviar Calificación",
-            onClick = { }
-        )
-
-        SecondaryTextButton(
-            text = "Omitir por ahora",
+        // Botón principal
+        VerviButton(
+            text = "Enviar calificación",
             onClick = { navController.popBackStack() }
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        // Omitir
+        TextButton(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                "Omitir por ahora",
+                color = VerviColors.TextSecondary
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
     }
 }
 
 // ----------------------------
-// SCREEN / TEMPLATE
+// 🔹 SCREEN
 // ----------------------------
 
 @Composable
 fun RateServiceScreen(navController: NavController) {
+    val imageUri = remember { mutableStateOf<Uri?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        imageUri.value = uri
+    }
 
     val provider = Provider(
         name = "Juan Pérez",
@@ -357,8 +266,7 @@ fun RateServiceScreen(navController: NavController) {
     )
 
     Scaffold(
-        modifier = Modifier.systemBarsPadding(),
-        containerColor = BackgroundLight
+        containerColor = VerviColors.BackgroundLight
     ) { padding ->
 
         Box(
@@ -371,17 +279,15 @@ fun RateServiceScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(VerviColors.Overlay)
             )
 
-            // Bottom Sheet
+            // BottomSheet
             Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
+                modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                RatingBottomSheet(navController,provider)
+                RatingBottomSheet(navController, provider, launcher)
             }
         }
     }
 }
-

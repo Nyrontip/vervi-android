@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -40,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import coil.compose.AsyncImage
-import com.example.verviapp.ui.screens.RequestItem
+import com.example.verviapp.viewmodel.state.RequestItem
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.model.ServiceHistoryItem
 
@@ -689,14 +688,14 @@ fun VerviRequestCard(
                     VerviSmallButton(
                         text = "Cancelar",
                         color = VerviColors.CancelRed,
-                        onClick = { navController.navigate("request/details") },
+                        onClick = { navController.navigate("request/cancel") },
                         modifier = Modifier.weight(1f)
                     )
 
                     VerviSmallButton(
                         text = "Confirmar",
                         color = VerviColors.Primary,
-                        onClick = { navController.navigate("request/details") },
+                        onClick = { navController.navigate("request/confirm") },
                         modifier = Modifier.weight(1f)
                     )
                 }

@@ -13,11 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.verviapp.viewmodel.ChatViewModel
-import com.example.verviapp.repository.ChatRepositoryImpl
 import com.example.verviapp.model.ChatMessage
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -95,10 +92,6 @@ fun MessageBubble(message: String, isUser: Boolean) {
         Text(text = message, color = textColor, fontSize = 15.sp)
     }
 }
-
-// ---------- MODULES ----------
-
-// ChatMessage data class moved to com.example.verviapp.model.ChatMessage
 
 @Composable
 fun AttachmentMenu(
@@ -361,19 +354,12 @@ fun ChatMessagesList(messages: List<ChatMessage>, modifier: Modifier = Modifier)
 @Composable
 fun ChatScreen(
     navController: NavController,
-    viewModel: ChatViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ChatViewModel(ChatRepositoryImpl()) as T
-            }
-        }
-    )
+    viewModel: ChatViewModel = hiltViewModel()
 ) {
 
-    val uiState by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
-    val messages = uiState.messages
+    val messages = state.messages
 
     Column(
         modifier = Modifier
@@ -384,14 +370,14 @@ fun ChatScreen(
         ChatTopBar { navController.popBackStack() }
         ChatMessagesList(messages = messages, modifier = Modifier.weight(1f))
         AttachmentMenu(
-            expanded = uiState.showAttachments,
+            expanded = state.showAttachments,
             onDismiss = { viewModel.toggleAttachments() },
             onGallery = { viewModel.toggleAttachments() },
             onCamera = { viewModel.toggleAttachments() },
             onFile = { viewModel.toggleAttachments() }
         )
         ChatInput(
-            text = uiState.inputText,
+            text = state.inputText,
             onTextChange = { viewModel.onInputChange(it) },
             onSend = { viewModel.sendMessage() },
             onAddFile = { viewModel.toggleAttachments() }
