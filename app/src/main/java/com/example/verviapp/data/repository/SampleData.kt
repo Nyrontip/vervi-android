@@ -1,10 +1,23 @@
 package com.example.verviapp.data.repository
+
 import com.example.verviapp.data.entity.RequestEntity
+import com.example.verviapp.data.entity.UserEntity
+
 /**
- * Datos de muestra para inicializar la BD en primera ejecuci�n.
- * Centralizados aqu� para f�cil mantenimiento y reutilizaci�n.
+ * Datos de muestra para inicializar la BD en primera ejecucion.
+ * Centralizados aqui para facil mantenimiento y reutilizacion.
  */
 object SampleData {
+    val sampleUsers = listOf(
+        UserEntity(
+            name = "Usuario Demo",
+            email = "test@vervi.com",
+            password = "123456",
+            bio = "Usuario base para pruebas de login local.",
+            location = "Bogota, Colombia"
+        )
+    )
+
     val sampleRequests = listOf(
         RequestEntity(
             status = "En curso",

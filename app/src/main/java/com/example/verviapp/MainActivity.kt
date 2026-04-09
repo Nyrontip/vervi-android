@@ -9,6 +9,11 @@ import com.example.verviapp.ui.theme.VerviAppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.verviapp.ui.screens.SplashScreen
+import com.example.verviapp.ui.screens.HomeScreen
+import com.example.verviapp.ui.screens.LoginScreen
+import com.example.verviapp.ui.screens.PrestadoresScreen
+import com.example.verviapp.ui.screens.ProfileScreen
 import com.example.verviapp.ui.screens.ApplyForServiceScreen
 import com.example.verviapp.ui.screens.EditProfileScreen
 import com.example.verviapp.ui.screens.NewRequestScreen
@@ -21,6 +26,7 @@ import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
 import com.example.verviapp.ui.screens.ChatScreen
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

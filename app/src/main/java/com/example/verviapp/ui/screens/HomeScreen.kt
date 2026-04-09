@@ -1,4 +1,4 @@
-package com.example.verviapp
+package com.example.verviapp.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll

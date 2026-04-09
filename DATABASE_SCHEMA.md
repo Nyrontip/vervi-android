@@ -17,6 +17,7 @@ Representa un usuario (cliente o prestador).
 Campos clave:
 - id (PK, autoincrement)
 - email (UNIQUE)
+- password (texto plano temporal para login local)
 - name, bio, location, photoUrl
 - rating, reviewCount
 - suggestedPriceCop (para prestadores)
@@ -316,4 +317,7 @@ Optimizaciones por pantalla/query:
    - Service → [Evidence, Reviews, Conversations] (CASCADE)
    - Conversation → [Messages] (CASCADE)
 5. **Indices**: Crear sobre FKs y columnas de búsqueda común (status, dates, isUnread).
-
+6. **Auth local (Room)**:
+   - Login/registro validan usuario por `email` en tabla `users`.
+   - La contraseña se persiste en `password` de forma temporal para pruebas locales.
+   - En primera ejecución se inserta un usuario demo desde `SampleData`.

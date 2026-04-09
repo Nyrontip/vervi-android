@@ -13,6 +13,7 @@ data class UserEntity(
     val id: Int = 0,
     val name: String,
     val email: String,
+    val password: String,
     val bio: String = "",
     val location: String = "",
     val photoUrl: String = "",
@@ -26,4 +27,3 @@ data class UserEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
-

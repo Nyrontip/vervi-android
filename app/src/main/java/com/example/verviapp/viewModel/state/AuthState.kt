@@ -5,7 +5,5 @@ package com.example.verviapp.viewModel.state
 // La UI observa este estado y reacciona según el caso que llegue
 data class AuthState(
     val isLoading: Boolean = false,
-    val loginSuccess: Boolean = false,
-    val registerSuccess: Boolean = false,
-    val errorMessage: String? = null   // null = sin error
+    val errorMessage: String? = null
 )
