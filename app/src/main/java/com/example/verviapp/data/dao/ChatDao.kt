@@ -12,22 +12,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ChatDao {
-
-    @Query(
-        """
-        SELECT id FROM users
-        WHERE email = :email
-        LIMIT 1
-        """
-    )
-    suspend fun getUserIdByEmail(email: String): Int?
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertUser(user: UserEntity): Long
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertUsers(users: List<UserEntity>)
-
     @Query(
         """
         SELECT id FROM conversations

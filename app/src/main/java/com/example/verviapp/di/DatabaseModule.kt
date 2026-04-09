@@ -1,9 +1,12 @@
 package com.example.verviapp.di
+
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.dao.ChatDao
+import com.example.verviapp.data.dao.NotificationDao
 import com.example.verviapp.data.database.AppDatabase
 import com.example.verviapp.data.dao.RequestDao
 import com.example.verviapp.data.repository.SampleData
@@ -16,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Singleton
+
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -39,19 +43,30 @@ object DatabaseModule {
                     AppDatabase::class.java,
                     AppDatabase.DATABASE_NAME
                 ).build()
-                database.chatDao().insertUsers(SampleData.sampleUsers)
+                database.userDao().insertUsers(SampleData.sampleUsers)
                 database.chatDao().insertConversations(SampleData.sampleConversations)
                 database.chatDao().insertMessages(SampleData.sampleMessages)
                 database.requestDao().insertRequests(SampleData.sampleRequests)
+                database.notificationDao().insertNotifications(SampleData.sampleNotifications)
+                database.close()
             }
         }
     })
     .build()
+
     @Singleton
     @Provides
     fun provideRequestDao(database: AppDatabase): RequestDao = database.requestDao()
 
     @Singleton
     @Provides
+    fun provideUserDao(database: AppDatabase): UserDao = database.userDao()
+
+    @Singleton
+    @Provides
     fun provideChatDao(database: AppDatabase): ChatDao = database.chatDao()
+
+    @Singleton
+    @Provides
+    fun provideNotificationDao(database: AppDatabase): NotificationDao = database.notificationDao()
 }

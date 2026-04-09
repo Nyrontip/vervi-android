@@ -3,7 +3,9 @@ package com.example.verviapp.data.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.verviapp.data.dao.ChatDao
+import com.example.verviapp.data.dao.NotificationDao
 import com.example.verviapp.data.dao.RequestDao
+import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.CategoryEntity
 import com.example.verviapp.data.entity.ConversationEntity
 import com.example.verviapp.data.entity.MessageEntity
@@ -37,10 +39,11 @@ import com.example.verviapp.data.entity.UserEntity
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun requestDao(): RequestDao
+    abstract fun userDao(): UserDao
     abstract fun chatDao(): ChatDao
+    abstract fun notificationDao(): NotificationDao
 
     companion object {
         const val DATABASE_NAME = "vervi_app.db"
     }
 }
-

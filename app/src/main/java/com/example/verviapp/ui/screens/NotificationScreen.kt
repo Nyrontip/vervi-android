@@ -1,6 +1,5 @@
 package com.example.verviapp.ui.screens
 
-import com.example.verviapp.data.repository.NotificationsRepositoryImpl
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,9 +22,7 @@ import com.example.verviapp.ui.theme.VerviColors
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.verviapp.viewmodel.NotificationsViewModel
 import com.example.verviapp.viewmodel.state.NotificationType
 
@@ -137,24 +134,15 @@ fun VerviNotificationCard(
 /* ------------------------------------------------ */
 /* SCREEN: NotificationsScreen */
 /* ------------------------------------------------ */
+@Suppress("DEPRECATION")
 @Composable
 fun NotificationsScreen(
     navController: NavController,
-    viewModel: NotificationsViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return NotificationsViewModel(
-                    NotificationsRepositoryImpl()
-                ) as T
-            }
-        }
-    )
+    viewModel: NotificationsViewModel = hiltViewModel()
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
-
-    val notifications = if (uiState.selectedTab == 0) uiState.notifications else uiState.notifications.filter { it.unread }
+    val notifications = uiState.notifications
 
     Scaffold(
         modifier = Modifier.systemBarsPadding(),

@@ -19,46 +19,37 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.viewmodel.LoginViewModel
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.AuthEvent
+import com.example.verviapp.viewmodel.LoginViewModel
 import com.example.verviapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
     var selectedTab by remember { mutableStateOf(0) } // Tab seleccionado (0 es login, 1 registro)
     val state by viewModel.state.collectAsState()
 
-    // Navega cuando login es exitoso — LaunchedEffect se ejecuta cuando loginSuccess cambia
-    LaunchedEffect(state.loginSuccess) {
-        if (state.loginSuccess) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true } // elimina login del backstack
+    // Eventos one-shot para navegación.
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                AuthEvent.LoginSuccess,
+                AuthEvent.RegisterSuccess -> {
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
             }
-            viewModel.resetState()
-        }
-    }
-
-    // Navega cuando registro es exitoso
-    LaunchedEffect(state.registerSuccess) {
-        if (state.registerSuccess) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-            }
-            viewModel.resetState()
         }
     }
 
     Scaffold(
         // VerviTopBar compartido — mismo estilo en toda la app, solo cambia el título
-        topBar = {
-            VerviTopBar(
-                title = "Vervi",
-                onBack = { navController.popBackStack() })
-        },
+        topBar = { VerviTopBar(title = "Vervi", onBack = { navController.popBackStack()}) },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -106,7 +97,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            if (selectedTab == 0) {
+                if (selectedTab == 0) {
                 LoginForm(viewModel)
             } else {
                 RegisterForm(viewModel)
@@ -149,21 +140,16 @@ private fun LoginForm(viewModel: LoginViewModel) {
     var password        by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    VerviTextField(
-        label = "Correo Electrónico", value = email, onValueChange = { email = it },
-        placeholder = "nombre@ejemplo.com", keyboardType = KeyboardType.Email
-    )
+    VerviTextField(label = "Correo Electrónico", value = email, onValueChange = { email = it },
+        placeholder = "nombre@ejemplo.com", keyboardType = KeyboardType.Email)
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    VerviPasswordField(
-        label = "Contraseña", value = password, onValueChange = { password = it },
-        visible = passwordVisible, onToggle = { passwordVisible = !passwordVisible })
+    VerviPasswordField(label = "Contraseña", value = password, onValueChange = { password = it },
+        visible = passwordVisible, onToggle = { passwordVisible = !passwordVisible})
 
     Spacer(modifier = Modifier.height(28.dp))
-    VerviButton(
-        text = "Ingresar  →",
-        onClick = { viewModel.login(email, password) })
+    VerviButton(text = "Ingresar  →", onClick = { viewModel.login(email, password) })
 }
 
 // ── RegisterForm — STATELESS: mismo patrón que LoginForm ───
@@ -176,35 +162,24 @@ private fun RegisterForm(viewModel: LoginViewModel) {
     var regPasswordVisible by remember { mutableStateOf(false) }
     var regConfirmVisible  by remember { mutableStateOf(false) }
 
-    VerviTextField(
-        label = "Nombre de usuario", value = nombre, onValueChange = { nombre = it },
-        placeholder = "Ejem: Camilo Martínez"
-    )
+    VerviTextField(label = "Nombre de usuario", value = nombre, onValueChange = {nombre = it},
+        placeholder = "Ejem: Camilo Martínez")
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    VerviTextField(
-        label = "Correo Electrónico", value = regEmail, onValueChange = { regEmail = it },
-        placeholder = "nombre@ejemplo.com", keyboardType = KeyboardType.Email
-    )
+    VerviTextField(label = "Correo Electrónico", value = regEmail, onValueChange = { regEmail = it },
+        placeholder = "nombre@ejemplo.com", keyboardType = KeyboardType.Email)
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    VerviPasswordField(
-        label = "Contraseña", value = regPassword, onValueChange = { regPassword = it },
-        visible = regPasswordVisible, onToggle = { regPasswordVisible = !regPasswordVisible })
+    VerviPasswordField(label = "Contraseña", value = regPassword, onValueChange = { regPassword = it },
+        visible = regPasswordVisible, onToggle = {regPasswordVisible = !regPasswordVisible})
 
     Spacer(modifier = Modifier.height(20.dp))
 
-    VerviPasswordField(
-        label = "Confirmar contraseña",
-        value = regConfirm,
-        onValueChange = { regConfirm = it },
-        visible = regConfirmVisible,
-        onToggle = { regConfirmVisible = !regConfirmVisible })
+    VerviPasswordField(label = "Confirmar contraseña", value = regConfirm,
+        onValueChange = {regConfirm = it}, visible = regConfirmVisible, onToggle = {regConfirmVisible = !regConfirmVisible})
 
     Spacer(modifier = Modifier.height(28.dp))
-    VerviButton(
-        text = "Registrarse  →",
-        onClick = { viewModel.register(nombre, regEmail, regPassword, regConfirm) })
+    VerviButton(text = "Registrarse  →", onClick = {viewModel.register(nombre, regEmail, regPassword, regConfirm)})
 }

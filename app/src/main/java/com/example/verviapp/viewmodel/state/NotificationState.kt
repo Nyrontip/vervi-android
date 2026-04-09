@@ -1,9 +1,7 @@
 package com.example.verviapp.viewmodel.state
 
-import java.util.UUID
-
 data class NotificationItem(
-    val id: String = UUID.randomUUID().toString(),
+    val id: Int,
     val title: String,
     val description: String,
     val time: String,

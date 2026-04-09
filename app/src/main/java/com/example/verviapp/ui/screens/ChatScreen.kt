@@ -15,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.verviapp.viewmodel.ChatViewModel
-import com.example.verviapp.model.ChatMessage
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -156,7 +155,7 @@ fun AttachmentItem(
 }
 
 @Composable
-fun ChatMessageItem(message: com.example.verviapp.model.ChatMessage) {
+fun ChatMessageItem(message: com.example.verviapp.model.ChatMessageState) {
 
     val alignment =
         if (message.isUser) Arrangement.End else Arrangement.Start
@@ -354,7 +353,7 @@ fun ChatTopBar(onBack: () -> Unit) {
 // ---------- MESSAGES LIST ----------
 
 @Composable
-fun ChatMessagesList(messages: List<com.example.verviapp.model.ChatMessage>, modifier: Modifier = Modifier) {
+fun ChatMessagesList(messages: List<com.example.verviapp.model.ChatMessageState>, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
