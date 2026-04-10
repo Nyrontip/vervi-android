@@ -18,6 +18,7 @@ data class RequestDetail(
     val title: String,
     val date: String,
     val price: String,
+    val location: String,
     val description: String,
     val status: String,
     val roleLabel: String,

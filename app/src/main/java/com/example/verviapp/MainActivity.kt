@@ -83,6 +83,9 @@ class MainActivity : ComponentActivity() {
                     composable("request/details") {
                         RequestDetailsScreen(navController)
                     }
+                    composable("request/details/{requestId}") {
+                        RequestDetailsScreen(navController)
+                    }
                     composable("request/cancel") {
                         RequestCancelScreen(navController)
                     }

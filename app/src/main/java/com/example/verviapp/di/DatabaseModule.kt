@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.dao.ChatDao
+import com.example.verviapp.data.dao.RequestDetailsDao
 import com.example.verviapp.data.database.AppDatabase
 import com.example.verviapp.data.dao.RequestDao
 import com.example.verviapp.data.repository.SampleData
@@ -43,9 +44,10 @@ object DatabaseModule {
                     AppDatabase.DATABASE_NAME
                 ).build()
                 database.userDao().insertUsers(SampleData.sampleUsers)
+                database.requestDao().insertRequests(SampleData.sampleRequests)
+                database.requestDetailsDao().insertAttachments(SampleData.sampleRequestAttachments)
                 database.chatDao().insertConversations(SampleData.sampleConversations)
                 database.chatDao().insertMessages(SampleData.sampleMessages)
-                database.requestDao().insertRequests(SampleData.sampleRequests)
                 database.close()
             }
         }
@@ -55,6 +57,10 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideRequestDao(database: AppDatabase): RequestDao = database.requestDao()
+
+    @Singleton
+    @Provides
+    fun provideRequestDetailsDao(database: AppDatabase): RequestDetailsDao = database.requestDetailsDao()
 
     @Singleton
     @Provides

@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -46,8 +47,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.verviapp.viewmodel.RequestDetailsViewModel
 import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.VerviButton
@@ -57,16 +58,22 @@ import com.example.verviapp.ui.theme.VerviColors
  * Detail screen for a **request / solicitud** (open job): hero, budget, apply flow.
  * For completed **service** detail (prestador, evidencia, calificar), use [ServiceDetailsScreen].
  */
-private val headerImages = listOf(
+private val defaultHeaderImages = listOf(
     "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&h=900&fit=crop",
     "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop",
     "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=1200&h=900&fit=crop"
 )
 
 @Composable
-fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewModel = viewModel()) {
+fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewModel = hiltViewModel()) {
+    val uiState by vm.uiState.collectAsState()
+    val request = uiState.request
+    val images = request?.images?.ifEmpty { defaultHeaderImages } ?: defaultHeaderImages
     val scrollState = rememberScrollState()
     var selectedCarouselIndex by remember { mutableIntStateOf(0) }
+    if (selectedCarouselIndex >= images.size) {
+        selectedCarouselIndex = 0
+    }
 
     Scaffold(
         containerColor = VerviColors.BackgroundLight,
@@ -102,7 +109,7 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                     .height(305.dp)
             ) {
                 AsyncImage(
-                    model = headerImages[selectedCarouselIndex],
+                    model = images[selectedCarouselIndex],
                     contentDescription = "Imagen solicitud",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -130,7 +137,7 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                         .padding(bottom = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    headerImages.indices.forEach { index ->
+                    images.indices.forEach { index ->
                         Box(
                             modifier = Modifier
                                 .height(6.dp)
@@ -158,7 +165,7 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Reparación de tubería",
+                            text = request?.title ?: "Cargando solicitud...",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = VerviColors.TextDark
@@ -170,7 +177,7 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                                 .padding(horizontal = 14.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = "ABIERTO",
+                                text = request?.status?.uppercase() ?: "--",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF2A8B4B)
@@ -189,7 +196,7 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "$50.000 COP",
+                            text = request?.price ?: "--",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = VerviColors.TextDark
@@ -212,13 +219,13 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                             modifier = Modifier.weight(1f),
                             icon = Icons.Outlined.Today,
                             label = "FECHA",
-                            value = "Hoy, 14:00"
+                            value = request?.date ?: "--"
                         )
                         RequestInfoPill(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Outlined.LocationOn,
                             label = "UBICACIÓN",
-                            value = "Bogotá, DC"
+                            value = request?.location ?: request?.client?.location ?: "--"
                         )
                     }
 
@@ -234,7 +241,7 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Se requiere reparación urgente de una fuga en la tubería principal de la cocina. El agua se está filtrando por debajo del mueble. Necesito a alguien con experiencia previa en plomería residencial. Cuento con algunas herramientas pero prefiero que traigan las suyas.",
+                        text = request?.description ?: "Sin descripcion disponible.",
                         fontSize = 16.sp,
                         lineHeight = 25.sp,
                         color = Color(0xFF4B5563)
@@ -253,9 +260,10 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                     Spacer(modifier = Modifier.height(10.dp))
 
                     RequestPublisherCard(
-                        name = "Carlos J. Martinez",
-                        ratingLine = "4.8 (12 servicios)",
-                        avatarUrl = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop",
+                        name = request?.client?.name ?: "Usuario no disponible",
+                        ratingLine = request?.client?.rating?.let { "$it calificacion" } ?: "Sin calificaciones",
+                        avatarUrl = request?.client?.avatarUrl
+                            ?: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop",
                         onChatClick = { navController.navigate("chat") }
                     )
                 }
