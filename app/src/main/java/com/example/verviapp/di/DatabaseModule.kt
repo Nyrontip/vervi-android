@@ -9,6 +9,7 @@ import com.example.verviapp.data.dao.ChatDao
 import com.example.verviapp.data.dao.NotificationDao
 import com.example.verviapp.data.database.AppDatabase
 import com.example.verviapp.data.dao.RequestDao
+import com.example.verviapp.data.dao.ServiceDao
 import com.example.verviapp.data.repository.SampleData
 import dagger.Module
 import dagger.Provides
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Singleton
+
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -47,6 +49,9 @@ object DatabaseModule {
                 database.chatDao().insertConversations(SampleData.sampleConversations)
                 database.chatDao().insertMessages(SampleData.sampleMessages)
                 database.requestDao().insertRequests(SampleData.sampleRequests)
+                database.serviceDao().insertServices(SampleData.sampleServices)
+                database.serviceDao().insertServiceEvidence(SampleData.sampleServiceEvidence)
+                database.serviceDao().insertReviews(SampleData.sampleReviews)
                 database.notificationDao().insertNotifications(SampleData.sampleNotifications)
                 database.close()
             }
@@ -65,6 +70,10 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideChatDao(database: AppDatabase): ChatDao = database.chatDao()
+
+    @Singleton
+    @Provides
+    fun provideServiceDao(database: AppDatabase): ServiceDao = database.serviceDao()
 
     @Singleton
     @Provides

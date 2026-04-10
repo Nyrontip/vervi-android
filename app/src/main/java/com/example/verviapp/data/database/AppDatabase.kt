@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import com.example.verviapp.data.dao.ChatDao
 import com.example.verviapp.data.dao.NotificationDao
 import com.example.verviapp.data.dao.RequestDao
+import com.example.verviapp.data.dao.ServiceDao
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.CategoryEntity
 import com.example.verviapp.data.entity.ConversationEntity
@@ -41,6 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun requestDao(): RequestDao
     abstract fun userDao(): UserDao
     abstract fun chatDao(): ChatDao
+    abstract fun serviceDao(): ServiceDao
     abstract fun notificationDao(): NotificationDao
 
     companion object {

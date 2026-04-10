@@ -1,6 +1,9 @@
 package com.example.verviapp.data.repository
 
 import com.example.verviapp.data.entity.RequestEntity
+import com.example.verviapp.data.entity.ReviewEntity
+import com.example.verviapp.data.entity.ServiceEntity
+import com.example.verviapp.data.entity.ServiceEvidenceEntity
 import com.example.verviapp.data.entity.UserEntity
 import com.example.verviapp.data.entity.ConversationEntity
 import com.example.verviapp.data.entity.MessageEntity
@@ -15,6 +18,8 @@ object SampleData {
     const val CHAT_CONVERSATION_ID = 5001
     const val CHAT_LOCAL_EMAIL = "chat.local@vervi.app"
     const val CHAT_REMOTE_EMAIL = "chat.remote@vervi.app"
+    const val SERVICE_LOCAL_USER_ID = CHAT_LOCAL_USER_ID
+    const val SERVICE_REMOTE_USER_ID = CHAT_REMOTE_USER_ID
     const val NOTIFICATIONS_USER_ID = CHAT_LOCAL_USER_ID
 
     val sampleUsers = listOf(
@@ -158,6 +163,93 @@ object SampleData {
             type = "REMINDER",
             isUnread = false,
             createdAt = System.currentTimeMillis() - 5 * 60 * 60_000
+        )
+    )
+
+    val sampleServices = listOf(
+        ServiceEntity(
+            id = 8001,
+            clientUserId = SERVICE_LOCAL_USER_ID,
+            providerUserId = SERVICE_REMOTE_USER_ID,
+            title = "Lavado de alfombras",
+            summary = "Lavado profundo con secado rapido.",
+            location = "Bogota, Chapinero",
+            totalPriceCop = 85000,
+            completedAt = System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000,
+            status = "COMPLETED"
+        ),
+        ServiceEntity(
+            id = 8002,
+            clientUserId = SERVICE_LOCAL_USER_ID,
+            providerUserId = SERVICE_REMOTE_USER_ID,
+            title = "Reparacion electrica",
+            summary = "Cambio de tomas y revision de cableado.",
+            location = "Bogota, Usaquen",
+            totalPriceCop = 120000,
+            completedAt = System.currentTimeMillis() - 15L * 24 * 60 * 60 * 1000,
+            status = "COMPLETED"
+        ),
+        ServiceEntity(
+            id = 8003,
+            clientUserId = SERVICE_REMOTE_USER_ID,
+            providerUserId = SERVICE_LOCAL_USER_ID,
+            title = "Limpieza de vidrios",
+            summary = "Limpieza exterior de ventanales.",
+            location = "Bogota, Cedritos",
+            totalPriceCop = 60000,
+            completedAt = System.currentTimeMillis() - 25L * 24 * 60 * 60 * 1000,
+            status = "COMPLETED"
+        ),
+        ServiceEntity(
+            id = 8004,
+            clientUserId = SERVICE_REMOTE_USER_ID,
+            providerUserId = SERVICE_LOCAL_USER_ID,
+            title = "Paseo de mascotas",
+            summary = "Dos salidas de 40 minutos con reporte.",
+            location = "Bogota, Teusaquillo",
+            totalPriceCop = 35000,
+            completedAt = System.currentTimeMillis() - 35L * 24 * 60 * 60 * 1000,
+            status = "COMPLETED"
+        )
+    )
+
+    val sampleServiceEvidence = listOf(
+        ServiceEvidenceEntity(
+            id = 8101,
+            serviceId = 8001,
+            imageUrl = "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=300&h=300&fit=crop",
+            sortOrder = 0
+        ),
+        ServiceEvidenceEntity(
+            id = 8102,
+            serviceId = 8002,
+            imageUrl = "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=300&h=300&fit=crop",
+            sortOrder = 0
+        ),
+        ServiceEvidenceEntity(
+            id = 8103,
+            serviceId = 8003,
+            imageUrl = "https://images.unsplash.com/photo-1522163182402-834f871fd851?w=300&h=300&fit=crop",
+            sortOrder = 0
+        )
+    )
+
+    val sampleReviews = listOf(
+        ReviewEntity(
+            id = 8201,
+            serviceId = 8001,
+            reviewerUserId = SERVICE_LOCAL_USER_ID,
+            reviewedUserId = SERVICE_REMOTE_USER_ID,
+            rating = 5,
+            comment = "Excelente trabajo"
+        ),
+        ReviewEntity(
+            id = 8202,
+            serviceId = 8003,
+            reviewerUserId = SERVICE_LOCAL_USER_ID,
+            reviewedUserId = SERVICE_REMOTE_USER_ID,
+            rating = 4,
+            comment = "Todo correcto"
         )
     )
 }
