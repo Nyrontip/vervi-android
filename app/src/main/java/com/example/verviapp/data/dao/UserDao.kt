@@ -51,7 +51,7 @@ interface UserDao {
     fun observeUserWithCategoriesById(userId: Int): Flow<UserWithCategories?>
 
     @Query("SELECT name FROM categories ORDER BY name ASC")
-    fun observeCategoryNames(): Flow<List<String>>
+    suspend fun getCategoryNames(): List<String>
 
     @Transaction
     @Query(

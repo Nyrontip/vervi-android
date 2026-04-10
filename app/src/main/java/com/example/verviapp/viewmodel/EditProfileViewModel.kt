@@ -8,7 +8,6 @@ import com.example.verviapp.data.entity.UserCategoryCrossRef
 import com.example.verviapp.data.repository.SampleData
 import com.example.verviapp.viewmodel.state.EditProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,9 +41,7 @@ class EditProfileViewModel @Inject constructor(
             }
 
             val selectedCategories = userWithCategories.categories.map { it.name }
-            val allCategories = userDao.observeCategoryNames()
-                .firstOrNull()
-                .orEmpty()
+            val allCategories = userDao.getCategoryNames()
 
             _state.value = _state.value.copy(
                 name = userWithCategories.user.name,

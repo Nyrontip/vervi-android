@@ -51,9 +51,13 @@ class PrestadoresViewModel @Inject constructor(
     private fun observeCategories() {
         categoriesJob?.cancel()
         categoriesJob = viewModelScope.launch {
-            userDao.observeCategoryNames().collect { categories ->
-                _state.value = _state.value.copy(categories = listOf("Todos") + categories)
-            }
+            runCatching { userDao.getCategoryNames() }
+                .onSuccess { categories ->
+                    _state.value = _state.value.copy(categories = listOf("Todos") + categories)
+                }
+                .onFailure {
+                    _state.value = _state.value.copy(categories = listOf("Todos"))
+                }
         }
     }
 

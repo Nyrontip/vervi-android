@@ -131,12 +131,14 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                     outlined = true,
                     fontSize = 12.sp
                 )
-                VerviBadge(
-                    text = "Prestador",
-                    color = VerviColors.Blue,
-                    outlined = true,
-                    fontSize = 12.sp
-                )
+                if (state.user.isProvider) {
+                    VerviBadge(
+                        text = "Prestador",
+                        color = VerviColors.Blue,
+                        outlined = true,
+                        fontSize = 12.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
