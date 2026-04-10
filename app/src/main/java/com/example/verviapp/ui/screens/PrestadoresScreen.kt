@@ -28,7 +28,7 @@ import com.example.verviapp.viewmodel.state.Provider
 import com.example.verviapp.viewmodel.PrestadoresViewModel
 
 @Composable
-fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewModel = viewModel()) {
+fun PrestadoresScreen(navController: NavController, viewModel: PrestadoresViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var selectedCat by remember { mutableStateOf("Todos") }
@@ -36,8 +36,16 @@ fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewMod
     val categorias   = listOf("Todos", "Carpinteros", "Plomeros", "Electricistas")
 
     Scaffold(
-        topBar    = { VerviTopBar(title = "Directorio de Prestadores", onBack = { navController.popBackStack()}) },
-        bottomBar = { VerviBottomBar(navController) },
+        topBar    = {
+            VerviTopBar(
+                title = "Directorio de Prestadores",
+                onBack = { navController.popBackStack() })
+        },
+        bottomBar = {
+            VerviBottomBar(
+                navController
+            )
+        },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -50,23 +58,28 @@ fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewMod
             Spacer(modifier = Modifier.height(2.dp))
 
             VerviSearchField(
-                value         = searchQuery,
+                value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder   = "Buscar...",
-                leadingIcon   = Icons.Default.Search
+                placeholder = "Buscar...",
+                leadingIcon = Icons.Default.Search
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
             // Chips de categoría con scroll horizontal — reutiliza VerviChips global
             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                VerviChips(opciones = categorias, selected = selectedCat, onSelect = { selectedCat = it })
+                VerviChips(
+                    opciones = categorias,
+                    selected = selectedCat,
+                    onSelect = { selectedCat = it })
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             state.providers.forEach { prestador ->
-                PrestadorCard(prestador = prestador, onVerPerfil = { navController.navigate("profile?userId=${prestador.id}") })
+                PrestadorCard(
+                    prestador = prestador,
+                    onVerPerfil = { navController.navigate("profile?userId=${prestador.id}") })
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -119,7 +132,12 @@ private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
 
                     // Badge especialidad + rating en la misma fila
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        VerviBadge(text     = prestador.specialty,  color    = VerviColors.TextDark, fontSize = 10.sp, outlined = true)
+                        VerviBadge(
+                            text = prestador.specialty,
+                            color = VerviColors.TextDark,
+                            fontSize = 10.sp,
+                            outlined = true
+                        )
 
                         Spacer(modifier = Modifier.width(8.dp))
 
@@ -136,7 +154,10 @@ private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            VerviOutlinedButton(text = "Ver Perfil", onClick = onVerPerfil)
+            VerviOutlinedButton(
+                text = "Ver Perfil",
+                onClick = onVerPerfil
+            )
         }
     }
 }

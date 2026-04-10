@@ -7,6 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.dao.ChatDao
 import com.example.verviapp.data.dao.RequestDetailsDao
+import com.example.verviapp.data.dao.NotificationDao
 import com.example.verviapp.data.database.AppDatabase
 import com.example.verviapp.data.dao.RequestDao
 import com.example.verviapp.data.repository.SampleData
@@ -48,6 +49,7 @@ object DatabaseModule {
                 database.requestDetailsDao().insertAttachments(SampleData.sampleRequestAttachments)
                 database.chatDao().insertConversations(SampleData.sampleConversations)
                 database.chatDao().insertMessages(SampleData.sampleMessages)
+                database.notificationDao().insertNotifications(SampleData.sampleNotifications)
                 database.close()
             }
         }
@@ -69,4 +71,8 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideChatDao(database: AppDatabase): ChatDao = database.chatDao()
+
+    @Singleton
+    @Provides
+    fun provideNotificationDao(database: AppDatabase): NotificationDao = database.notificationDao()
 }

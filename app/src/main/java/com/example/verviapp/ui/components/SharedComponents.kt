@@ -41,7 +41,7 @@ import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.example.verviapp.viewmodel.state.RequestItem
 import com.example.verviapp.ui.theme.VerviColors
-import com.example.verviapp.model.ServiceHistoryItem
+import com.example.verviapp.viewmodel.state.ServiceHistoryItem
 
 // ════════════════════════════════════════════════════════════
 //  VerviTopBar — barra superior con título centrado
@@ -94,10 +94,26 @@ private data class BottomNavItem(
 @Composable
 fun VerviBottomBar(navController: NavController) {
     val items = listOf(
-        BottomNavItem("Inicio",      Icons.Default.Home, "home"),
-        BottomNavItem("Solicitudes", Icons.Default.ListAlt, "requests/management"),
-        BottomNavItem("Historial",   Icons.Default.History, "services/history"),
-        BottomNavItem("Perfil",      Icons.Default.Person, "profile")
+        BottomNavItem(
+            "Inicio",
+            Icons.Default.Home,
+            "home"
+        ),
+        BottomNavItem(
+            "Solicitudes",
+            Icons.Default.ListAlt,
+            "requests/management"
+        ),
+        BottomNavItem(
+            "Historial",
+            Icons.Default.History,
+            "services/history"
+        ),
+        BottomNavItem(
+            "Perfil",
+            Icons.Default.Person,
+            "profile"
+        )
     )
 
 // Observa el backStack del NavController
@@ -633,7 +649,7 @@ fun VerviStatusBadge(
 @Composable
 fun VerviRequestCard(
     navController: NavController,
-    request: RequestItem,
+    request: com.example.verviapp.viewmodel.state.RequestItem,
     modifier: Modifier = Modifier
 ) {
     Row(

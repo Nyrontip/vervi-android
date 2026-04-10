@@ -1,7 +1,5 @@
 package com.example.verviapp.ui.screens
 
-import com.example.verviapp.model.NotificationType
-import com.example.verviapp.model.NotificationItem
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,8 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,50 +18,19 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
-import com.example.verviapp.ui.components.VerviBottomBar
-import com.example.verviapp.ui.components.VerviTabs
-import com.example.verviapp.ui.components.VerviTopBar
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.verviapp.viewmodel.NotificationsViewModel
+import com.example.verviapp.viewmodel.state.NotificationType
+
 
 /* ------------------------------------------------ */
 /* SAMPLE DATA */
 /* ------------------------------------------------ */
-val sampleNotifications = listOf(
-    NotificationItem(
-        "Nueva postulación recibida",
-        "En el servicio: Reparación de tubería en Bogotá.",
-        "hace 5 min",
-        NotificationType.APPLICATION,
-        true
-    ),
-    NotificationItem(
-        "Nuevo mensaje de Juan",
-        "¿A qué hora podrías venir a revisar el daño mañana?",
-        "hace 15 min",
-        NotificationType.MESSAGE
-    ),
-    NotificationItem(
-        "Servicio confirmado",
-        "Mantenimiento aire acondicionado ha sido agendado exitosamente.",
-        "hace 1 h",
-        NotificationType.CONFIRMED
-    ),
-    NotificationItem(
-        "Pago recibido",
-        "Has recibido COP $45.000 por Limpieza General.",
-        "hace 3 h",
-        NotificationType.PAYMENT
-    ),
-    NotificationItem(
-        "Recordatorio de servicio",
-        "Recuerda tu cita de mañana a las 8:00 AM para Jardinería.",
-        "hace 5 h",
-        NotificationType.REMINDER
-    )
-)
+// Nota: los datos de ejemplo ahora los provee el repositorio a través del ViewModel.
 
 @Composable
 fun VerviNotificationCard(
@@ -169,26 +134,29 @@ fun VerviNotificationCard(
 /* ------------------------------------------------ */
 /* SCREEN: NotificationsScreen */
 /* ------------------------------------------------ */
+@Suppress("DEPRECATION")
 @Composable
-fun NotificationsScreen(navController: NavController) {
+fun NotificationsScreen(
+    navController: NavController,
+    viewModel: NotificationsViewModel = hiltViewModel()
+) {
 
-    var selectedTab by remember { mutableStateOf(0) }
-
-    val notifications =
-        if (selectedTab == 0)
-            sampleNotifications
-        else
-            sampleNotifications.filter { it.unread }
+    val uiState by viewModel.uiState.collectAsState()
+    val notifications = uiState.notifications
 
     Scaffold(
         modifier = Modifier.systemBarsPadding(),
         topBar = {
-            VerviTopBar(
+            com.example.verviapp.ui.components.VerviTopBar(
                 title = "Notificaciones",
                 onBack = { navController.popBackStack() }
             )
         },
-        bottomBar = { VerviBottomBar(navController) }
+        bottomBar = {
+            com.example.verviapp.ui.components.VerviBottomBar(
+                navController
+            )
+        }
     ) { padding ->
 
         Column(
@@ -199,10 +167,10 @@ fun NotificationsScreen(navController: NavController) {
         ) {
 
             // Tabs compartidos
-            VerviTabs(
+            com.example.verviapp.ui.components.VerviTabs(
                 tabs = listOf("Todas", "No Leídas"),
-                selectedIndex = selectedTab,
-                onTabSelected = { selectedTab = it }
+                selectedIndex = uiState.selectedTab,
+                onTabSelected = { viewModel.selectTab(it) }
             )
 
             // Lista de notificaciones usando componente local
@@ -219,7 +187,9 @@ fun NotificationsScreen(navController: NavController) {
                         type = item.type,
                         unread = item.unread,
                         onClick = {
-                            // Acción según tipo de notificación
+                            // Marcar como leído al abrir
+                            if (item.unread) viewModel.markAsRead(item)
+                            // Acción según tipo de notificación: por ahora navegamos a detalles genéricos
                         }
                     )
                 }

@@ -5,6 +5,7 @@ import com.example.verviapp.data.entity.RequestAttachmentEntity
 import com.example.verviapp.data.entity.UserEntity
 import com.example.verviapp.data.entity.ConversationEntity
 import com.example.verviapp.data.entity.MessageEntity
+import com.example.verviapp.data.entity.NotificationEntity
 /**
  * Datos de muestra para inicializar la BD en primera ejecucion.
  * Centralizados aqui para facil mantenimiento y reutilizacion.
@@ -18,6 +19,7 @@ object SampleData {
     const val REQUEST_DETAILS_REQUEST_ID = 1001
     const val REQUEST_DETAILS_CLIENT_ID = 9101
     const val REQUEST_DETAILS_CONVERSATION_ID = 5101
+    const val NOTIFICATIONS_USER_ID = CHAT_LOCAL_USER_ID
 
     val sampleUsers = listOf(
         UserEntity(
@@ -164,6 +166,54 @@ object SampleData {
             requestId = REQUEST_DETAILS_REQUEST_ID,
             uri = "https://lh3.googleusercontent.com/aida-public/AB6AXuBjAV7UadivynJLQcW0ZCie0huPCq5-NgOsEUKoIixEJv_cQx9QyFr0ZAeV84se42IPISvVAeVfST19okT8dhlxRd_SNrS0Ja0kAforSZ8ItFM1xxUEZGQ12UaaNekxVTioulr46maivNSO05w7naHieBStO7kQee2Vi5137VfqTxCn1xQMGKPitZAu9GclF6BF5ymob3ewjysuuFkdwCi2bKrb_5V9WJ4CSaCRT6chQXRkGX0vdXF-Kvp5rKXEfeOIqlpA6iq4u7VQ",
             sortOrder = 2
+        )
+    )
+
+    val sampleNotifications = listOf(
+        NotificationEntity(
+            id = 8001,
+            userId = NOTIFICATIONS_USER_ID,
+            title = "Nueva postulacion recibida",
+            description = "En el servicio: Reparacion de nevera en Bogota.",
+            type = "APPLICATION",
+            isUnread = true,
+            createdAt = System.currentTimeMillis() - 5 * 60_000
+        ),
+        NotificationEntity(
+            id = 8002,
+            userId = NOTIFICATIONS_USER_ID,
+            title = "Nuevo mensaje de Juan",
+            description = "A que hora podrias venir a revisar el dano manana?",
+            type = "MESSAGE",
+            isUnread = false,
+            createdAt = System.currentTimeMillis() - 15 * 60_000
+        ),
+        NotificationEntity(
+            id = 8003,
+            userId = NOTIFICATIONS_USER_ID,
+            title = "Servicio confirmado",
+            description = "Mantenimiento aire acondicionado ha sido agendado exitosamente.",
+            type = "CONFIRMED",
+            isUnread = false,
+            createdAt = System.currentTimeMillis() - 60 * 60_000
+        ),
+        NotificationEntity(
+            id = 8004,
+            userId = NOTIFICATIONS_USER_ID,
+            title = "Pago recibido",
+            description = "Has recibido COP $45.000 por Limpieza General.",
+            type = "PAYMENT",
+            isUnread = false,
+            createdAt = System.currentTimeMillis() - 3 * 60 * 60_000
+        ),
+        NotificationEntity(
+            id = 8005,
+            userId = NOTIFICATIONS_USER_ID,
+            title = "Recordatorio de servicio",
+            description = "Recuerda tu cita de manana a las 8:00 AM para Jardineria.",
+            type = "REMINDER",
+            isUnread = false,
+            createdAt = System.currentTimeMillis() - 5 * 60 * 60_000
         )
     )
 }
