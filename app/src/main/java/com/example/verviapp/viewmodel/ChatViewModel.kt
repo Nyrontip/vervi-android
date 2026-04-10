@@ -6,7 +6,7 @@ import com.example.verviapp.data.dao.ChatDao
 import com.example.verviapp.data.entity.MessageEntity
 import com.example.verviapp.data.repository.SampleData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import com.example.verviapp.model.ChatMessage
+import com.example.verviapp.model.ChatMessageState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +20,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 data class ChatUiState(
-	val messages: List<ChatMessage> = emptyList(),
+	val messages: List<ChatMessageState> = emptyList(),
 	val inputText: String = "",
 	val showAttachments: Boolean = false,
 	val isLoading: Boolean = false,
@@ -114,7 +114,7 @@ class ChatViewModel @Inject constructor(
 		observeHistory()
 	}
 
-	private fun MessageEntity.toUiMessage(remoteUserId: Int): ChatMessage = ChatMessage(
+	private fun MessageEntity.toUiMessage(remoteUserId: Int): ChatMessageState = ChatMessageState(
 		text = body,
 		time = TIME_FORMATTER.format(Date(sentAt)),
 		isUser = senderUserId != remoteUserId,

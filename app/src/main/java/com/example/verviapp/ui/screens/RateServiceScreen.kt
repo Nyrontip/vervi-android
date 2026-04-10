@@ -140,7 +140,7 @@ fun VerviInteractiveRating(
 @Composable
 fun RatingBottomSheet(
     navController: NavController,
-    provider: Provider,
+    provider: com.example.verviapp.ui.screens.Provider,
     launcher: ManagedActivityResultLauncher<String, Uri?>
 ) {
 
@@ -286,7 +286,11 @@ fun RateServiceScreen(navController: NavController) {
             Box(
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                RatingBottomSheet(navController, provider, launcher)
+                RatingBottomSheet(
+                    navController,
+                    provider,
+                    launcher
+                )
             }
         }
     }

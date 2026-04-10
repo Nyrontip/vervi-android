@@ -6,7 +6,6 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.dao.ChatDao
-import com.example.verviapp.data.dao.ServiceDao
 import com.example.verviapp.data.database.AppDatabase
 import com.example.verviapp.data.dao.RequestDao
 import com.example.verviapp.data.repository.SampleData
@@ -50,6 +49,7 @@ object DatabaseModule {
                 database.serviceDao().insertServices(SampleData.sampleServices)
                 database.serviceDao().insertServiceEvidence(SampleData.sampleServiceEvidence)
                 database.serviceDao().insertReviews(SampleData.sampleReviews)
+                database.notificationDao().insertNotifications(SampleData.sampleNotifications)
                 database.close()
             }
         }
@@ -71,4 +71,8 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideServiceDao(database: AppDatabase): ServiceDao = database.serviceDao()
+
+    @Singleton
+    @Provides
+    fun provideNotificationDao(database: AppDatabase): NotificationDao = database.notificationDao()
 }
