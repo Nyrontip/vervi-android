@@ -98,6 +98,7 @@ class RequestManagementViewModel @Inject constructor(
         }
 
         return RequestItem(
+            id = entity.id,
             status = entity.status,
             statusColor = statusColor,
             title = entity.title,
