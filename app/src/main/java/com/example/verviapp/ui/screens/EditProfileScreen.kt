@@ -30,10 +30,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.verviapp.R
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviColors
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.verviapp.viewmodel.EditProfileViewModel
 import com.example.verviapp.viewmodel.ProfileViewModel
+import com.example.verviapp.ui.theme.VerviColors
 
 @Composable
 fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = viewModel()) {
@@ -67,7 +67,11 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
     ) { uri -> if (uri != null) photoUri = uri }
 
     Scaffold(
-        topBar         = { VerviTopBar(title = "Editar Perfil", onBack = { navController.popBackStack() }) },
+        topBar         = {
+            VerviTopBar(
+                title = "Editar Perfil",
+                onBack = { navController.popBackStack() })
+        },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -129,20 +133,20 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
 
             // ── Nombre completo ──────────────────────────────────
             VerviTextField(
-                label         = "Nombre Completo",
-                value         = state.name,
+                label = "Nombre Completo",
+                value = state.name,
                 onValueChange = { viewModel.onNameChange(it) },
-                placeholder   = "Tu nombre completo"
+                placeholder = "Tu nombre completo"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Biografía — VerviTextArea multilínea ─────────────
             VerviTextArea(
-                label         = "Biografía",
-                value         = state.bio,
+                label = "Biografía",
+                value = state.bio,
                 onValueChange = { viewModel.onBioChange(it) },
-                placeholder   = "Cuéntanos un poco sobre tus servicios..."
+                placeholder = "Cuéntanos un poco sobre tus servicios..."
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -241,21 +245,21 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     VerviTextField(
-                        label         = "Precio (COP)",
-                        value         = state.price,
+                        label = "Precio (COP)",
+                        value = state.price,
                         onValueChange = { viewModel.onPriceChange(it) },
-                        placeholder   = "50.000",
-                        keyboardType  = androidx.compose.ui.text.input.KeyboardType.Number,
-                        leadingIcon   = Icons.Default.AttachMoney
+                        placeholder = "50.000",
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+                        leadingIcon = Icons.Default.AttachMoney
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     VerviTextField(
-                        label         = "Ubicación",
-                        value         = state.location,
+                        label = "Ubicación",
+                        value = state.location,
                         onValueChange = { viewModel.onLocationChange(it) },
-                        placeholder   = "Bogotá",
-                        leadingIcon   = Icons.Default.LocationOn
+                        placeholder = "Bogotá",
+                        leadingIcon = Icons.Default.LocationOn
                     )
                 }
             }
@@ -264,19 +268,19 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
 
             // ── Guardar con ícono ────────────────────────────────
             VerviButton(
-                text    = "Guardar Cambios",
+                text = "Guardar Cambios",
                 onClick = { viewModel.save(photoUri) },
-                icon    = Icons.Default.Save
+                icon = Icons.Default.Save
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // ── Cancelar — outlined sin color destructivo ────────
             VerviOutlinedButton(
-                text    = "Cancelar",
+                text = "Cancelar",
                 onClick = { navController.popBackStack() },
-                color   = VerviColors.TextSecondary,
-                height  = 48.dp
+                color = VerviColors.TextSecondary,
+                height = 48.dp
             )
 
             Spacer(modifier = Modifier.height(24.dp))

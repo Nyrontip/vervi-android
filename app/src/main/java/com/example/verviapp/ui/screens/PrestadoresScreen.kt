@@ -31,8 +31,16 @@ fun PrestadoresScreen(navController: NavController, viewModel: PrestadoresViewMo
     val state by viewModel.state.collectAsState()
 
     Scaffold(
-        topBar    = { VerviTopBar(title = "Directorio de Prestadores", onBack = { navController.popBackStack()}) },
-        bottomBar = { VerviBottomBar(navController) },
+        topBar    = {
+            VerviTopBar(
+                title = "Directorio de Prestadores",
+                onBack = { navController.popBackStack() })
+        },
+        bottomBar = {
+            VerviBottomBar(
+                navController
+            )
+        },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -86,7 +94,9 @@ fun PrestadoresScreen(navController: NavController, viewModel: PrestadoresViewMo
             }
 
             state.providers.forEach { prestador ->
-                PrestadorCard(prestador = prestador, onVerPerfil = { navController.navigate("profile?userId=${prestador.id}") })
+                PrestadorCard(
+                    prestador = prestador,
+                    onVerPerfil = { navController.navigate("profile?userId=${prestador.id}") })
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -139,7 +149,12 @@ private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
 
                     // Badge especialidad + rating en la misma fila
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        VerviBadge(text     = prestador.specialty,  color    = VerviColors.TextDark, fontSize = 10.sp, outlined = true)
+                        VerviBadge(
+                            text = prestador.specialty,
+                            color = VerviColors.TextDark,
+                            fontSize = 10.sp,
+                            outlined = true
+                        )
 
                         Spacer(modifier = Modifier.width(8.dp))
 
@@ -156,7 +171,10 @@ private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            VerviOutlinedButton(text = "Ver Perfil", onClick = onVerPerfil)
+            VerviOutlinedButton(
+                text = "Ver Perfil",
+                onClick = onVerPerfil
+            )
         }
     }
 }

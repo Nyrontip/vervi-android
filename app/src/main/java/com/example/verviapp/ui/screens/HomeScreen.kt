@@ -35,20 +35,24 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
     Scaffold(
         topBar = {
             VerviTopBar(
-                title   = "Vervi",
-                onBack  = null,
+                title = "Vervi",
+                onBack = null,
                 actions = {
-                    IconButton(onClick        = {
+                    IconButton(onClick = {
                         navController.navigate("login")
                     }) {
-                        Icon(Icons.Default.Person, contentDescription = "Perfil",
-                            tint = VerviColors.TextDark)
+                        Icon(
+                            Icons.Default.Person, contentDescription = "Perfil",
+                            tint = VerviColors.TextDark
+                        )
                     }
                     IconButton(onClick = {
                         navController.navigate("notifications")
                     }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones",
-                            tint = VerviColors.TextDark)
+                        Icon(
+                            Icons.Default.Notifications, contentDescription = "Notificaciones",
+                            tint = VerviColors.TextDark
+                        )
                     }
                 }
             )
@@ -80,9 +84,9 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             // VerviChips global — categorías seleccionables con scroll horizontal
             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
                 VerviChips(
-                    opciones  = categorias,
-                    selected  = selectedCat,
-                    onSelect = { selectedCat = it; viewModel.onCategoryChange(it) }
+                    opciones = categorias,
+                    selected = selectedCat,
+                    onSelect = { newCat -> selectedCat = newCat; viewModel.onCategoryChange(newCat) }
                 )
             }
 
@@ -126,7 +130,11 @@ private fun ServiceCard(servicio: Service, onDetalle: () -> Unit) {
                 )
                 // Badge precio — fondo blanco, texto azul (usa VerviBadge global)
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)) {
-                    VerviBadge(text     = servicio.price, color    = VerviColors.Blue, fontSize = 13.sp,)
+                    VerviBadge(
+                        text = servicio.price,
+                        color = VerviColors.Blue,
+                        fontSize = 13.sp,
+                    )
                 }
             }
 
@@ -142,7 +150,11 @@ private fun ServiceCard(servicio: Service, onDetalle: () -> Unit) {
                     if (servicio.isUrgent) {
                         Spacer(modifier = Modifier.width(8.dp))
                         // Badge URGENTE outlined — borde azul, sin fondo
-                        VerviBadge(text = "URGENTE", color = VerviColors.Blue, outlined = true)
+                        VerviBadge(
+                            text = "URGENTE",
+                            color = VerviColors.Blue,
+                            outlined = true
+                        )
                     }
                 }
 
@@ -172,8 +184,8 @@ private fun ServiceCard(servicio: Service, onDetalle: () -> Unit) {
                             fontSize = 13.sp, color = VerviColors.TextGray)
                     }
                     VerviButton(
-                        text      = "Ver detalle",
-                        onClick   = onDetalle, fillWidth = false, height    = 38.dp, fontSize  = 13.sp
+                        text = "Ver detalle",
+                        onClick = onDetalle, fillWidth = false, height = 38.dp, fontSize = 13.sp
                     )
                 }
             }

@@ -17,9 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.verviapp.R
 import com.example.verviapp.ui.components.VerviFooterText
 import com.example.verviapp.ui.theme.VerviColors
-import com.example.verviapp.R
 import kotlinx.coroutines.delay
 
 @Composable
