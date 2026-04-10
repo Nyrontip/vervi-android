@@ -48,6 +48,7 @@ class EditProfileViewModel @Inject constructor(
             _state.value = _state.value.copy(
                 name = userWithCategories.user.name,
                 bio = userWithCategories.user.bio,
+                photoUrl = userWithCategories.user.photoUrl,
                 price = userWithCategories.user.suggestedPriceCop?.let { currencyFormatter.format(it) } ?: "",
                 location = userWithCategories.user.location,
                 isProvider = userWithCategories.user.isProvider,

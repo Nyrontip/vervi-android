@@ -43,6 +43,7 @@ object SampleData {
             password = "123456",
             bio = "Usuario base para pruebas de login local.",
             location = "Bogota, Colombia",
+            photoUrl = "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=600&h=600&fit=crop",
             isProvider = true,
             rating = 4.6f,
             reviewCount = 18,
@@ -55,6 +56,7 @@ object SampleData {
             isProvider = true,
             isOnline = true,
             password = "123456",
+            photoUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop",
             rating = 4.7f,
             reviewCount = 32,
             suggestedPriceCop = 75000

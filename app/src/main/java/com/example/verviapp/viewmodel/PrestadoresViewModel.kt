@@ -2,7 +2,6 @@ package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
-import com.example.verviapp.R
 import com.example.verviapp.data.dao.CategoryDao
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.UserWithCategories
@@ -104,7 +103,9 @@ class PrestadoresViewModel @Inject constructor(
             price = formattedPrice,
             rating = user.rating,
             reviewCount = user.reviewCount,
-            imageRes = R.drawable.login_hero
+            imageUrl = user.photoUrl.ifBlank {
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=600&fit=crop"
+            }
         )
     }
 }

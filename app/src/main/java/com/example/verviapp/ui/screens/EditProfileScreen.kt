@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import coil.compose.AsyncImage
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,12 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.verviapp.R
 import com.example.verviapp.ui.components.*
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.verviapp.viewmodel.EditProfileViewModel
@@ -97,8 +94,10 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
                             .border(3.dp, Color.White, CircleShape)
                     )
                 } else {
-                    Image(
-                        painter            = painterResource(id = R.drawable.login_hero),
+                    AsyncImage(
+                        model = state.photoUrl.ifBlank {
+                            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=600&fit=crop"
+                        },
                         contentDescription = "Foto de perfil",
                         contentScale       = ContentScale.Crop,
                         modifier           = Modifier

@@ -14,13 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Image
 import androidx.navigation.NavController
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.state.Provider
@@ -109,8 +108,8 @@ private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
             // Fila superior: foto + info
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // Foto del prestador con esquinas redondeadas
-                Image(
-                    painter            = painterResource(id = prestador.imageRes),
+                AsyncImage(
+                    model = prestador.imageUrl,
                     contentDescription = prestador.name,
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier
