@@ -33,6 +33,7 @@ object SampleData {
     const val CATEGORY_PLOMEROS_ID = 1102
     const val CATEGORY_ELECTRICISTAS_ID = 1103
     const val CATEGORY_LIMPIEZA_ID = 1104
+    const val CATEGORY_TUTORIAS_ID = 1105
 
     val sampleUsers = listOf(
         UserEntity(
@@ -86,7 +87,8 @@ object SampleData {
         CategoryEntity(id = CATEGORY_CARPINTEROS_ID, name = "Carpinteros"),
         CategoryEntity(id = CATEGORY_PLOMEROS_ID, name = "Plomeros"),
         CategoryEntity(id = CATEGORY_ELECTRICISTAS_ID, name = "Electricistas"),
-        CategoryEntity(id = CATEGORY_LIMPIEZA_ID, name = "Limpieza")
+        CategoryEntity(id = CATEGORY_LIMPIEZA_ID, name = "Limpieza"),
+        CategoryEntity(id = CATEGORY_TUTORIAS_ID, name = "Tutorías")
     )
 
     val sampleUserCategories = listOf(
@@ -149,6 +151,7 @@ object SampleData {
         ),
         RequestEntity(
             status = "En curso",
+            categoryId = CATEGORY_ELECTRICISTAS_ID,
             title = "Mantenimiento de Aire Acondicionado",
             date = "12 Oct 2023",
             applications = "3 Postulaciones",
@@ -157,11 +160,13 @@ object SampleData {
             isActive = true,
             description = "Se requiere revisión técnica completa del sistema de aire acondicionado central.",
             location = "Bogotá, Chapinero",
+            budgetCop = 180000,
             applicationCount = 3,
             isUrgent = true
         ),
         RequestEntity(
             status = "Pendiente",
+            categoryId = CATEGORY_TUTORIAS_ID,
             title = "Clase Particular de Matemáticas",
             date = "10 Oct 2023",
             applications = "1 Postulación",
@@ -170,6 +175,7 @@ object SampleData {
             isActive = true,
             description = "Necesito ayuda con cálculo vectorial y ecuaciones diferenciales.",
             location = "Bogotá, Usaquén",
+            budgetCop = 90000,
             applicationCount = 1,
             isUrgent = false
         ),

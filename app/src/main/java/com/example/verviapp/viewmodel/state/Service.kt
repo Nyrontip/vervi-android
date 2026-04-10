@@ -1,7 +1,7 @@
 package com.example.verviapp.viewmodel.state
 
 data class Service(
-    val id: String,
+    val id: Int,
     val title: String,
     val location: String,
     val price: String,
@@ -10,4 +10,3 @@ data class Service(
     val imageRes: Int,       // referencia al drawable — luego será URL de API
     val category: String
 )
-
