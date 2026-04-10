@@ -73,7 +73,7 @@ private const val clientAvatarUrl =
     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"
 
 @Composable
-fun ServiceDetailsScreen(navController: NavController) {
+fun ServiceDetailsScreen(navController: NavController, serviceId: Int) {
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -104,7 +104,7 @@ fun ServiceDetailsScreen(navController: NavController) {
                 HorizontalDivider(color = VerviColors.BorderGray)
                 VerviButton(
                     text = "Calificar Servicio",
-                    onClick = { navController.navigate("service/rate") },
+                    onClick = { navController.navigate("service/rate/$serviceId") },
                     color = VerviColors.OrangeSecondary,
                     icon = Icons.Default.Star,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),

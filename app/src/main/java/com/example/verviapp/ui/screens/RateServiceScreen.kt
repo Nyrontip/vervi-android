@@ -11,16 +11,13 @@ import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.verviapp.viewmodel.RateServiceViewModel
-import com.example.verviapp.repository.RatingsRepositoryImpl
+import com.example.verviapp.viewmodel.RateServiceEvent
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,15 +29,6 @@ import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-
-// ----------------------------
-// DATA
-// ----------------------------
-
-data class Provider(
-    val name: String,
-    val avatarUrl: String
-)
 
 // ----------------------------
 // 🔹 NUEVOS COMPONENTES REUTILIZABLES
@@ -146,12 +134,11 @@ fun VerviInteractiveRating(
 @Composable
 fun RatingBottomSheet(
     navController: NavController,
-    provider: Provider,
     launcher: ManagedActivityResultLauncher<String, Uri?>,
     viewModel: RateServiceViewModel
 ) {
 
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -183,12 +170,12 @@ fun RatingBottomSheet(
         // Header
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-            VerviAvatar(provider.avatarUrl)
+            VerviAvatar(uiState.counterpartAvatarUrl)
 
             Spacer(Modifier.height(12.dp))
 
             Text(
-                text = "Calificar a ${provider.name}",
+                text = "Calificar a ${uiState.counterpartName}",
                 fontSize = 20.sp,
                 color = VerviColors.TextPrimary
             )
@@ -235,9 +222,10 @@ fun RatingBottomSheet(
         VerviButton(
             text = if (uiState.isSubmitting) "Enviando..." else "Enviar calificación",
             onClick = {
-                viewModel.submitRating(provider.name)
-                navController.popBackStack()
-            }
+                if (!uiState.isSubmitting && !uiState.isLoading) {
+                    viewModel.submitRating()
+                }
+            },
         )
 
         // Omitir
@@ -260,29 +248,26 @@ fun RatingBottomSheet(
 // ----------------------------
 
 @Composable
-fun RateServiceScreen(navController: NavController) {
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        // actualizar el viewModel con la Uri como string
-        uri?.let { _uri ->
-            // veremos inyectado el viewModel más abajo
+fun RateServiceScreen(navController: NavController, serviceId: Int) {
+    val viewModel: RateServiceViewModel = hiltViewModel()
+
+    LaunchedEffect(serviceId) {
+        viewModel.load(serviceId)
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            if (event is RateServiceEvent.Submitted) {
+                navController.popBackStack()
+            }
         }
     }
 
-    val viewModel: RateServiceViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return RateServiceViewModel(RatingsRepositoryImpl()) as T
-            }
-        }
-    )
-
-    val provider = Provider(
-        name = "Juan Pérez",
-        avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuANtCUGY5nCwclrXbDrVX1FXXyOT6BJpuuUGLpmbLbk42YEKjQAy_ymEJ5jfZdYfq1-FYGyJIIudW5w7gyrr79NnCrNbTCmNw39HgpwYsd_ZjQaJc8JJULFyYUFaL3mixnNaS1wVy3cNywMdeb3zihM5nHn3-XG4FU5Xaem20N0MOE3oHUXHxunqolzDdGPGVpIDkHvI2yz-KCo9GCmy-dKbxw5v6GHcZX53nbvfpn8TQGvg07GZd8aw8Jk8QO4LEKPfZBjVSgLhMdh"
-    )
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        viewModel.onAttachImage(uri?.toString())
+    }
 
     Scaffold(
         containerColor = VerviColors.BackgroundLight
@@ -305,8 +290,10 @@ fun RateServiceScreen(navController: NavController) {
                 Box(
                     modifier = Modifier.align(Alignment.BottomCenter)
                 ) {
-                    RatingBottomSheet(navController, provider, launcher, viewModel)
+                    RatingBottomSheet(navController, launcher, viewModel)
                 }
         }
     }
 }
+
+

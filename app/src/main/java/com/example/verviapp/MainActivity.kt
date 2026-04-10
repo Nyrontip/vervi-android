@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.verviapp.ui.theme.VerviAppTheme
 import androidx.navigation.compose.NavHost
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.verviapp.ui.screens.SplashScreen
@@ -79,8 +81,12 @@ class MainActivity : ComponentActivity() {
                     composable("services/history") {
                         ServiceHistoryScreen(navController)
                     }
-                    composable("service/rate") {
-                        RateServiceScreen(navController)
+                    composable(
+                        route = "service/rate/{serviceId}",
+                        arguments = listOf(navArgument("serviceId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: return@composable
+                        RateServiceScreen(navController, serviceId)
                     }
                     composable("chat") {
                         ChatScreen(navController)
@@ -97,8 +103,12 @@ class MainActivity : ComponentActivity() {
                     composable("request/confirm") {
                         RequestConfirmScreen(navController)
                     }
-                    composable("service/details") {
-                        ServiceDetailsScreen(navController)
+                    composable(
+                        route = "service/details/{serviceId}",
+                        arguments = listOf(navArgument("serviceId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: return@composable
+                        ServiceDetailsScreen(navController, serviceId)
                     }
                     composable("service/apply") {
                         ApplyForServiceScreen(navController)
