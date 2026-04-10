@@ -74,10 +74,9 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
 
             // Buscador con ícono de lupa
             VerviSearchField(
-                value = searchQuery,
-                onValueChange = { newValue -> searchQuery = newValue; viewModel.onSearchChange(newValue) },
-                placeholder = "¿Qué servicio necesitas?",
-                leadingIcon = Icons.Default.Search
+                value         = searchQuery,
+                onValueChange = { searchQuery = it; viewModel.onSearchChange(it) },
+                placeholder   = "¿Qué servicio necesitas?"
             )
 
             Spacer(modifier = Modifier.height(14.dp))
