@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
@@ -30,8 +30,9 @@ import com.example.verviapp.viewmodel.ProfileViewModel
 import com.example.verviapp.R
 
 @Composable
-fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = viewModel()) {
+fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
+    val isExternalProfile = !userId.isNullOrBlank()
 
     LaunchedEffect(userId) {
         viewModel.loadProfile(userId)     // null carga el perfil local
@@ -107,16 +108,18 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Botones Editar / Cerrar sesión ──────────────────
-            VerviOutlinedButton(
-                text = "Editar Perfil",
-                onClick = { navController.navigate("editProfile") })
-            Spacer(modifier = Modifier.height(8.dp))
-            VerviOutlinedButton(
-                text = "Cerrar Sesión", onClick = { navController.navigate("login") },
-                color = Color(0xFFD32F2F)
-            )  // rojo para acción destructiva
+            if (!isExternalProfile) {
+                VerviOutlinedButton(
+                    text = "Editar Perfil",
+                    onClick = { navController.navigate("editProfile") })
+                Spacer(modifier = Modifier.height(8.dp))
+                VerviOutlinedButton(
+                    text = "Cerrar Sesión", onClick = { navController.navigate("login") },
+                    color = Color(0xFFD32F2F)
+                ) 
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             // ── Badges de rol — Cliente / Prestador ─────────────
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

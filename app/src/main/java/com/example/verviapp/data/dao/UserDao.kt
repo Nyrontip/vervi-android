@@ -29,6 +29,10 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUserCategories(userCategories: List<UserCategoryCrossRef>)
 
+    @Transaction
+    @Query("SELECT * FROM users WHERE id = :userId LIMIT 1")
+    suspend fun getUserWithCategoriesById(userId: Int): UserWithCategories?
+
     @Query("SELECT name FROM categories ORDER BY name ASC")
     fun observeCategoryNames(): Flow<List<String>>
 
