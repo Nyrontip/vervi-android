@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/repository/ServiceHistoryRepository.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/verviapp/repository/ServiceHistoryRepository.kt" />
+              <option name="updatedContent" value="package com.example.verviapp.repository&#10;&#10;import com.example.verviapp.model.ServiceHistoryItem&#10;&#10;interface ServiceHistoryRepository {&#10;    suspend fun getHistory(): List&lt;ServiceHistoryItem&gt;&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
