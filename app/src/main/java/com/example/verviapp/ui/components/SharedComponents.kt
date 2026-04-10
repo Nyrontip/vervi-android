@@ -514,6 +514,18 @@ fun VerviFooterText(
     )
 }
 
+@Composable
+fun VerviLoadingState(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = VerviColors.Blue)
+    }
+}
+
 // ── verviFieldColors — colores estándar para todos los inputs ──
 @Composable
 private fun verviFieldColors() = OutlinedTextFieldDefaults.colors(

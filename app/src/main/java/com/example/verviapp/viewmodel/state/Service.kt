@@ -7,6 +7,6 @@ data class Service(
     val price: String,
     val applicationCount: Int,
     val isUrgent: Boolean,
-    val imageRes: Int,       // referencia al drawable — luego será URL de API
+    val imageUrl: String,
     val category: String
 )

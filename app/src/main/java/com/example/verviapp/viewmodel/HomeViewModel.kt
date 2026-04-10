@@ -2,7 +2,6 @@ package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.verviapp.R
 import com.example.verviapp.data.dao.CategoryDao
 import com.example.verviapp.data.dao.HomeRequestRow
 import com.example.verviapp.data.dao.RequestDao
@@ -101,7 +100,7 @@ class HomeViewModel @Inject constructor(
             price = formattedPrice,
             applicationCount = applicationCount,
             isUrgent = isUrgent,
-            imageRes = R.drawable.login_hero,
+            imageUrl = imageUrl,
             category = categoryName ?: "Sin categoría"
         )
     }

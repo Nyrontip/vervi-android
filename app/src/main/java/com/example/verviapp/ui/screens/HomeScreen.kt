@@ -1,6 +1,5 @@
 package com.example.verviapp.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,12 +13,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.state.Service
@@ -97,14 +96,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
             Spacer(modifier = Modifier.height(12.dp))
 
             if (state.isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = VerviColors.Blue)
-                }
+                VerviLoadingState()
             }
 
             if (state.errorMessage != null) {
@@ -141,8 +133,8 @@ private fun ServiceCard(servicio: Service, onDetalle: () -> Unit) {
         Column {
             // Imagen con badge de precio superpuesto
             Box {
-                Image(
-                    painter            = painterResource(id = servicio.imageRes),
+                AsyncImage(
+                    model = servicio.imageUrl,
                     contentDescription = servicio.title,
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier.fillMaxWidth().height(160.dp)

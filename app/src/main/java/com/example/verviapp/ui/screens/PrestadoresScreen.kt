@@ -73,14 +73,7 @@ fun PrestadoresScreen(navController: NavController, viewModel: PrestadoresViewMo
             Spacer(modifier = Modifier.height(16.dp))
 
             if (state.isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = VerviColors.Blue)
-                }
+                VerviLoadingState()
             }
 
             if (state.errorMessage != null) {

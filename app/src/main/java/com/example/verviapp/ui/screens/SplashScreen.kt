@@ -29,14 +29,14 @@ fun SplashScreen(navController: NavController) {
     // Anima el progreso suavemente al valor objetivo
     val animatedProgress by animateFloatAsState(
         targetValue   = progress,
-        animationSpec = tween(durationMillis = 500, easing = LinearEasing),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
         label         = "progressAnimation"
     )
 
-    // Arranca la animación y al terminar abre LoginActivity
+    // Arranca la animación y al terminar abre home
     LaunchedEffect(Unit) {
         progress = 1f
-        delay(500) // espera que termine la animación
+        delay(1000)
         navController.navigate("home")
     }
 
