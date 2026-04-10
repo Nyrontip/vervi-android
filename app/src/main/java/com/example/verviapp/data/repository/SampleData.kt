@@ -298,6 +298,28 @@ object SampleData {
             totalPriceCop = 35000,
             completedAt = System.currentTimeMillis() - 35L * 24 * 60 * 60 * 1000,
             status = "COMPLETED"
+        ),
+        ServiceEntity(
+            id = 8010,
+            clientUserId = DEMO_PROVIDER_USER_ID,
+            providerUserId = SERVICE_REMOTE_USER_ID,
+            title = "Instalacion de lamparas",
+            summary = "Montaje de dos lamparas LED con verificacion de cableado.",
+            location = "Bogota, Suba",
+            totalPriceCop = 98000,
+            completedAt = System.currentTimeMillis() - 10L * 24 * 60 * 60 * 1000,
+            status = "COMPLETED"
+        ),
+        ServiceEntity(
+            id = 8011,
+            clientUserId = SERVICE_REMOTE_USER_ID,
+            providerUserId = DEMO_PROVIDER_USER_ID,
+            title = "Mantenimiento de cerradura",
+            summary = "Ajuste de cerradura principal y lubricacion preventiva.",
+            location = "Bogota, Engativa",
+            totalPriceCop = 70000,
+            completedAt = System.currentTimeMillis() - 18L * 24 * 60 * 60 * 1000,
+            status = "COMPLETED"
         )
     )
 
@@ -319,6 +341,18 @@ object SampleData {
             serviceId = 8003,
             imageUrl = "https://images.unsplash.com/photo-1522163182402-834f871fd851?w=300&h=300&fit=crop",
             sortOrder = 0
+        ),
+        ServiceEvidenceEntity(
+            id = 8110,
+            serviceId = 8010,
+            imageUrl = "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=300&h=300&fit=crop",
+            sortOrder = 0
+        ),
+        ServiceEvidenceEntity(
+            id = 8111,
+            serviceId = 8011,
+            imageUrl = "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=300&h=300&fit=crop",
+            sortOrder = 0
         )
     )
 
@@ -338,6 +372,14 @@ object SampleData {
             reviewedUserId = SERVICE_REMOTE_USER_ID,
             rating = 4,
             comment = "Todo correcto"
+        ),
+        ReviewEntity(
+            id = 8210,
+            serviceId = 8010,
+            reviewerUserId = DEMO_PROVIDER_USER_ID,
+            reviewedUserId = SERVICE_REMOTE_USER_ID,
+            rating = 5,
+            comment = "Trabajo impecable"
         )
     )
 }

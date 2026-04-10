@@ -87,6 +87,7 @@ class ServiceHistoryViewModel @Inject constructor(
 						it.copy(
 							services = rows.map { row ->
 								ServiceHistoryItem(
+										serviceId = row.serviceId,
 									title = row.title,
 									provider = row.counterpartName,
 									date = dateFormatter.format(Date(row.dateMillis)),

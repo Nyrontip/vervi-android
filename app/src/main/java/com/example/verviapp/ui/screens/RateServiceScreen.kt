@@ -11,10 +11,13 @@ import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.verviapp.viewmodel.RateServiceViewModel
+import com.example.verviapp.viewmodel.RateServiceEvent
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,15 +29,6 @@ import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-
-// ----------------------------
-// DATA
-// ----------------------------
-
-data class Provider(
-    val name: String,
-    val avatarUrl: String
-)
 
 // ----------------------------
 // 🔹 NUEVOS COMPONENTES REUTILIZABLES
@@ -140,12 +134,11 @@ fun VerviInteractiveRating(
 @Composable
 fun RatingBottomSheet(
     navController: NavController,
-    provider: com.example.verviapp.ui.screens.Provider,
-    launcher: ManagedActivityResultLauncher<String, Uri?>
+    launcher: ManagedActivityResultLauncher<String, Uri?>,
+    viewModel: RateServiceViewModel
 ) {
 
-    var rating by remember { mutableStateOf(4) }
-    var comment by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -177,12 +170,12 @@ fun RatingBottomSheet(
         // Header
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-            VerviAvatar(provider.avatarUrl)
+            VerviAvatar(uiState.counterpartAvatarUrl)
 
             Spacer(Modifier.height(12.dp))
 
             Text(
-                text = "Calificar a ${provider.name}",
+                text = "Calificar a ${uiState.counterpartName}",
                 fontSize = 20.sp,
                 color = VerviColors.TextPrimary
             )
@@ -198,8 +191,8 @@ fun RatingBottomSheet(
 
         // Rating
         VerviInteractiveRating(
-            rating = rating,
-            onRatingSelected = { rating = it }
+            rating = uiState.rating,
+            onRatingSelected = { viewModel.onRatingSelected(it) }
         )
 
         Spacer(Modifier.height(24.dp))
@@ -207,8 +200,8 @@ fun RatingBottomSheet(
         // Comentario
         VerviTextArea(
             label = "Comentario opcional",
-            value = comment,
-            onValueChange = { comment = it },
+            value = uiState.comment,
+            onValueChange = { viewModel.onCommentChange(it) },
             placeholder = "Escribe tu experiencia..."
         )
 
@@ -227,8 +220,12 @@ fun RatingBottomSheet(
 
         // Botón principal
         VerviButton(
-            text = "Enviar calificación",
-            onClick = { navController.popBackStack() }
+            text = if (uiState.isSubmitting) "Enviando..." else "Enviar calificación",
+            onClick = {
+                if (!uiState.isSubmitting && !uiState.isLoading) {
+                    viewModel.submitRating()
+                }
+            },
         )
 
         // Omitir
@@ -251,19 +248,26 @@ fun RatingBottomSheet(
 // ----------------------------
 
 @Composable
-fun RateServiceScreen(navController: NavController) {
-    val imageUri = remember { mutableStateOf<Uri?>(null) }
+fun RateServiceScreen(navController: NavController, serviceId: Int) {
+    val viewModel: RateServiceViewModel = hiltViewModel()
+
+    LaunchedEffect(serviceId) {
+        viewModel.load(serviceId)
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            if (event is RateServiceEvent.Submitted) {
+                navController.popBackStack()
+            }
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri.value = uri
+        viewModel.onAttachImage(uri?.toString())
     }
-
-    val provider = Provider(
-        name = "Juan Pérez",
-        avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuANtCUGY5nCwclrXbDrVX1FXXyOT6BJpuuUGLpmbLbk42YEKjQAy_ymEJ5jfZdYfq1-FYGyJIIudW5w7gyrr79NnCrNbTCmNw39HgpwYsd_ZjQaJc8JJULFyYUFaL3mixnNaS1wVy3cNywMdeb3zihM5nHn3-XG4FU5Xaem20N0MOE3oHUXHxunqolzDdGPGVpIDkHvI2yz-KCo9GCmy-dKbxw5v6GHcZX53nbvfpn8TQGvg07GZd8aw8Jk8QO4LEKPfZBjVSgLhMdh"
-    )
 
     Scaffold(
         containerColor = VerviColors.BackgroundLight
@@ -283,15 +287,13 @@ fun RateServiceScreen(navController: NavController) {
             )
 
             // BottomSheet
-            Box(
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ) {
-                RatingBottomSheet(
-                    navController,
-                    provider,
-                    launcher
-                )
-            }
+                Box(
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                ) {
+                    RatingBottomSheet(navController, launcher, viewModel)
+                }
         }
     }
 }
+
+

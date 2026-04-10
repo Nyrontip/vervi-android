@@ -82,6 +82,53 @@ interface ServiceDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReviews(reviews: List<ReviewEntity>)
+
+    @Query(
+        """
+        SELECT
+            s.id AS serviceId,
+            counterpart.id AS counterpartUserId,
+            counterpart.name AS counterpartName,
+            counterpart.photoUrl AS counterpartAvatarUrl,
+            review.rating AS existingRating,
+            review.comment AS existingComment,
+            review.evidenceImageUrl AS existingEvidenceImageUrl
+        FROM services s
+        INNER JOIN users counterpart
+            ON counterpart.id = CASE
+                WHEN s.clientUserId = :reviewerUserId THEN s.providerUserId
+                ELSE s.clientUserId
+            END
+        LEFT JOIN reviews review
+            ON review.id = (
+                SELECT r.id
+                FROM reviews r
+                WHERE r.serviceId = s.id
+                  AND r.reviewerUserId = :reviewerUserId
+                ORDER BY r.createdAt DESC, r.id DESC
+                LIMIT 1
+            )
+        WHERE s.id = :serviceId
+          AND (s.clientUserId = :reviewerUserId OR s.providerUserId = :reviewerUserId)
+        LIMIT 1
+        """
+    )
+    suspend fun getRateServiceRow(serviceId: Int, reviewerUserId: Int): ServiceRateRow?
+
+    @Query(
+        """
+        SELECT id
+        FROM reviews
+        WHERE serviceId = :serviceId
+          AND reviewerUserId = :reviewerUserId
+        ORDER BY createdAt DESC, id DESC
+        LIMIT 1
+        """
+    )
+    suspend fun getLatestReviewId(serviceId: Int, reviewerUserId: Int): Int?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertReview(review: ReviewEntity): Long
 }
 
 data class ServiceHistoryRow(
@@ -92,5 +139,15 @@ data class ServiceHistoryRow(
     val totalPriceCop: Long,
     val imageUrl: String?,
     val rating: Int?
+)
+
+data class ServiceRateRow(
+    val serviceId: Int,
+    val counterpartUserId: Int,
+    val counterpartName: String,
+    val counterpartAvatarUrl: String?,
+    val existingRating: Int?,
+    val existingComment: String?,
+    val existingEvidenceImageUrl: String?
 )
 
