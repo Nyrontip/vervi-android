@@ -11,6 +11,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
@@ -24,29 +27,40 @@ class ProfileViewModel @Inject constructor(
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
     private val currencyFormatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
+    private var lastRequestedUserId: Int = SampleData.DEMO_PROVIDER_USER_ID
+    private var profileJob: Job? = null
 
     init {
         loadProfile()
     }
 
     fun loadProfile(userId: String? = null) {
-        viewModelScope.launch {
+        lastRequestedUserId = userId?.toIntOrNull() ?: SampleData.DEMO_PROVIDER_USER_ID
+        observeProfile(lastRequestedUserId)
+    }
+
+    fun refreshCurrentProfile() {
+        observeProfile(lastRequestedUserId)
+    }
+
+    private fun observeProfile(userId: Int) {
+        profileJob?.cancel()
+        profileJob = viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
-            val requestedUserId = userId?.toIntOrNull() ?: SampleData.DEMO_PROVIDER_USER_ID
-
-            val user = userDao.getUserWithCategoriesById(requestedUserId)
-            if (user == null) {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    user = User()
-                )
-                return@launch
-            }
-
-            _state.value = _state.value.copy(
-                isLoading = false,
-                user = user.toUiUser()
-            )
+            userDao.observeUserWithCategoriesById(userId)
+                .catch {
+                    _state.value = _state.value.copy(isLoading = false, user = User())
+                }
+                .collectLatest { userWithCategories ->
+                    if (userWithCategories == null) {
+                        _state.value = _state.value.copy(isLoading = false, user = User())
+                    } else {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            user = userWithCategories.toUiUser()
+                        )
+                    }
+                }
         }
     }
 

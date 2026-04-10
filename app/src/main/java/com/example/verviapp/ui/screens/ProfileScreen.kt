@@ -44,11 +44,13 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 title = "Mi Perfil",
                 onBack = { navController.popBackStack() },
                 actions = {
-                    IconButton(onClick = { navController.navigate("editProfile") }) {
-                        Icon(
-                            Icons.Default.Settings, contentDescription = "Ajustes",
-                            tint = VerviColors.TextDark
-                        )
+                    if (!isExternalProfile) {
+                        IconButton(onClick = { navController.navigate("editProfile") }) {
+                            Icon(
+                                Icons.Default.Settings, contentDescription = "Ajustes",
+                                tint = VerviColors.TextDark
+                            )
+                        }
                     }
                 }
             )
