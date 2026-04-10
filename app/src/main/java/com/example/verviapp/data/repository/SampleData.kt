@@ -1,35 +1,51 @@
 package com.example.verviapp.data.repository
 
+import com.example.verviapp.data.entity.CategoryEntity
 import com.example.verviapp.data.entity.RequestEntity
 import com.example.verviapp.data.entity.UserEntity
 import com.example.verviapp.data.entity.ConversationEntity
 import com.example.verviapp.data.entity.MessageEntity
+import com.example.verviapp.data.entity.UserCategoryCrossRef
 /**
  * Datos de muestra para inicializar la BD en primera ejecucion.
  * Centralizados aqui para facil mantenimiento y reutilizacion.
  */
 object SampleData { 
+    const val DEMO_PROVIDER_USER_ID = 9000
     const val CHAT_LOCAL_USER_ID = 9001
     const val CHAT_REMOTE_USER_ID = 9002
     const val CHAT_CONVERSATION_ID = 5001
     const val CHAT_LOCAL_EMAIL = "chat.local@vervi.app"
     const val CHAT_REMOTE_EMAIL = "chat.remote@vervi.app"
 
+    const val CATEGORY_CARPINTEROS_ID = 1101
+    const val CATEGORY_PLOMEROS_ID = 1102
+    const val CATEGORY_ELECTRICISTAS_ID = 1103
+    const val CATEGORY_LIMPIEZA_ID = 1104
+
     val sampleUsers = listOf(
         UserEntity(
+            id = DEMO_PROVIDER_USER_ID,
             name = "Usuario Demo",
             email = "test@vervi.com",
             password = "123456",
             bio = "Usuario base para pruebas de login local.",
-            location = "Bogota, Colombia"
+            location = "Bogota, Colombia",
+            isProvider = true,
+            rating = 4.6f,
+            reviewCount = 18,
+            suggestedPriceCop = 65000
         ),
         UserEntity(
             id = CHAT_LOCAL_USER_ID,
-            name = "Cliente",
+            name = "Mateo Gomez",
             email = CHAT_LOCAL_EMAIL,
-            isProvider = false,
+            isProvider = true,
             isOnline = true,
-            password = "123456"
+            password = "123456",
+            rating = 4.7f,
+            reviewCount = 32,
+            suggestedPriceCop = 75000
         ),
         UserEntity(
             id = CHAT_REMOTE_USER_ID,
@@ -38,8 +54,24 @@ object SampleData {
             isProvider = true,
             isOnline = true,
             password = "123456",
+            rating = 4.9f,
+            reviewCount = 48,
+            suggestedPriceCop = 80000,
             photoUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDRoJbuz12pcHLb_QstqeS_pEkfsnOEmftV2Ed727AU3t7bOSHjkSfmCY2JfVePqvopofXX7vTDuvAtMCWbilnFLg_UteSicoAczML_D9PBjI0u3D_lCZ-2105dT2Mwv4OwMnkAO0CpuprG8o6wkdVqagwkTNqWhUPtwj3dZv7Vrx1mEuxbBl4UEjgLoTuGsL33f_JCbYv5gu00GBxBjHtqO18o4EutH2iWhrnjS8BqynnfujcsdMGAbM7C8sUbaRuSwpja0lZrAMUJ"
         )
+    )
+
+    val sampleCategories = listOf(
+        CategoryEntity(id = CATEGORY_CARPINTEROS_ID, name = "Carpinteros"),
+        CategoryEntity(id = CATEGORY_PLOMEROS_ID, name = "Plomeros"),
+        CategoryEntity(id = CATEGORY_ELECTRICISTAS_ID, name = "Electricistas"),
+        CategoryEntity(id = CATEGORY_LIMPIEZA_ID, name = "Limpieza")
+    )
+
+    val sampleUserCategories = listOf(
+        UserCategoryCrossRef(userId = DEMO_PROVIDER_USER_ID, categoryId = CATEGORY_ELECTRICISTAS_ID),
+        UserCategoryCrossRef(userId = CHAT_LOCAL_USER_ID, categoryId = CATEGORY_CARPINTEROS_ID),
+        UserCategoryCrossRef(userId = CHAT_REMOTE_USER_ID, categoryId = CATEGORY_PLOMEROS_ID)
     )
 
     val sampleConversations = listOf(

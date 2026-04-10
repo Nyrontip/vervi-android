@@ -72,8 +72,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             VerviSearchField(
                 value         = searchQuery,
                 onValueChange = { searchQuery = it; viewModel.onSearchChange(it) },
-                placeholder   = "¿Qué servicio necesitas?",
-                leadingIcon   = Icons.Default.Search
+                placeholder   = "¿Qué servicio necesitas?"
             )
 
             Spacer(modifier = Modifier.height(14.dp))

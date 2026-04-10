@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -265,7 +267,7 @@ fun VerviSearchField(
     onValueChange: (String) -> Unit,
     placeholder: String = "Buscar...",
     modifier: Modifier = Modifier,
-    leadingIcon: ImageVector? = null
+    onSearchClick: (() -> Unit)? = null
 ) {
     OutlinedTextField(
         value           = value,
@@ -273,9 +275,17 @@ fun VerviSearchField(
         placeholder     = { Text(placeholder, color = Color(0xFFAAAAAA), fontSize = 14.sp) },
         singleLine      = true,
         shape           = RoundedCornerShape(16.dp),                    // más redondeado que inputs de form
-        leadingIcon     = if (leadingIcon != null) ({
-            Icon(leadingIcon, contentDescription = null, tint = Color(0xFFAAAAAA),modifier = Modifier.size(20.dp))
+        trailingIcon    = if (onSearchClick != null) ({
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    tint = VerviColors.Blue,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }) else null,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         colors          = verviFieldColors(),
         textStyle     = LocalTextStyle.current.copy(fontSize = 14.sp),
         modifier      = modifier
