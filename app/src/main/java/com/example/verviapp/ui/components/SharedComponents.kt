@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -41,7 +43,7 @@ import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.example.verviapp.viewmodel.state.RequestItem
 import com.example.verviapp.ui.theme.VerviColors
-import com.example.verviapp.model.ServiceHistoryItem
+import com.example.verviapp.viewmodel.state.ServiceHistoryItem
 
 // ════════════════════════════════════════════════════════════
 //  VerviTopBar — barra superior con título centrado
@@ -94,10 +96,26 @@ private data class BottomNavItem(
 @Composable
 fun VerviBottomBar(navController: NavController) {
     val items = listOf(
-        BottomNavItem("Inicio",      Icons.Default.Home, "home"),
-        BottomNavItem("Solicitudes", Icons.Default.ListAlt, "requests/management"),
-        BottomNavItem("Historial",   Icons.Default.History, "services/history"),
-        BottomNavItem("Perfil",      Icons.Default.Person, "profile")
+        BottomNavItem(
+            "Inicio",
+            Icons.Default.Home,
+            "home"
+        ),
+        BottomNavItem(
+            "Solicitudes",
+            Icons.Default.ListAlt,
+            "requests/management"
+        ),
+        BottomNavItem(
+            "Historial",
+            Icons.Default.History,
+            "services/history"
+        ),
+        BottomNavItem(
+            "Perfil",
+            Icons.Default.Person,
+            "profile"
+        )
     )
 
 // Observa el backStack del NavController
@@ -265,7 +283,7 @@ fun VerviSearchField(
     onValueChange: (String) -> Unit,
     placeholder: String = "Buscar...",
     modifier: Modifier = Modifier,
-    leadingIcon: ImageVector? = null
+    onSearchClick: (() -> Unit)? = null
 ) {
     OutlinedTextField(
         value           = value,
@@ -273,9 +291,17 @@ fun VerviSearchField(
         placeholder     = { Text(placeholder, color = Color(0xFFAAAAAA), fontSize = 14.sp) },
         singleLine      = true,
         shape           = RoundedCornerShape(16.dp),                    // más redondeado que inputs de form
-        leadingIcon     = if (leadingIcon != null) ({
-            Icon(leadingIcon, contentDescription = null, tint = Color(0xFFAAAAAA),modifier = Modifier.size(20.dp))
+        trailingIcon    = if (onSearchClick != null) ({
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    tint = VerviColors.Blue,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }) else null,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         colors          = verviFieldColors(),
         textStyle     = LocalTextStyle.current.copy(fontSize = 14.sp),
         modifier      = modifier
@@ -633,7 +659,7 @@ fun VerviStatusBadge(
 @Composable
 fun VerviRequestCard(
     navController: NavController,
-    request: RequestItem,
+    request: com.example.verviapp.viewmodel.state.RequestItem,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -680,7 +706,7 @@ fun VerviRequestCard(
                     VerviSmallButton(
                         text = "Eliminar",
                         color = VerviColors.CancelRed,
-                        onClick = { navController.navigate("request/details") },
+                        onClick = { navController.navigate("request/details/${request.id}") },
                         modifier = Modifier.weight(1f)
                     )
                 } else {

@@ -18,7 +18,7 @@ import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.RequestManagementViewModel
 
 @Composable
-fun RequestsScreen(navController: NavController, vm: RequestManagementViewModel = hiltViewModel()) {
+fun RequestsScreen(navController: NavController, vm: com.example.verviapp.viewmodel.RequestManagementViewModel = hiltViewModel()) {
 
     val state by vm.uiState.collectAsState()
 
@@ -117,4 +117,4 @@ fun RequestsScreen(navController: NavController, vm: RequestManagementViewModel 
 // -----------------------------
 // SAMPLE DATA
 // -----------------------------
-// sample data moved to RequestRepositoryImpl
+// sample data moved to SampleData

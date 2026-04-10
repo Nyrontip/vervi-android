@@ -4,7 +4,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
+import com.example.verviapp.data.entity.CategoryEntity
+import com.example.verviapp.data.entity.UserWithCategories
+import com.example.verviapp.data.entity.UserCategoryCrossRef
 import com.example.verviapp.data.entity.UserEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
@@ -17,4 +22,46 @@ interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUsers(users: List<UserEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertCategories(categories: List<CategoryEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertUserCategories(userCategories: List<UserCategoryCrossRef>)
+
+    @Query("SELECT name FROM categories ORDER BY name ASC")
+    fun observeCategoryNames(): Flow<List<String>>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM users
+        WHERE users.isProvider = 1
+          AND (
+              :text = ''
+              OR LOWER(users.name) LIKE '%' || LOWER(:text) || '%'
+              OR LOWER(users.bio) LIKE '%' || LOWER(:text) || '%'
+              OR LOWER(users.location) LIKE '%' || LOWER(:text) || '%'
+              OR EXISTS (
+                  SELECT 1
+                  FROM user_categories uc
+                  INNER JOIN categories c ON c.id = uc.categoryId
+                  WHERE uc.userId = users.id
+                    AND LOWER(c.name) LIKE '%' || LOWER(:text) || '%'
+              )
+          )
+          AND (
+              :category = 'Todos'
+              OR EXISTS (
+                  SELECT 1
+                  FROM user_categories uc
+                  INNER JOIN categories c ON c.id = uc.categoryId
+                  WHERE uc.userId = users.id
+                    AND c.name = :category
+              )
+          )
+        ORDER BY users.rating DESC, users.reviewCount DESC, users.name ASC
+        """
+    )
+    fun observeProviders(text: String, category: String): Flow<List<UserWithCategories>>
 }

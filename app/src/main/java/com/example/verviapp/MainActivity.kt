@@ -26,6 +26,11 @@ import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
 import com.example.verviapp.ui.screens.ChatScreen
+import com.example.verviapp.ui.screens.LoginScreen
+import com.example.verviapp.ui.screens.ProfileScreen
+import com.example.verviapp.ui.screens.SplashScreen
+import com.example.verviapp.ui.screens.HomeScreen
+import com.example.verviapp.ui.screens.PrestadoresScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -81,6 +86,9 @@ class MainActivity : ComponentActivity() {
                         ChatScreen(navController)
                     }
                     composable("request/details") {
+                        RequestDetailsScreen(navController)
+                    }
+                    composable("request/details/{requestId}") {
                         RequestDetailsScreen(navController)
                     }
                     composable("request/cancel") {

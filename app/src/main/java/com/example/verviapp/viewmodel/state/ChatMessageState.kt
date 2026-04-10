@@ -1,6 +1,6 @@
 package com.example.verviapp.model
 
-data class ChatMessage(
+data class ChatMessageState(
     val text: String,
     val time: String,
     val isUser: Boolean,
