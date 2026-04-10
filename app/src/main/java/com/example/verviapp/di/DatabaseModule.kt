@@ -6,8 +6,10 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.dao.ChatDao
+import com.example.verviapp.data.dao.NotificationDao
 import com.example.verviapp.data.database.AppDatabase
 import com.example.verviapp.data.dao.RequestDao
+import com.example.verviapp.data.dao.ServiceDao
 import com.example.verviapp.data.repository.SampleData
 import dagger.Module
 import dagger.Provides
@@ -18,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Singleton
+
 
 @Module
 @InstallIn(SingletonComponent::class)

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.dao.ServiceDao
 import com.example.verviapp.data.repository.SampleData
-import com.example.verviapp.model.ServiceHistoryItem
+import com.example.verviapp.viewmodel.state.ServiceHistoryItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
