@@ -26,43 +26,47 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+    private var appDatabaseInstance: AppDatabase? = null
+    
     @Singleton
     @Provides
     fun provideAppDatabase(
         @ApplicationContext context: Context
-    ): AppDatabase = Room.databaseBuilder(
-        context,
-        AppDatabase::class.java,
-        AppDatabase.DATABASE_NAME
-    )
-    .addCallback(object : RoomDatabase.Callback() {
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
-            // Se ejecuta UNA SOLA VEZ cuando se crea la BD por primera vez
-            // Inserta datos de muestra en background
-            GlobalScope.launch(Dispatchers.IO) {
-                val database = Room.databaseBuilder(
-                    context,
-                    AppDatabase::class.java,
-                    AppDatabase.DATABASE_NAME
-                ).build()
-                database.userDao().insertUsers(SampleData.sampleUsers)
-                database.userDao().insertCategories(SampleData.sampleCategories)
-                database.userDao().insertUserCategories(SampleData.sampleUserCategories)
-                database.requestDao().insertRequests(SampleData.sampleRequests)
-                database.requestDetailsDao().insertAttachments(SampleData.sampleRequestAttachments)
-                database.chatDao().insertConversations(SampleData.sampleConversations)
-                database.chatDao().insertMessages(SampleData.sampleMessages)
-                database.requestDao().insertRequests(SampleData.sampleRequests)
-                database.serviceDao().insertServices(SampleData.sampleServices)
-                database.serviceDao().insertServiceEvidence(SampleData.sampleServiceEvidence)
-                database.serviceDao().insertReviews(SampleData.sampleReviews)
-                database.notificationDao().insertNotifications(SampleData.sampleNotifications)
-                database.close()
-            }
+    ): AppDatabase {
+        if (appDatabaseInstance != null) {
+            return appDatabaseInstance!!
         }
-    })
-    .build()
+        
+        val instance = Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            AppDatabase.DATABASE_NAME
+        )
+        .fallbackToDestructiveMigration()
+        .addCallback(object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                GlobalScope.launch(Dispatchers.IO) {
+                    val database = appDatabaseInstance ?: return@launch
+                    database.userDao().insertUsers(SampleData.sampleUsers)
+                    database.userDao().insertCategories(SampleData.sampleCategories)
+                    database.userDao().insertUserCategories(SampleData.sampleUserCategories)
+                    database.requestDao().insertRequests(SampleData.sampleRequests)
+                    database.requestDetailsDao().insertAttachments(SampleData.sampleRequestAttachments)
+                    database.chatDao().insertConversations(SampleData.sampleConversations)
+                    database.chatDao().insertMessages(SampleData.sampleMessages)
+                    database.serviceDao().insertServices(SampleData.sampleServices)
+                    database.serviceDao().insertServiceEvidence(SampleData.sampleServiceEvidence)
+                    database.serviceDao().insertReviews(SampleData.sampleReviews)
+                    database.notificationDao().insertNotifications(SampleData.sampleNotifications)
+                }
+            }
+        })
+        .build()
+        
+        appDatabaseInstance = instance
+        return instance
+    }
 
     @Singleton
     @Provides
