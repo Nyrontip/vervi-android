@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.UserWithCategories
-import com.example.verviapp.data.repository.SampleData
+import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.ProfileState
 import com.example.verviapp.viewmodel.state.User
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,13 +21,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
     private val currencyFormatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
-    private var lastRequestedUserId: Int = SampleData.DEMO_PROVIDER_USER_ID
+    private var lastRequestedUserId: Int? = null
     private var profileJob: Job? = null
 
     init {
@@ -35,12 +36,31 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun loadProfile(userId: String? = null) {
-        lastRequestedUserId = userId?.toIntOrNull() ?: SampleData.DEMO_PROVIDER_USER_ID
-        observeProfile(lastRequestedUserId)
+        val requestedUserId = userId?.toIntOrNull() ?: sessionManager.getLoggedInUserId()
+        lastRequestedUserId = requestedUserId
+        if (requestedUserId == null) {
+            profileJob?.cancel()
+            _state.value = _state.value.copy(isLoading = false, user = User())
+            return
+        }
+        observeProfile(requestedUserId)
     }
 
     fun refreshCurrentProfile() {
-        observeProfile(lastRequestedUserId)
+        val userId = lastRequestedUserId ?: return
+        observeProfile(userId)
+    }
+
+    fun getSessionUserId(): Int? = sessionManager.getLoggedInUserId()
+
+    fun canEditProfile(userId: String?): Boolean {
+        val sessionUserId = sessionManager.getLoggedInUserId() ?: return false
+        val requestedUserId = userId?.toIntOrNull()
+        return requestedUserId == null || requestedUserId == sessionUserId
+    }
+
+    fun logout() {
+        sessionManager.clearSession()
     }
 
     private fun observeProfile(userId: Int) {

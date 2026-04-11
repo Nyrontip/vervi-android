@@ -11,22 +11,28 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.state.Service
 import com.example.verviapp.viewmodel.HomeViewModel
+import com.example.verviapp.viewmodel.LoginViewModel
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: HomeViewModel = hiltViewModel(),
+    loginViewModel: LoginViewModel = hiltViewModel()
+) {
     val state by viewModel.state.collectAsState()
+    val hasSession = loginViewModel.hasActiveSession()
 
     Scaffold(
         topBar = {
@@ -35,7 +41,8 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                 onBack = null,
                 actions = {
                     IconButton(onClick = {
-                        navController.navigate("login")
+                        val destination = if (hasSession) "profile" else "login"
+                        navController.navigate(destination)
                     }) {
                         Icon(
                             Icons.Default.Person, contentDescription = "Perfil",
