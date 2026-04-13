@@ -4,6 +4,7 @@ package com.example.verviapp.viewmodel.state
 data class EditProfileState(
     val name: String = "",
     val bio: String = "",
+    val photoUrl: String = "",
     val price: String = "",
     val location: String = "",
     val isProvider: Boolean = false,

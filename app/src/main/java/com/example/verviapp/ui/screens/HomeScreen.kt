@@ -1,6 +1,5 @@
 package com.example.verviapp.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,24 +13,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.verviapp.viewmodel.state.Service
 import com.example.verviapp.viewmodel.HomeViewModel
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }  // estado local de UI
-    var selectedCat by remember { mutableStateOf("Todos") }  // estado local de UI
-    val categorias = listOf("Todos", "Carpintería", "Limpieza", "Electricidad")
-    
+
     Scaffold(
         topBar = {
             VerviTopBar(
@@ -74,9 +70,10 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
 
             // Buscador con ícono de lupa
             VerviSearchField(
-                value         = searchQuery,
-                onValueChange = { searchQuery = it; viewModel.onSearchChange(it) },
-                placeholder   = "¿Qué servicio necesitas?"
+                value = state.searchQuery,
+                onValueChange = viewModel::onSearchChange,
+                placeholder = "¿Qué servicio necesitas?",
+                onSearchClick = viewModel::onSearchDone
             )
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -84,9 +81,9 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
             // VerviChips global — categorías seleccionables con scroll horizontal
             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
                 VerviChips(
-                    opciones = categorias,
-                    selected = selectedCat,
-                    onSelect = { newCat -> selectedCat = newCat; viewModel.onCategoryChange(newCat) }
+                    opciones = state.categories,
+                    selected = state.selectedCategory,
+                    onSelect = viewModel::onCategoryChange
                 )
             }
 
@@ -98,10 +95,24 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = viewMode
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            if (state.isLoading) {
+                VerviLoadingState()
+            }
+
+            if (state.errorMessage != null) {
+                Text(
+                    text = state.errorMessage!!,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             state.services.forEach { servicio ->
                 ServiceCard(
                     servicio = servicio,
-                    onDetalle = { navController.navigate("request/details") }
+                    onDetalle = { navController.navigate("request/details/${servicio.id}") }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -122,8 +133,8 @@ private fun ServiceCard(servicio: Service, onDetalle: () -> Unit) {
         Column {
             // Imagen con badge de precio superpuesto
             Box {
-                Image(
-                    painter            = painterResource(id = servicio.imageRes),
+                AsyncImage(
+                    model = servicio.imageUrl,
                     contentDescription = servicio.title,
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier.fillMaxWidth().height(160.dp)

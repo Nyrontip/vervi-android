@@ -8,5 +8,5 @@ data class Provider(
     val price: String,
     val rating: Float,
     val reviewCount: Int,
-    val imageRes: Int
+    val imageUrl: String
 )
