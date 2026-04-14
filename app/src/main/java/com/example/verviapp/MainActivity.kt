@@ -11,6 +11,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.dialog
 import com.example.verviapp.ui.screens.SplashScreen
 import com.example.verviapp.ui.screens.HomeScreen
 import com.example.verviapp.ui.screens.LoginScreen
@@ -28,11 +29,6 @@ import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
 import com.example.verviapp.ui.screens.ChatScreen
-import com.example.verviapp.ui.screens.LoginScreen
-import com.example.verviapp.ui.screens.ProfileScreen
-import com.example.verviapp.ui.screens.SplashScreen
-import com.example.verviapp.ui.screens.HomeScreen
-import com.example.verviapp.ui.screens.PrestadoresScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -81,11 +77,11 @@ class MainActivity : ComponentActivity() {
                     composable("services/history") {
                         ServiceHistoryScreen(navController)
                     }
-                    composable(
+                    dialog(
                         route = "service/rate/{serviceId}",
                         arguments = listOf(navArgument("serviceId") { type = NavType.IntType })
                     ) { backStackEntry ->
-                        val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: return@composable
+                        val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: return@dialog
                         RateServiceScreen(navController, serviceId)
                     }
                     composable("chat") {
