@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +45,7 @@ import coil.compose.AsyncImage
 import com.example.verviapp.viewmodel.state.RequestItem
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.state.ServiceHistoryItem
+import com.example.verviapp.viewmodel.LoginViewModel
 
 // ════════════════════════════════════════════════════════════
 //  VerviTopBar — barra superior con título centrado
@@ -95,6 +97,8 @@ private data class BottomNavItem(
 )
 @Composable
 fun VerviBottomBar(navController: NavController) {
+    val loginViewModel: LoginViewModel = hiltViewModel()
+    val hasSession = loginViewModel.hasActiveSession()
     val items = listOf(
         BottomNavItem(
             "Inicio",
@@ -114,7 +118,7 @@ fun VerviBottomBar(navController: NavController) {
         BottomNavItem(
             "Perfil",
             Icons.Default.Person,
-            "profile"
+            if (hasSession) "profile" else "login"
         )
     )
 

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.UserEntity
+import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.AuthState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -20,7 +21,8 @@ sealed class AuthEvent {
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthState())
@@ -48,6 +50,8 @@ class LoginViewModel @Inject constructor(
                     )
                     return@launch
                 }
+
+                sessionManager.saveUserSession(user.id)
 
                 _state.value = _state.value.copy(isLoading = false, errorMessage = null)
                 _events.emit(AuthEvent.LoginSuccess)
@@ -102,6 +106,8 @@ class LoginViewModel @Inject constructor(
                     return@launch
                 }
 
+                sessionManager.saveUserSession(insertResult.toInt())
+
                 _state.value = _state.value.copy(isLoading = false, errorMessage = null)
                 _events.emit(AuthEvent.RegisterSuccess)
             } catch (t: Throwable) {
@@ -116,4 +122,6 @@ class LoginViewModel @Inject constructor(
     fun clearError() {
         _state.value = _state.value.copy(errorMessage = null)
     }
+
+    fun hasActiveSession(): Boolean = sessionManager.isLoggedIn()
 }

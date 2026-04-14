@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.dao.CategoryDao
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.UserCategoryCrossRef
-import com.example.verviapp.data.repository.SampleData
+import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.EditProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,20 +20,33 @@ import javax.inject.Inject
 @HiltViewModel
 class EditProfileViewModel @Inject constructor(
     private val userDao: UserDao,
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
-    private val editableUserId = SampleData.DEMO_PROVIDER_USER_ID
     private val currencyFormatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
 
     private val _state = MutableStateFlow(EditProfileState())
     val state: StateFlow<EditProfileState> = _state.asStateFlow()
 
+    private fun editableUserId(): Int? = sessionManager.getLoggedInUserId()
+
+    fun hasActiveSession(): Boolean = editableUserId() != null
+
     fun loadProfileForEdit() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, errorMessage = null)
 
-            val userWithCategories = userDao.getUserWithCategoriesById(editableUserId)
+            val userId = editableUserId()
+            if (userId == null) {
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    errorMessage = "No hay sesión activa"
+                )
+                return@launch
+            }
+
+            val userWithCategories = userDao.getUserWithCategoriesById(userId)
             if (userWithCategories == null) {
                 _state.value = _state.value.copy(
                     isLoading = false,
@@ -96,7 +109,16 @@ class EditProfileViewModel @Inject constructor(
             _state.value = currentState.copy(isSaving = true, errorMessage = null)
 
             try {
-                val currentUser = userDao.getUserById(editableUserId)
+                val userId = editableUserId()
+                if (userId == null) {
+                    _state.value = _state.value.copy(
+                        isSaving = false,
+                        errorMessage = "No hay sesión activa"
+                    )
+                    return@launch
+                }
+
+                val currentUser = userDao.getUserById(userId)
                 if (currentUser == null) {
                     _state.value = _state.value.copy(
                         isSaving = false,
@@ -120,13 +142,13 @@ class EditProfileViewModel @Inject constructor(
                     .filter { it.isNotBlank() }
                     .distinct()
 
-                categoryDao.deleteUserCategoriesByUserId(editableUserId)
+                categoryDao.deleteUserCategoriesByUserId(userId)
                 if (normalizedCategories.isNotEmpty()) {
                     val categories = categoryDao.getCategoriesByNames(normalizedCategories)
                     if (categories.isNotEmpty()) {
                         categoryDao.insertUserCategories(
                             categories.map { category ->
-                                UserCategoryCrossRef(userId = editableUserId, categoryId = category.id)
+                                UserCategoryCrossRef(userId = userId, categoryId = category.id)
                             }
                         )
                     }

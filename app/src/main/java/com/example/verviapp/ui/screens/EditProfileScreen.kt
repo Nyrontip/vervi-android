@@ -37,6 +37,10 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
     var categoryMenuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        if (!viewModel.hasActiveSession()) {
+            navController.popBackStack()
+            return@LaunchedEffect
+        }
         viewModel.loadProfileForEdit()
     }
 

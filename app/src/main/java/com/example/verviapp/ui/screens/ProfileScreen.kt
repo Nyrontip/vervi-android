@@ -30,10 +30,10 @@ import com.example.verviapp.viewmodel.ProfileViewModel
 @Composable
 fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
-    val isExternalProfile = !userId.isNullOrBlank()
+    val canManageProfile = remember(userId) { viewModel.canEditProfile(userId) }
 
     LaunchedEffect(userId) {
-        viewModel.loadProfile(userId)     // null carga el perfil local
+        viewModel.loadProfile(userId)
     }
 
     Scaffold(
@@ -42,7 +42,7 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 title = "Mi Perfil",
                 onBack = { navController.popBackStack() },
                 actions = {
-                    if (!isExternalProfile) {
+                    if (canManageProfile) {
                         IconButton(onClick = { navController.navigate("editProfile") }) {
                             Icon(
                                 Icons.Default.Settings, contentDescription = "Ajustes",
@@ -110,15 +110,22 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Botones Editar / Cerrar sesión ──────────────────
-            if (!isExternalProfile) {
+            if (canManageProfile) {
                 VerviOutlinedButton(
                     text = "Editar Perfil",
                     onClick = { navController.navigate("editProfile") })
                 Spacer(modifier = Modifier.height(8.dp))
                 VerviOutlinedButton(
-                    text = "Cerrar Sesión", onClick = { navController.navigate("login") },
+                    text = "Cerrar Sesión",
+                    onClick = {
+                        viewModel.logout()
+                        navController.navigate("login") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
                     color = Color(0xFFD32F2F)
-                ) 
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
