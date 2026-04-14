@@ -2,7 +2,7 @@ package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
-import com.example.verviapp.R
+import com.example.verviapp.data.dao.CategoryDao
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.UserWithCategories
 import com.example.verviapp.viewmodel.state.Provider
@@ -21,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PrestadoresViewModel @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val categoryDao: CategoryDao
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProvidersState())
@@ -51,7 +52,7 @@ class PrestadoresViewModel @Inject constructor(
     private fun observeCategories() {
         categoriesJob?.cancel()
         categoriesJob = viewModelScope.launch {
-            runCatching { userDao.getCategoryNames() }
+            runCatching { categoryDao.getCategoryNames() }
                 .onSuccess { categories ->
                     _state.value = _state.value.copy(categories = listOf("Todos") + categories)
                 }
@@ -102,7 +103,9 @@ class PrestadoresViewModel @Inject constructor(
             price = formattedPrice,
             rating = user.rating,
             reviewCount = user.reviewCount,
-            imageRes = R.drawable.login_hero
+            imageUrl = user.photoUrl.ifBlank {
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=600&fit=crop"
+            }
         )
     }
 }

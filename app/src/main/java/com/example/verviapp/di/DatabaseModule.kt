@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.verviapp.data.dao.ChatDao
+import com.example.verviapp.data.dao.CategoryDao
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.dao.RequestDetailsDao
 import com.example.verviapp.data.dao.NotificationDao
@@ -33,10 +34,12 @@ object DatabaseModule {
     fun provideAppDatabase(
         @ApplicationContext context: Context
     ): AppDatabase {
+        // Retorna instancia existente si ya fue creada (singleton pattern)
         if (appDatabaseInstance != null) {
             return appDatabaseInstance!!
         }
         
+        // Crea la instancia con callback para inicializar datos de muestra
         val instance = Room.databaseBuilder(
             context,
             AppDatabase::class.java,
@@ -46,11 +49,13 @@ object DatabaseModule {
         .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
+                // Se ejecuta UNA SOLA VEZ cuando se crea la BD por primera vez
+                // Inserta datos de muestra en background
                 GlobalScope.launch(Dispatchers.IO) {
                     val database = appDatabaseInstance ?: return@launch
                     database.userDao().insertUsers(SampleData.sampleUsers)
-                    database.userDao().insertCategories(SampleData.sampleCategories)
-                    database.userDao().insertUserCategories(SampleData.sampleUserCategories)
+                    database.categoryDao().insertCategories(SampleData.sampleCategories)
+                    database.categoryDao().insertUserCategories(SampleData.sampleUserCategories)
                     database.requestDao().insertRequests(SampleData.sampleRequests)
                     database.requestDetailsDao().insertAttachments(SampleData.sampleRequestAttachments)
                     database.chatDao().insertConversations(SampleData.sampleConversations)
@@ -79,6 +84,10 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideUserDao(database: AppDatabase): UserDao = database.userDao()
+
+    @Singleton
+    @Provides
+    fun provideCategoryDao(database: AppDatabase): CategoryDao = database.categoryDao()
 
     @Singleton
     @Provides

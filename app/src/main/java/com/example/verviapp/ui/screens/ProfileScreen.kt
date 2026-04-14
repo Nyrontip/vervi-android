@@ -1,6 +1,5 @@
 package com.example.verviapp.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -17,17 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.ProfileViewModel
-import com.example.verviapp.R
 
 @Composable
 fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = hiltViewModel()) {
@@ -77,8 +75,10 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                     .clip(CircleShape)
                     .border(3.dp, Color.White, CircleShape)
             ) {
-                Image(
-                    painter            = painterResource(id = R.drawable.login_hero),
+                AsyncImage(
+                    model = state.user.photoUrl.ifBlank {
+                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=600&fit=crop"
+                    },
                     contentDescription = "Foto de perfil",
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier.fillMaxSize()

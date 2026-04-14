@@ -3,6 +3,7 @@ package com.example.verviapp.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.verviapp.data.dao.CategoryDao
 import com.example.verviapp.data.dao.UserDao
 import com.example.verviapp.data.entity.UserCategoryCrossRef
 import com.example.verviapp.data.repository.SampleData
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditProfileViewModel @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val categoryDao: CategoryDao
 ) : ViewModel() {
 
     private val editableUserId = SampleData.DEMO_PROVIDER_USER_ID
@@ -41,11 +43,12 @@ class EditProfileViewModel @Inject constructor(
             }
 
             val selectedCategories = userWithCategories.categories.map { it.name }
-            val allCategories = userDao.getCategoryNames()
+            val allCategories = categoryDao.getCategoryNames()
 
             _state.value = _state.value.copy(
                 name = userWithCategories.user.name,
                 bio = userWithCategories.user.bio,
+                photoUrl = userWithCategories.user.photoUrl,
                 price = userWithCategories.user.suggestedPriceCop?.let { currencyFormatter.format(it) } ?: "",
                 location = userWithCategories.user.location,
                 isProvider = userWithCategories.user.isProvider,
@@ -117,11 +120,11 @@ class EditProfileViewModel @Inject constructor(
                     .filter { it.isNotBlank() }
                     .distinct()
 
-                userDao.deleteUserCategoriesByUserId(editableUserId)
+                categoryDao.deleteUserCategoriesByUserId(editableUserId)
                 if (normalizedCategories.isNotEmpty()) {
-                    val categories = userDao.getCategoriesByNames(normalizedCategories)
+                    val categories = categoryDao.getCategoriesByNames(normalizedCategories)
                     if (categories.isNotEmpty()) {
-                        userDao.insertUserCategories(
+                        categoryDao.insertUserCategories(
                             categories.map { category ->
                                 UserCategoryCrossRef(userId = editableUserId, categoryId = category.id)
                             }
