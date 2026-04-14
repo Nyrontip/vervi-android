@@ -1,5 +1,6 @@
 package com.example.verviapp.ui.components
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,7 +11,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ListAlt
@@ -198,7 +201,8 @@ fun VerviTextField(
                 tint = Color(0xFFAAAAAA), modifier = Modifier.size(18.dp))
         }) else null,
         colors          = verviFieldColors(),
-        modifier        = modifier.fillMaxWidth()
+        modifier        = modifier
+            .fillMaxWidth()
     )
 }
 
@@ -230,7 +234,8 @@ fun VerviTextArea(
         minLines      = minLines,
         maxLines      = maxLines,
         colors        = verviFieldColors(),
-        modifier      = modifier.fillMaxWidth()
+        modifier      = modifier
+            .fillMaxWidth(),
     )
 }
 
@@ -518,6 +523,85 @@ fun VerviFooterText(
     )
 }
 
+// ════════════════════════════════════════════════════════════
+//  AttachmentSlot — slot de imagen adjunta con agregar/quitar
+//
+//  Muestra:
+//  - Estado vacío: ícono + texto "Agregar"
+//  - Estado con imagen: preview + botón de eliminar
+//
+//  Uso:
+//    AttachmentSlot(
+//        uri = imageUri,
+//        onAddClick = { pickImage() },
+//        onRemoveClick = { clearImage() }
+//    )
+// ════════════════════════════════════════════════════════════
+@Composable
+fun AttachmentSlot(
+    uri: Uri?,
+    onAddClick: () -> Unit,
+    onRemoveClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape = RoundedCornerShape(10.dp)
+    val slotBorder = BorderStroke(1.dp, VerviColors.BorderGray)
+
+    Box(
+        modifier = modifier
+            .height(96.dp)
+            .clip(shape)
+            .border(slotBorder, shape)
+            .background(if (uri != null) Color(0xFFF5F0E8) else Color(0xFFE8EEF4))
+            .clickable(enabled = uri == null) { onAddClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        if (uri != null) {
+            AsyncImage(
+                model = uri,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(shape),
+                contentScale = ContentScale.Crop
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE53935))
+                    .clickable { onRemoveClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Default.AddPhotoAlternate,
+                    contentDescription = null,
+                    tint = VerviColors.Primary,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Agregar",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = VerviColors.Primary
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun VerviLoadingState(modifier: Modifier = Modifier) {
     Box(
@@ -533,7 +617,7 @@ fun VerviLoadingState(modifier: Modifier = Modifier) {
 // ── verviFieldColors — colores estándar para todos los inputs ──
 @Composable
 private fun verviFieldColors() = OutlinedTextFieldDefaults.colors(
-    unfocusedBorderColor    = Color.Transparent,    // sin borde al perder foco
+    unfocusedBorderColor    = VerviColors.BorderGray,    // sin borde al perder foco
     focusedBorderColor      = VerviColors.Blue,     // borde azul al enfocar
     unfocusedContainerColor = Color.White,
     focusedContainerColor   = Color.White
@@ -675,7 +759,7 @@ fun VerviStatusBadge(
 @Composable
 fun VerviRequestCard(
     navController: NavController,
-    request: com.example.verviapp.viewmodel.state.RequestItem,
+    request: RequestItem,
     modifier: Modifier = Modifier
 ) {
     Row(
