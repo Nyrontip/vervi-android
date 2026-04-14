@@ -342,11 +342,6 @@ fun ChatTopBar(onBack: () -> Unit) {
             Text("Carlos Ruiz", fontWeight = FontWeight.SemiBold, color = VerviColors.TextWhite)
             Text("Proveedor de Limpieza", fontSize = 12.sp, color = VerviColors.TextWhite)
         }
-        IconButtonCircle(
-            Icons.Default.Call,
-            tint = VerviColors.TextWhite
-        ) {}
-        //IconButtonCircle(Icons.Default.MoreVert, tint = VerviColors.TextWhite) {} No es util por ahora
     }
 }
 
