@@ -258,7 +258,7 @@ fun ChatInput(
         ) {
 
             // 📎 Adjuntar (más minimalista)
-            IconButton(
+            /*IconButton(
                 onClick = onAddFile,
                 modifier = Modifier.size(40.dp)
             ) {
@@ -267,7 +267,7 @@ fun ChatInput(
                     contentDescription = "Adjuntar",
                     tint = VerviColors.Primary
                 )
-            }
+            }*/
 
             // ✏️ Input integrado (sin borde duro)
             TextField(
