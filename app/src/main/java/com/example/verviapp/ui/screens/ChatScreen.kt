@@ -75,25 +75,6 @@ fun IconButtonCircle(icon: ImageVector, tint: Color = VerviColors.Primary, onCli
 }
 
 @Composable
-fun MessageBubble(message: String, isUser: Boolean) {
-    val background =
-        if (isUser) VerviColors.Primary.copy(alpha = 0.9f)
-        else VerviColors.BackgroundOther
-
-    val textColor =
-        if (isUser) VerviColors.TextUser
-        else VerviColors.TextOther
-
-    Box(
-        modifier = Modifier
-            .background(background, shape = RoundedCornerShape(18.dp))
-            .padding(horizontal = 14.dp, vertical = 10.dp)
-    ) {
-        Text(text = message, color = textColor, fontSize = 15.sp)
-    }
-}
-
-@Composable
 fun AttachmentMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
@@ -247,7 +228,7 @@ fun ChatInput(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = 5.dp),
         shape = RoundedCornerShape(28.dp),
         tonalElevation = 3.dp,
         color = VerviColors.InputBackground
@@ -320,6 +301,7 @@ fun ChatTopBar(onBack: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(VerviColors.Primary)
+            .statusBarsPadding()
             .padding(vertical = 4.dp, horizontal = 5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -353,10 +335,13 @@ fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modi
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         reverseLayout = false
     ) {
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
         items(
             items = messages,
             key = { it.hashCode() }
@@ -378,29 +363,41 @@ fun ChatScreen(
 
     val messages = state.messages
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .background(VerviColors.BgColor)
-    ) {
-        ChatTopBar { navController.popBackStack() }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = VerviColors.BgColor,
+        topBar = {
+            ChatTopBar { navController.popBackStack() }
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .imePadding()
+            ) {
+                AttachmentMenu(
+                    expanded = state.showAttachments,
+                    onDismiss = { viewModel.toggleAttachments() },
+                    onGallery = { viewModel.toggleAttachments() },
+                    onCamera = { viewModel.toggleAttachments() },
+                    onFile = { viewModel.toggleAttachments() }
+                )
+                ChatInput(
+                    text = state.inputText,
+                    onTextChange = { viewModel.onInputChange(it) },
+                    onSend = { viewModel.sendMessage() },
+                    onAddFile = { viewModel.toggleAttachments() }
+                )
+            }
+        }
+    ) { innerPadding ->
         ChatMessagesList(
             messages = messages,
-            modifier = Modifier.weight(1f)
-        )
-        AttachmentMenu(
-            expanded = state.showAttachments,
-            onDismiss = { viewModel.toggleAttachments() },
-            onGallery = { viewModel.toggleAttachments() },
-            onCamera = { viewModel.toggleAttachments() },
-            onFile = { viewModel.toggleAttachments() }
-        )
-        ChatInput(
-            text = state.inputText,
-            onTextChange = { viewModel.onInputChange(it) },
-            onSend = { viewModel.sendMessage() },
-            onAddFile = { viewModel.toggleAttachments() }
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
         )
     }
 }
