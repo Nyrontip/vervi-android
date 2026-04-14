@@ -1,19 +1,6 @@
-package com.example.verviapp.model
+package com.example.verviapp.viewmodel.state
 
-data class ClientSummary(
-    val name: String,
-    val rating: Float?,
-    val location: String,
-    val phone: String?,
-    val avatarUrl: String?
-)
-
-data class ChatSummary(
-    val lastMessage: String,
-    val unreadCount: Int
-)
-
-data class RequestDetail(
+data class RequestDetailItem(
     val id: String,
     val title: String,
     val date: String,

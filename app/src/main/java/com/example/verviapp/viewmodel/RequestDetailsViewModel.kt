@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.dao.RequestDetailsDao
 import com.example.verviapp.data.repository.SampleData
-import com.example.verviapp.model.ChatSummary
-import com.example.verviapp.model.ClientSummary
-import com.example.verviapp.model.RequestDetail
+import com.example.verviapp.viewmodel.state.ChatSummary
+import com.example.verviapp.viewmodel.state.ClientSummary
+import com.example.verviapp.viewmodel.state.RequestDetailItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +19,7 @@ import javax.inject.Inject
 data class RequestDetailsUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val request: RequestDetail? = null
+    val request: RequestDetailItem? = null
 )
 
 @HiltViewModel
@@ -56,7 +56,7 @@ class RequestDetailsViewModel @Inject constructor(
                 val clientEntity = request.clientUserId?.let { requestDetailsDao.getUserById(it) }
                 val conversation = requestDetailsDao.getConversationByRequestId(request.id)
 
-                val data = RequestDetail(
+                val data = RequestDetailItem(
                     id = request.id.toString(),
                     title = request.title,
                     date = request.date,

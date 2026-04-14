@@ -85,7 +85,7 @@ fun VerviNotificationCard(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .offset(x = 2.dp, y = (-2).dp)
+                        .offset(x = -2.dp, y = (2).dp)
                         .size(10.dp)
                         .background(VerviColors.OrangeSecondary, CircleShape)
                         .border(2.dp, VerviColors.TextWhite, CircleShape)

@@ -37,7 +37,7 @@ import com.example.verviapp.data.entity.UserEntity
         MessageEntity::class,
         NotificationEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

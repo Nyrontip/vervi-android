@@ -5,8 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.dao.ChatDao
 import com.example.verviapp.data.entity.MessageEntity
 import com.example.verviapp.data.repository.SampleData
+import com.example.verviapp.viewmodel.state.ChatMessageState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import com.example.verviapp.model.ChatMessageState
+import com.example.verviapp.viewmodel.state.ChatUiState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,14 +20,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-data class ChatUiState(
-	val messages: List<ChatMessageState> = emptyList(),
-	val inputText: String = "",
-	val showAttachments: Boolean = false,
-	val isLoading: Boolean = false,
-	val isSending: Boolean = false,
-	val error: String? = null
-)
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(

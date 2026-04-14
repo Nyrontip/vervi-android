@@ -23,7 +23,6 @@ data class UserEntity(
     val isProvider: Boolean = false,
     val projectCount: Int = 0,
     val requestCount: Int = 0,
-    val isOnline: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

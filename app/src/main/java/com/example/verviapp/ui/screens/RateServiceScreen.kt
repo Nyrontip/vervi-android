@@ -1,13 +1,13 @@
 package com.example.verviapp.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,6 +18,7 @@ import com.example.verviapp.viewmodel.RateServiceEvent
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,7 +27,6 @@ import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import android.net.Uri
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 
@@ -47,57 +47,6 @@ fun VerviAvatar(
             .size(size)
             .clip(CircleShape)
     )
-}
-
-// Upload Card reutilizable
-@Composable
-fun VerviUploadCard(
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                1.5.dp,
-                VerviColors.BorderGray,
-                RoundedCornerShape(12.dp)
-            )
-            .clickable { onClick() }
-            .padding(vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(VerviColors.Primary.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.AddAPhoto,
-                contentDescription = null,
-                tint = VerviColors.Primary
-            )
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = title,
-            fontSize = 14.sp,
-            color = VerviColors.TextPrimary
-        )
-
-        Text(
-            text = subtitle,
-            fontSize = 12.sp,
-            color = VerviColors.TextSecondary
-        )
-    }
 }
 
 // Rating interactivo
@@ -134,8 +83,8 @@ fun VerviInteractiveRating(
 @Composable
 fun RatingBottomSheet(
     navController: NavController,
-    launcher: ManagedActivityResultLauncher<String, Uri?>,
-    viewModel: RateServiceViewModel
+    viewModel: RateServiceViewModel,
+    onPickImage: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -144,12 +93,11 @@ fun RatingBottomSheet(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-            .background(VerviColors.BottomSheetBackground)
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
+            .imePadding()
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
-
-        // Handle
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -207,13 +155,19 @@ fun RatingBottomSheet(
 
         Spacer(Modifier.height(20.dp))
 
-        // Upload
-        VerviUploadCard(
-            title = "Adjuntar imagen de evidencia",
-            subtitle = "Sube una foto del servicio realizado (Opcional)",
-            onClick = {
-                launcher.launch("image/*")
-            }
+        Text(
+            text = "EVIDENCIA (OPCIONAL)",
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            color = VerviColors.TextSecondary,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(6.dp))
+        AttachmentSlot(
+            uri = uiState.imageUri?.let(Uri::parse),
+            onAddClick = onPickImage,
+            onRemoveClick = { viewModel.onAttachImage(null) },
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(Modifier.height(24.dp))
@@ -247,9 +201,11 @@ fun RatingBottomSheet(
 // 🔹 SCREEN
 // ----------------------------
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RateServiceScreen(navController: NavController, serviceId: Int) {
     val viewModel: RateServiceViewModel = hiltViewModel()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(serviceId) {
         viewModel.load(serviceId)
@@ -269,30 +225,18 @@ fun RateServiceScreen(navController: NavController, serviceId: Int) {
         viewModel.onAttachImage(uri?.toString())
     }
 
-    Scaffold(
-        containerColor = VerviColors.BackgroundLight
-    ) { padding ->
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-
-            // Overlay
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(VerviColors.Overlay)
-            )
-
-            // BottomSheet
-                Box(
-                    modifier = Modifier.align(Alignment.BottomCenter)
-                ) {
-                    RatingBottomSheet(navController, launcher, viewModel)
-                }
-        }
+    ModalBottomSheet(
+        onDismissRequest = { navController.popBackStack() },
+        sheetState = sheetState,
+        containerColor = VerviColors.BottomSheetBackground,
+        scrimColor = VerviColors.Overlay,
+        sheetMaxWidth = Dp.Unspecified
+    ) {
+        RatingBottomSheet(
+            navController = navController,
+            viewModel = viewModel,
+            onPickImage = { launcher.launch("image/*") }
+        )
     }
 }
 
