@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Star
@@ -144,12 +146,11 @@ fun RatingBottomSheet(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-            .background(VerviColors.BottomSheetBackground)
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
+            .imePadding()
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
-
-        // Handle
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -247,9 +248,12 @@ fun RatingBottomSheet(
 // 🔹 SCREEN
 // ----------------------------
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RateServiceScreen(navController: NavController, serviceId: Int) {
     val viewModel: RateServiceViewModel = hiltViewModel()
+    var showBottomSheet by remember { mutableStateOf(true) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(serviceId) {
         viewModel.load(serviceId)
@@ -258,7 +262,7 @@ fun RateServiceScreen(navController: NavController, serviceId: Int) {
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             if (event is RateServiceEvent.Submitted) {
-                navController.popBackStack()
+                showBottomSheet = false
             }
         }
     }
@@ -269,29 +273,18 @@ fun RateServiceScreen(navController: NavController, serviceId: Int) {
         viewModel.onAttachImage(uri?.toString())
     }
 
-    Scaffold(
-        containerColor = VerviColors.BackgroundLight
-    ) { padding ->
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showBottomSheet = false
+                navController.popBackStack()
+            },
+            sheetState = sheetState,
+            containerColor = VerviColors.BottomSheetBackground,
+            scrimColor = VerviColors.Overlay,
+            sheetMaxWidth = Dp.Unspecified
         ) {
-
-            // Overlay
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(VerviColors.Overlay)
-            )
-
-            // BottomSheet
-                Box(
-                    modifier = Modifier.align(Alignment.BottomCenter)
-                ) {
-                    RatingBottomSheet(navController, launcher, viewModel)
-                }
+            RatingBottomSheet(navController, launcher, viewModel)
         }
     }
 }
