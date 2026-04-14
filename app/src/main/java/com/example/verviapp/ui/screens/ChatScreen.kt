@@ -36,6 +36,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.scaleIn
+import com.example.verviapp.viewmodel.state.ChatMessageState
 
 // ---------- ATOMS ----------
 
@@ -155,7 +156,7 @@ fun AttachmentItem(
 }
 
 @Composable
-fun ChatMessageItem(message: com.example.verviapp.model.ChatMessageState) {
+fun ChatMessageItem(message: ChatMessageState) {
 
     val alignment =
         if (message.isUser) Arrangement.End else Arrangement.Start
@@ -331,11 +332,11 @@ fun ChatTopBar(onBack: () -> Unit) {
             Avatar(
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuBbXJ6mwDBe7aVLNNLYT3qvuXHAzHznWBIhM55cvQSvU3-8xDX56fHQDumSJVMqGfoYWmwPoX4mSuQWf4VALZUafhYNLfT4pb--W3VdnHpbdtPORb_0_2LyxIII_-1wFKn0AjefyIk25IPTNcdTGF-vr3HOEcEuuPyi2AW9ZjRRMgwr04DSwDnUxNB35QZ4HzznnUcv80f768GU2yLXN1lnsoOHF1yKM8_DM4NX6MSHXjeBbTTRZS2fIU5_kRzqGaM830P3vJKh7akT"
             )
-            StatusDot(
+            /*StatusDot(
                 modifier = Modifier.align(
                     Alignment.BottomEnd
                 )
-            )
+            )¨*/
         }
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f)) {
@@ -348,7 +349,7 @@ fun ChatTopBar(onBack: () -> Unit) {
 // ---------- MESSAGES LIST ----------
 
 @Composable
-fun ChatMessagesList(messages: List<com.example.verviapp.model.ChatMessageState>, modifier: Modifier = Modifier) {
+fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
