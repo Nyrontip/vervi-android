@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 // Data Class
 // -----------------------------
 data class RequestItem(
+    val id: Int,
     val status: String,
     val statusColor: Color,
     val title: String,
@@ -124,6 +125,7 @@ fun RequestsScreen(navController: NavController) {
 // -----------------------------
 val sampleRequests = listOf(
     RequestItem(
+        id = 1,
         status = "En curso",
         statusColor = Color(0xFF10B981),
         title = "Mantenimiento de Aire Acondicionado",
@@ -134,6 +136,7 @@ val sampleRequests = listOf(
         secondaryIcon = Icons.Default.MoreHoriz
     ),
     RequestItem(
+        id = 2,
         status = "Pendiente",
         statusColor = Color(0xFFF59E0B),
         title = "Clase Particular de Matemáticas",
@@ -144,6 +147,7 @@ val sampleRequests = listOf(
         secondaryIcon = Icons.Default.MoreHoriz
     ),
     RequestItem(
+        id = 3,
         status = "Borrador",
         statusColor = Color.Gray,
         title = "Reparación de Fuga de Agua",

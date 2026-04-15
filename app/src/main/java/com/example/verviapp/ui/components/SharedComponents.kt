@@ -696,7 +696,7 @@ fun VerviRequestCard(
                     VerviSmallButton(
                         text = "Confirmar",
                         color = VerviColors.Primary,
-                        onClick = { navController.navigate("request/confirm") },
+                        onClick = { navController.navigate("request/confirm/${request.id}") },
                         modifier = Modifier.weight(1f)
                     )
                 }

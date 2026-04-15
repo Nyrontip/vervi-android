@@ -5,8 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.verviapp.ui.theme.VerviAppTheme
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import com.example.verviapp.ui.screens.ApplyForServiceScreen
 import com.example.verviapp.ui.screens.EditProfileScreen
@@ -79,8 +82,12 @@ class MainActivity : ComponentActivity() {
                     composable("request/cancel") {
                         RequestCancelScreen(navController)
                     }
-                    composable("request/confirm") {
-                        RequestConfirmScreen(navController)
+                    dialog(
+                        route = "request/confirm/{requestId}",
+                        arguments = listOf(navArgument("requestId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
+                        RequestConfirmScreen(navController, requestId)
                     }
                     composable("service/details") {
                         ServiceDetailsScreen(navController)
