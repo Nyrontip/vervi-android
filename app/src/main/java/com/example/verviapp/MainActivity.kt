@@ -93,8 +93,12 @@ class MainActivity : ComponentActivity() {
                     composable("request/details/{requestId}") {
                         RequestDetailsScreen(navController)
                     }
-                    composable("request/cancel") {
-                        RequestCancelScreen(navController)
+                    dialog(
+                        route = "request/cancel/{requestId}",
+                        arguments = listOf(navArgument("requestId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
+                        RequestCancelScreen(navController, requestId)
                     }
                     composable("request/confirm") {
                         RequestConfirmScreen(navController)
