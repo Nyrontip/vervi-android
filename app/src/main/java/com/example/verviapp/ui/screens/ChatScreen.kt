@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.verviapp.viewmodel.ChatViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +36,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.scaleIn
+import com.example.verviapp.viewmodel.state.ChatMessageState
 
 // ---------- ATOMS ----------
 
@@ -72,34 +75,6 @@ fun IconButtonCircle(icon: ImageVector, tint: Color = VerviColors.Primary, onCli
 }
 
 @Composable
-fun MessageBubble(message: String, isUser: Boolean) {
-    val background =
-        if (isUser) VerviColors.Primary.copy(alpha = 0.9f)
-        else VerviColors.BackgroundOther
-
-    val textColor =
-        if (isUser) VerviColors.TextUser
-        else VerviColors.TextOther
-
-    Box(
-        modifier = Modifier
-            .background(background, shape = RoundedCornerShape(18.dp))
-            .padding(horizontal = 14.dp, vertical = 10.dp)
-    ) {
-        Text(text = message, color = textColor, fontSize = 15.sp)
-    }
-}
-
-// ---------- MODULES ----------
-
-data class ChatMessage(
-    val text: String,
-    val time: String,
-    val isUser: Boolean,
-    val avatar: String? = null
-)
-
-@Composable
 fun AttachmentMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
@@ -122,9 +97,21 @@ fun AttachmentMenu(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-            AttachmentItem("Galería", Icons.Default.Image, onGallery)
-            AttachmentItem("Cámara", Icons.Default.CameraAlt, onCamera)
-            AttachmentItem("Archivo", Icons.Default.InsertDriveFile, onFile)
+            AttachmentItem(
+                "Galería",
+                Icons.Default.Image,
+                onGallery
+            )
+            AttachmentItem(
+                "Cámara",
+                Icons.Default.CameraAlt,
+                onCamera
+            )
+            AttachmentItem(
+                "Archivo",
+                Icons.Default.InsertDriveFile,
+                onFile
+            )
         }
     }
 }
@@ -150,7 +137,7 @@ fun AttachmentItem(
 }
 
 @Composable
-fun ChatMessageItem(message: ChatMessage) {
+fun ChatMessageItem(message: ChatMessageState) {
 
     val alignment =
         if (message.isUser) Arrangement.End else Arrangement.Start
@@ -241,7 +228,7 @@ fun ChatInput(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = 5.dp),
         shape = RoundedCornerShape(28.dp),
         tonalElevation = 3.dp,
         color = VerviColors.InputBackground
@@ -253,7 +240,7 @@ fun ChatInput(
         ) {
 
             // 📎 Adjuntar (más minimalista)
-            IconButton(
+            /*IconButton(
                 onClick = onAddFile,
                 modifier = Modifier.size(40.dp)
             ) {
@@ -262,7 +249,7 @@ fun ChatInput(
                     contentDescription = "Adjuntar",
                     tint = VerviColors.Primary
                 )
-            }
+            }*/
 
             // ✏️ Input integrado (sin borde duro)
             TextField(
@@ -314,38 +301,47 @@ fun ChatTopBar(onBack: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(VerviColors.Primary)
+            .statusBarsPadding()
             .padding(vertical = 4.dp, horizontal = 5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButtonCircle(Icons.Default.ArrowBack, tint = VerviColors.TextWhite) { onBack() }
+        IconButtonCircle(
+            Icons.Default.ArrowBack,
+            tint = VerviColors.TextWhite
+        ) { onBack() }
         Spacer(Modifier.width(8.dp))
         Box {
             Avatar(
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuBbXJ6mwDBe7aVLNNLYT3qvuXHAzHznWBIhM55cvQSvU3-8xDX56fHQDumSJVMqGfoYWmwPoX4mSuQWf4VALZUafhYNLfT4pb--W3VdnHpbdtPORb_0_2LyxIII_-1wFKn0AjefyIk25IPTNcdTGF-vr3HOEcEuuPyi2AW9ZjRRMgwr04DSwDnUxNB35QZ4HzznnUcv80f768GU2yLXN1lnsoOHF1yKM8_DM4NX6MSHXjeBbTTRZS2fIU5_kRzqGaM830P3vJKh7akT"
             )
-            StatusDot(modifier = Modifier.align(Alignment.BottomEnd))
+            /*StatusDot(
+                modifier = Modifier.align(
+                    Alignment.BottomEnd
+                )
+            )¨*/
         }
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f)) {
             Text("Carlos Ruiz", fontWeight = FontWeight.SemiBold, color = VerviColors.TextWhite)
             Text("Proveedor de Limpieza", fontSize = 12.sp, color = VerviColors.TextWhite)
         }
-        IconButtonCircle(Icons.Default.Call, tint = VerviColors.TextWhite) {}
-        //IconButtonCircle(Icons.Default.MoreVert, tint = VerviColors.TextWhite) {} No es util por ahora
     }
 }
 
 // ---------- MESSAGES LIST ----------
 
 @Composable
-fun ChatMessagesList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
+fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         reverseLayout = false
     ) {
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
         items(
             items = messages,
             key = { it.hashCode() }
@@ -358,53 +354,50 @@ fun ChatMessagesList(messages: List<ChatMessage>, modifier: Modifier = Modifier)
 // ---------- SCREEN ----------
 
 @Composable
-fun ChatScreen(navController: NavController) {
-    var showAttachments by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
+fun ChatScreen(
+    navController: NavController,
+    viewModel: ChatViewModel = hiltViewModel()
+) {
 
-    val messages = remember {
-        mutableStateListOf(
-            ChatMessage(
-                "Hola, ¿en qué puedo ayudarte hoy?",
-                "09:12 AM",
-                false,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuDRoJbuz12pcHLb_QstqeS_pEkfsnOEmftV2Ed727AU3t7bOSHjkSfmCY2JfVePqvopofXX7vTDuvAtMCWbilnFLg_UteSicoAczML_D9PBjI0u3D_lCZ-2105dT2Mwv4OwMnkAO0CpuprG8o6wkdVqagwkTNqWhUPtwj3dZv7Vrx1mEuxbBl4UEjgLoTuGsL33f_JCbYv5gu00GBxBjHtqO18o4EutH2iWhrnjS8BqynnfujcsdMGAbM7C8sUbaRuSwpja0lZrAMUJ"
-            ),
-            ChatMessage(
-                "Hola Carlos, necesito una cotización para limpieza.",
-                "09:15 AM",
-                true
-            )
-        )
-    }
+    val state by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .background(VerviColors.BgColor)
-    ) {
-        ChatTopBar { navController.popBackStack() }
-        ChatMessagesList(messages = messages, modifier = Modifier.weight(1f))
-        AttachmentMenu(
-            expanded = showAttachments,
-            onDismiss = { showAttachments = false },
-            onGallery = { showAttachments = false },
-            onCamera = { showAttachments = false },
-            onFile = { showAttachments = false }
-        )
-        ChatInput(
-            text = text,
-            onTextChange = { text = it },
-            onSend = {
-                if (text.isNotBlank()) {
-                    messages.add(ChatMessage(text, "Ahora", true))
-                    text = ""
-                }
-            },
-            onAddFile = {
-                showAttachments = !showAttachments
+    val messages = state.messages
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = VerviColors.BgColor,
+        topBar = {
+            ChatTopBar { navController.popBackStack() }
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .imePadding()
+            ) {
+                AttachmentMenu(
+                    expanded = state.showAttachments,
+                    onDismiss = { viewModel.toggleAttachments() },
+                    onGallery = { viewModel.toggleAttachments() },
+                    onCamera = { viewModel.toggleAttachments() },
+                    onFile = { viewModel.toggleAttachments() }
+                )
+                ChatInput(
+                    text = state.inputText,
+                    onTextChange = { viewModel.onInputChange(it) },
+                    onSend = { viewModel.sendMessage() },
+                    onAddFile = { viewModel.toggleAttachments() }
+                )
             }
+        }
+    ) { innerPadding ->
+        ChatMessagesList(
+            messages = messages,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
         )
     }
 }

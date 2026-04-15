@@ -1,20 +1,24 @@
 package com.example.verviapp.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.verviapp.viewmodel.RateServiceViewModel
+import com.example.verviapp.viewmodel.RateServiceEvent
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,18 +27,8 @@ import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import android.net.Uri
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-
-// ----------------------------
-// DATA
-// ----------------------------
-
-data class Provider(
-    val name: String,
-    val avatarUrl: String
-)
 
 // ----------------------------
 // 🔹 NUEVOS COMPONENTES REUTILIZABLES
@@ -53,57 +47,6 @@ fun VerviAvatar(
             .size(size)
             .clip(CircleShape)
     )
-}
-
-// Upload Card reutilizable
-@Composable
-fun VerviUploadCard(
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                1.5.dp,
-                VerviColors.BorderGray,
-                RoundedCornerShape(12.dp)
-            )
-            .clickable { onClick() }
-            .padding(vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(VerviColors.Primary.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.AddAPhoto,
-                contentDescription = null,
-                tint = VerviColors.Primary
-            )
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = title,
-            fontSize = 14.sp,
-            color = VerviColors.TextPrimary
-        )
-
-        Text(
-            text = subtitle,
-            fontSize = 12.sp,
-            color = VerviColors.TextSecondary
-        )
-    }
 }
 
 // Rating interactivo
@@ -140,23 +83,21 @@ fun VerviInteractiveRating(
 @Composable
 fun RatingBottomSheet(
     navController: NavController,
-    provider: Provider,
-    launcher: ManagedActivityResultLauncher<String, Uri?>
+    viewModel: RateServiceViewModel,
+    onPickImage: () -> Unit
 ) {
 
-    var rating by remember { mutableStateOf(4) }
-    var comment by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-            .background(VerviColors.BottomSheetBackground)
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
+            .imePadding()
             .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
-
-        // Handle
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -177,12 +118,12 @@ fun RatingBottomSheet(
         // Header
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-            VerviAvatar(provider.avatarUrl)
+            VerviAvatar(uiState.counterpartAvatarUrl)
 
             Spacer(Modifier.height(12.dp))
 
             Text(
-                text = "Calificar a ${provider.name}",
+                text = "Calificar a ${uiState.counterpartName}",
                 fontSize = 20.sp,
                 color = VerviColors.TextPrimary
             )
@@ -198,8 +139,8 @@ fun RatingBottomSheet(
 
         // Rating
         VerviInteractiveRating(
-            rating = rating,
-            onRatingSelected = { rating = it }
+            rating = uiState.rating,
+            onRatingSelected = { viewModel.onRatingSelected(it) }
         )
 
         Spacer(Modifier.height(24.dp))
@@ -207,28 +148,38 @@ fun RatingBottomSheet(
         // Comentario
         VerviTextArea(
             label = "Comentario opcional",
-            value = comment,
-            onValueChange = { comment = it },
+            value = uiState.comment,
+            onValueChange = { viewModel.onCommentChange(it) },
             placeholder = "Escribe tu experiencia..."
         )
 
         Spacer(Modifier.height(20.dp))
 
-        // Upload
-        VerviUploadCard(
-            title = "Adjuntar imagen de evidencia",
-            subtitle = "Sube una foto del servicio realizado (Opcional)",
-            onClick = {
-                launcher.launch("image/*")
-            }
+        Text(
+            text = "EVIDENCIA (OPCIONAL)",
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            color = VerviColors.TextSecondary,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(6.dp))
+        AttachmentSlot(
+            uri = uiState.imageUri?.let(Uri::parse),
+            onAddClick = onPickImage,
+            onRemoveClick = { viewModel.onAttachImage(null) },
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(Modifier.height(24.dp))
 
         // Botón principal
         VerviButton(
-            text = "Enviar calificación",
-            onClick = { navController.popBackStack() }
+            text = if (uiState.isSubmitting) "Enviando..." else "Enviar calificación",
+            onClick = {
+                if (!uiState.isSubmitting && !uiState.isLoading) {
+                    viewModel.submitRating()
+                }
+            },
         )
 
         // Omitir
@@ -250,44 +201,43 @@ fun RatingBottomSheet(
 // 🔹 SCREEN
 // ----------------------------
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RateServiceScreen(navController: NavController) {
-    val imageUri = remember { mutableStateOf<Uri?>(null) }
+fun RateServiceScreen(navController: NavController, serviceId: Int) {
+    val viewModel: RateServiceViewModel = hiltViewModel()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(serviceId) {
+        viewModel.load(serviceId)
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            if (event is RateServiceEvent.Submitted) {
+                navController.popBackStack()
+            }
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri.value = uri
+        viewModel.onAttachImage(uri?.toString())
     }
 
-    val provider = Provider(
-        name = "Juan Pérez",
-        avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuANtCUGY5nCwclrXbDrVX1FXXyOT6BJpuuUGLpmbLbk42YEKjQAy_ymEJ5jfZdYfq1-FYGyJIIudW5w7gyrr79NnCrNbTCmNw39HgpwYsd_ZjQaJc8JJULFyYUFaL3mixnNaS1wVy3cNywMdeb3zihM5nHn3-XG4FU5Xaem20N0MOE3oHUXHxunqolzDdGPGVpIDkHvI2yz-KCo9GCmy-dKbxw5v6GHcZX53nbvfpn8TQGvg07GZd8aw8Jk8QO4LEKPfZBjVSgLhMdh"
-    )
-
-    Scaffold(
-        containerColor = VerviColors.BackgroundLight
-    ) { padding ->
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-
-            // Overlay
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(VerviColors.Overlay)
-            )
-
-            // BottomSheet
-            Box(
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ) {
-                RatingBottomSheet(navController, provider, launcher)
-            }
-        }
+    ModalBottomSheet(
+        onDismissRequest = { navController.popBackStack() },
+        sheetState = sheetState,
+        containerColor = VerviColors.BottomSheetBackground,
+        scrimColor = VerviColors.Overlay,
+        sheetMaxWidth = Dp.Unspecified
+    ) {
+        RatingBottomSheet(
+            navController = navController,
+            viewModel = viewModel,
+            onPickImage = { launcher.launch("image/*") }
+        )
     }
 }
+
+

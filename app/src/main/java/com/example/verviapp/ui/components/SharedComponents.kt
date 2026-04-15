@@ -1,5 +1,6 @@
 package com.example.verviapp.ui.components
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,25 +11,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -40,9 +45,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.wear.compose.navigation.currentBackStackEntryAsState
 import coil.compose.AsyncImage
-import com.example.verviapp.ui.screens.RequestItem
+import com.example.verviapp.viewmodel.state.RequestItem
 import com.example.verviapp.ui.theme.VerviColors
-import com.example.verviapp.model.ServiceHistoryItem
+import com.example.verviapp.viewmodel.state.ServiceHistoryItem
+import com.example.verviapp.viewmodel.LoginViewModel
 
 // ════════════════════════════════════════════════════════════
 //  VerviTopBar — barra superior con título centrado
@@ -94,11 +100,29 @@ private data class BottomNavItem(
 )
 @Composable
 fun VerviBottomBar(navController: NavController) {
+    val loginViewModel: LoginViewModel = hiltViewModel()
+    val hasSession = loginViewModel.hasActiveSession()
     val items = listOf(
-        BottomNavItem("Inicio",      Icons.Default.Home, "home"),
-        BottomNavItem("Solicitudes", Icons.Default.ListAlt, "requests/management"),
-        BottomNavItem("Historial",   Icons.Default.History, "services/history"),
-        BottomNavItem("Perfil",      Icons.Default.Person, "profile")
+        BottomNavItem(
+            "Inicio",
+            Icons.Default.Home,
+            "home"
+        ),
+        BottomNavItem(
+            "Solicitudes",
+            Icons.Default.ListAlt,
+            "requests/management"
+        ),
+        BottomNavItem(
+            "Historial",
+            Icons.Default.History,
+            "services/history"
+        ),
+        BottomNavItem(
+            "Perfil",
+            Icons.Default.Person,
+            if (hasSession) "profile" else "login"
+        )
     )
 
 // Observa el backStack del NavController
@@ -177,7 +201,8 @@ fun VerviTextField(
                 tint = Color(0xFFAAAAAA), modifier = Modifier.size(18.dp))
         }) else null,
         colors          = verviFieldColors(),
-        modifier        = modifier.fillMaxWidth()
+        modifier        = modifier
+            .fillMaxWidth()
     )
 }
 
@@ -209,7 +234,8 @@ fun VerviTextArea(
         minLines      = minLines,
         maxLines      = maxLines,
         colors        = verviFieldColors(),
-        modifier      = modifier.fillMaxWidth()
+        modifier      = modifier
+            .fillMaxWidth(),
     )
 }
 
@@ -266,7 +292,7 @@ fun VerviSearchField(
     onValueChange: (String) -> Unit,
     placeholder: String = "Buscar...",
     modifier: Modifier = Modifier,
-    leadingIcon: ImageVector? = null
+    onSearchClick: (() -> Unit)? = null
 ) {
     OutlinedTextField(
         value           = value,
@@ -274,9 +300,17 @@ fun VerviSearchField(
         placeholder     = { Text(placeholder, color = Color(0xFFAAAAAA), fontSize = 14.sp) },
         singleLine      = true,
         shape           = RoundedCornerShape(16.dp),                    // más redondeado que inputs de form
-        leadingIcon     = if (leadingIcon != null) ({
-            Icon(leadingIcon, contentDescription = null, tint = Color(0xFFAAAAAA),modifier = Modifier.size(20.dp))
+        trailingIcon    = if (onSearchClick != null) ({
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    tint = VerviColors.Blue,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }) else null,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         colors          = verviFieldColors(),
         textStyle     = LocalTextStyle.current.copy(fontSize = 14.sp),
         modifier      = modifier
@@ -489,10 +523,101 @@ fun VerviFooterText(
     )
 }
 
+// ════════════════════════════════════════════════════════════
+//  AttachmentSlot — slot de imagen adjunta con agregar/quitar
+//
+//  Muestra:
+//  - Estado vacío: ícono + texto "Agregar"
+//  - Estado con imagen: preview + botón de eliminar
+//
+//  Uso:
+//    AttachmentSlot(
+//        uri = imageUri,
+//        onAddClick = { pickImage() },
+//        onRemoveClick = { clearImage() }
+//    )
+// ════════════════════════════════════════════════════════════
+@Composable
+fun AttachmentSlot(
+    uri: Uri?,
+    onAddClick: () -> Unit,
+    onRemoveClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape = RoundedCornerShape(10.dp)
+    val slotBorder = BorderStroke(1.dp, VerviColors.BorderGray)
+
+    Box(
+        modifier = modifier
+            .height(96.dp)
+            .clip(shape)
+            .border(slotBorder, shape)
+            .background(if (uri != null) Color(0xFFF5F0E8) else Color(0xFFE8EEF4))
+            .clickable(enabled = uri == null) { onAddClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        if (uri != null) {
+            AsyncImage(
+                model = uri,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(shape),
+                contentScale = ContentScale.Crop
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE53935))
+                    .clickable { onRemoveClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Default.AddPhotoAlternate,
+                    contentDescription = null,
+                    tint = VerviColors.Primary,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Agregar",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = VerviColors.Primary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun VerviLoadingState(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = VerviColors.Blue)
+    }
+}
+
 // ── verviFieldColors — colores estándar para todos los inputs ──
 @Composable
 private fun verviFieldColors() = OutlinedTextFieldDefaults.colors(
-    unfocusedBorderColor    = Color.Transparent,    // sin borde al perder foco
+    unfocusedBorderColor    = VerviColors.BorderGray,    // sin borde al perder foco
     focusedBorderColor      = VerviColors.Blue,     // borde azul al enfocar
     unfocusedContainerColor = Color.White,
     focusedContainerColor   = Color.White
@@ -681,7 +806,7 @@ fun VerviRequestCard(
                     VerviSmallButton(
                         text = "Eliminar",
                         color = VerviColors.CancelRed,
-                        onClick = { navController.navigate("request/details") },
+                        onClick = { navController.navigate("request/details/${request.id}") },
                         modifier = Modifier.weight(1f)
                     )
                 } else {

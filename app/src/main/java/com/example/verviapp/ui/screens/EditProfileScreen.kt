@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import coil.compose.AsyncImage
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,37 +22,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.verviapp.R
 import com.example.verviapp.ui.components.*
-import com.example.verviapp.ui.theme.VerviColors
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.verviapp.viewmodel.EditProfileViewModel
-import com.example.verviapp.viewmodel.ProfileViewModel
+import com.example.verviapp.ui.theme.VerviColors
 
 @Composable
-fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = viewModel()) {
+fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
+    var categoryMenuExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        if (!viewModel.hasActiveSession()) {
+            navController.popBackStack()
+            return@LaunchedEffect
+        }
+        viewModel.loadProfileForEdit()
+    }
 
     // Vuelve atrás al guardar exitosamente
     LaunchedEffect(state.saveSuccess) {
         if (state.saveSuccess) {
             navController.popBackStack()
             viewModel.resetSaveSuccess()
-        }
-    }
-
-    // Obtener el ProfileViewModel para leer el usuario actual
-    val profileViewModel: ProfileViewModel = viewModel()
-    val profileState by profileViewModel.state.collectAsState()
-    // Inicializar con los datos reales al entrar a la pantalla
-    LaunchedEffect(profileState.user) {
-        if (profileState.user.id.isNotEmpty()) {
-            viewModel.initWithUser(profileState.user)
         }
     }
 
@@ -67,7 +62,11 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
     ) { uri -> if (uri != null) photoUri = uri }
 
     Scaffold(
-        topBar         = { VerviTopBar(title = "Editar Perfil", onBack = { navController.popBackStack() }) },
+        topBar         = {
+            VerviTopBar(
+                title = "Editar Perfil",
+                onBack = { navController.popBackStack() })
+        },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -99,8 +98,10 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
                             .border(3.dp, Color.White, CircleShape)
                     )
                 } else {
-                    Image(
-                        painter            = painterResource(id = R.drawable.login_hero),
+                    AsyncImage(
+                        model = state.photoUrl.ifBlank {
+                            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=600&fit=crop"
+                        },
                         contentDescription = "Foto de perfil",
                         contentScale       = ContentScale.Crop,
                         modifier           = Modifier
@@ -127,22 +128,32 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            if (state.errorMessage != null) {
+                Text(
+                    text = state.errorMessage!!,
+                    color = Color(0xFFD32F2F),
+                    fontSize = 13.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             // ── Nombre completo ──────────────────────────────────
             VerviTextField(
-                label         = "Nombre Completo",
-                value         = state.name,
+                label = "Nombre Completo",
+                value = state.name,
                 onValueChange = { viewModel.onNameChange(it) },
-                placeholder   = "Tu nombre completo"
+                placeholder = "Tu nombre completo"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Biografía — VerviTextArea multilínea ─────────────
             VerviTextArea(
-                label         = "Biografía",
-                value         = state.bio,
+                label = "Biografía",
+                value = state.bio,
                 onValueChange = { viewModel.onBioChange(it) },
-                placeholder   = "Cuéntanos un poco sobre tus servicios..."
+                placeholder = "Cuéntanos un poco sobre tus servicios..."
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -216,20 +227,48 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
                         )
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Box(modifier = Modifier.fillMaxWidth()) {
                 FilterChip(
                     selected = false,
-                    onClick  = { viewModel.addCategory("OTraa") },
-                    label    = { Text("+ Añadir", fontSize = 13.sp) },
-                    colors   = FilterChipDefaults.filterChipColors(
+                    onClick = { categoryMenuExpanded = true },
+                    enabled = state.availableCategories.isNotEmpty(),
+                    label = {
+                        Text(
+                            text = if (state.availableCategories.isEmpty()) "Sin más categorías" else "+ Añadir",
+                            fontSize = 13.sp
+                        )
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
                         containerColor = Color.White,
-                        labelColor     = VerviColors.TextDark
+                        labelColor = VerviColors.TextDark,
+                        disabledContainerColor = Color.White,
+                        disabledLabelColor = VerviColors.TextSecondary
                     ),
                     border = FilterChipDefaults.filterChipBorder(
-                        enabled     = true,
-                        selected    = false,
+                        enabled = true,
+                        selected = false,
                         borderColor = VerviColors.BorderGray
                     )
                 )
+
+                DropdownMenu(
+                    expanded = categoryMenuExpanded,
+                    onDismissRequest = { categoryMenuExpanded = false }
+                ) {
+                    state.availableCategories.forEach { category ->
+                        DropdownMenuItem(
+                            text = { Text(category) },
+                            onClick = {
+                                viewModel.addCategory(category)
+                                categoryMenuExpanded = false
+                            }
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -241,21 +280,21 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     VerviTextField(
-                        label         = "Precio (COP)",
-                        value         = state.price,
+                        label = "Precio (COP)",
+                        value = state.price,
                         onValueChange = { viewModel.onPriceChange(it) },
-                        placeholder   = "50.000",
-                        keyboardType  = androidx.compose.ui.text.input.KeyboardType.Number,
-                        leadingIcon   = Icons.Default.AttachMoney
+                        placeholder = "50.000",
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+                        leadingIcon = Icons.Default.AttachMoney
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     VerviTextField(
-                        label         = "Ubicación",
-                        value         = state.location,
+                        label = "Ubicación",
+                        value = state.location,
                         onValueChange = { viewModel.onLocationChange(it) },
-                        placeholder   = "Bogotá",
-                        leadingIcon   = Icons.Default.LocationOn
+                        placeholder = "Bogotá",
+                        leadingIcon = Icons.Default.LocationOn
                     )
                 }
             }
@@ -264,19 +303,20 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
 
             // ── Guardar con ícono ────────────────────────────────
             VerviButton(
-                text    = "Guardar Cambios",
+                text = "Guardar Cambios",
                 onClick = { viewModel.save(photoUri) },
-                icon    = Icons.Default.Save
+                modifier = Modifier,
+                icon = Icons.Default.Save
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // ── Cancelar — outlined sin color destructivo ────────
             VerviOutlinedButton(
-                text    = "Cancelar",
+                text = "Cancelar",
                 onClick = { navController.popBackStack() },
-                color   = VerviColors.TextSecondary,
-                height  = 48.dp
+                color = VerviColors.TextSecondary,
+                height = 48.dp
             )
 
             Spacer(modifier = Modifier.height(24.dp))

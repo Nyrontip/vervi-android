@@ -1,4 +1,4 @@
-package com.example.verviapp.model
+package com.example.verviapp.viewmodel.state
 
 // Estado completo de la pantalla de Perfil
 data class ProfileState(

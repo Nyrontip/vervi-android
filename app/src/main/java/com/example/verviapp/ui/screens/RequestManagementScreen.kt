@@ -5,19 +5,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.verviapp.viewmodel.RequestManagementViewModel
 
 // -----------------------------
 // Data Class
@@ -38,9 +36,23 @@ data class RequestItem(
 // SCREEN
 // -----------------------------
 @Composable
-fun RequestsScreen(navController: NavController) {
+fun RequestsScreen(navController: NavController, vm: com.example.verviapp.viewmodel.RequestManagementViewModel = hiltViewModel()) {
 
-    var selectedTab by remember { mutableStateOf(0) }
+    val state by vm.uiState.collectAsState()
+
+    // Navegación por eventos
+    LaunchedEffect(Unit) {
+        vm.events.collect { ev ->
+            when (ev) {
+                is com.example.verviapp.viewmodel.RequestEvent.OpenRequest -> {
+                    navController.navigate("request/details")
+                }
+                com.example.verviapp.viewmodel.RequestEvent.CreateNew -> {
+                    navController.navigate("request/new")
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -54,7 +66,7 @@ fun RequestsScreen(navController: NavController) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate("request/new") },
+                onClick = { vm.onCreateNew() },
                 containerColor = VerviColors.FabOrange,
                 contentColor = VerviColors.TextWhite
             ) {
@@ -82,19 +94,19 @@ fun RequestsScreen(navController: NavController) {
 
             // 🔵 Tabs
             TabRow(
-                selectedTabIndex = selectedTab,
+                selectedTabIndex = state.selectedTab,
                 containerColor = VerviColors.BgColor,
                 contentColor = VerviColors.Blue
             ) {
                 listOf("Activas", "Finalizadas").forEachIndexed { index, title ->
                     Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
+                        selected = state.selectedTab == index,
+                        onClick = { vm.selectTab(index) },
                         text = {
                             Text(
                                 text = title,
                                 fontSize = 15.sp,
-                                fontWeight = if (selectedTab == index)
+                                fontWeight = if (state.selectedTab == index)
                                     FontWeight.Bold else FontWeight.Normal
                             )
                         }
@@ -109,10 +121,10 @@ fun RequestsScreen(navController: NavController) {
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(sampleRequests.size) { index ->
+                items(state.requests.size) { index ->
                     VerviRequestCard(
                         navController = navController,
-                        request = sampleRequests[index]
+                        request = state.requests[index]
                     )
                 }
             }

@@ -1,6 +1,5 @@
-package com.example.verviapp
+package com.example.verviapp.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -17,34 +16,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = viewModel()) {
+fun ProfileScreen(navController: NavController, userId: String? = null, viewModel: ProfileViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
+    val canManageProfile = remember(userId) { viewModel.canEditProfile(userId) }
 
     LaunchedEffect(userId) {
-        viewModel.loadProfile(userId)     // null carga el perfil local
+        viewModel.loadProfile(userId)
     }
 
     Scaffold(
         topBar = {
             VerviTopBar(
-                title   = "Mi Perfil",
-                onBack  = { navController.popBackStack() },
+                title = "Mi Perfil",
+                onBack = { navController.popBackStack() },
                 actions = {
-                    IconButton(onClick = { navController.navigate("editProfile") }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Ajustes",
-                            tint = VerviColors.TextDark)
+                    if (canManageProfile) {
+                        IconButton(onClick = { navController.navigate("editProfile") }) {
+                            Icon(
+                                Icons.Default.Settings, contentDescription = "Ajustes",
+                                tint = VerviColors.TextDark
+                            )
+                        }
                     }
                 }
             )
@@ -71,8 +75,10 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                     .clip(CircleShape)
                     .border(3.dp, Color.White, CircleShape)
             ) {
-                Image(
-                    painter            = painterResource(id = R.drawable.login_hero),
+                AsyncImage(
+                    model = state.user.photoUrl.ifBlank {
+                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=600&fit=crop"
+                    },
                     contentDescription = "Foto de perfil",
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier.fillMaxSize()
@@ -104,17 +110,42 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
             Spacer(modifier = Modifier.height(16.dp))
 
             // ── Botones Editar / Cerrar sesión ──────────────────
-            VerviOutlinedButton(text = "Editar Perfil", onClick = { navController.navigate("editProfile") })
-            Spacer(modifier = Modifier.height(8.dp))
-            VerviOutlinedButton(text = "Cerrar Sesión", onClick = { navController.navigate("login") },
-                color = Color(0xFFD32F2F))  // rojo para acción destructiva
+            if (canManageProfile) {
+                VerviOutlinedButton(
+                    text = "Editar Perfil",
+                    onClick = { navController.navigate("editProfile") })
+                Spacer(modifier = Modifier.height(8.dp))
+                VerviOutlinedButton(
+                    text = "Cerrar Sesión",
+                    onClick = {
+                        viewModel.logout()
+                        navController.navigate("login") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
+                    color = Color(0xFFD32F2F)
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             // ── Badges de rol — Cliente / Prestador ─────────────
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                VerviBadge(text = "Cliente",   color = VerviColors.Blue, outlined = true, fontSize= 12.sp)
-                VerviBadge(text = "Prestador", color = VerviColors.Blue, outlined = true, fontSize= 12.sp)
+                VerviBadge(
+                    text = "Cliente",
+                    color = VerviColors.Blue,
+                    outlined = true,
+                    fontSize = 12.sp
+                )
+                if (state.user.isProvider) {
+                    VerviBadge(
+                        text = "Prestador",
+                        color = VerviColors.Blue,
+                        outlined = true,
+                        fontSize = 12.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -148,7 +179,12 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 state.user.categories.forEach { category ->
-                    VerviBadge(text = category, color = VerviColors.TextDark, outlined = true, fontSize=13.sp)
+                    VerviBadge(
+                        text = category,
+                        color = VerviColors.TextDark,
+                        outlined = true,
+                        fontSize = 13.sp
+                    )
                 }
             }
 
@@ -177,10 +213,10 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 modifier = Modifier.fillMaxWidth()
             ) {
                 VerviActivityItem(
-                    icon       = Icons.Default.ListAlt,
-                    titulo     = "Mis Solicitudes",
-                    subtitulo  = "Ver tus pedidos pendientes",
-                    onClick    = { navController.navigate("requests/management") }
+                    icon = Icons.Default.ListAlt,
+                    titulo = "Mis Solicitudes",
+                    subtitulo = "Ver tus pedidos pendientes",
+                    onClick = { navController.navigate("requests/management") }
                 )
                 HorizontalDivider(
                     modifier  = Modifier.padding(horizontal = 16.dp),
@@ -188,10 +224,10 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                     thickness = 1.dp
                 )
                 VerviActivityItem(
-                    icon      = Icons.Default.History,
-                    titulo    = "Historial de Servicios",
+                    icon = Icons.Default.History,
+                    titulo = "Historial de Servicios",
                     subtitulo = "Servicios completados y recibos",
-                    onClick   = { navController.navigate("services/history") }
+                    onClick = { navController.navigate("services/history") }
                 )
             }
 
@@ -202,8 +238,16 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard(numero = "${state.user.projectCount}", label = "PROYECTOS",  modifier = Modifier.weight(1f))
-                StatCard(numero = "${state.user.requestCount}", label = "SOLICITUDES", modifier = Modifier.weight(1f))
+                StatCard(
+                    numero = "${state.user.projectCount}",
+                    label = "PROYECTOS",
+                    modifier = Modifier.weight(1f)
+                )
+                StatCard(
+                    numero = "${state.user.requestCount}",
+                    label = "SOLICITUDES",
+                    modifier = Modifier.weight(1f)
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))

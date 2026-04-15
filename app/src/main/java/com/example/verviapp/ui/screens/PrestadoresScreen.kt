@@ -1,4 +1,4 @@
-package com.example.verviapp
+package com.example.verviapp.ui.screens
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -6,7 +6,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,29 +14,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Image
 import androidx.navigation.NavController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.verviapp.model.Provider
+import com.example.verviapp.viewmodel.state.Provider
 import com.example.verviapp.viewmodel.PrestadoresViewModel
 
 @Composable
-fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewModel = viewModel()) {
+fun PrestadoresScreen(navController: NavController, viewModel: PrestadoresViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedCat by remember { mutableStateOf("Todos") }
-
-    val categorias   = listOf("Todos", "Carpinteros", "Plomeros", "Electricistas")
 
     Scaffold(
-        topBar    = { VerviTopBar(title = "Directorio de Prestadores", onBack = { navController.popBackStack()}) },
-        bottomBar = { VerviBottomBar(navController) },
+        topBar    = {
+            VerviTopBar(
+                title = "Directorio de Prestadores",
+                onBack = { navController.popBackStack() })
+        },
+        bottomBar = {
+            VerviBottomBar(
+                navController
+            )
+        },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
         Column(
@@ -50,23 +52,43 @@ fun PrestadoresScreen(navController: NavController,viewModel: PrestadoresViewMod
             Spacer(modifier = Modifier.height(2.dp))
 
             VerviSearchField(
-                value         = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder   = "Buscar...",
-                leadingIcon   = Icons.Default.Search
+                value = state.searchQuery,
+                onValueChange = viewModel::onSearchChange,
+                placeholder = "Buscar...",
+                onSearchClick = viewModel::onSearchDone
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
             // Chips de categoría con scroll horizontal — reutiliza VerviChips global
             Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                VerviChips(opciones = categorias, selected = selectedCat, onSelect = { selectedCat = it })
+                VerviChips(
+                    opciones = state.categories,
+                    selected = state.selectedCategory,
+                    onSelect = viewModel::onCategoryChange
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            if (state.isLoading) {
+                VerviLoadingState()
+            }
+
+            if (state.errorMessage != null) {
+                Text(
+                    text = state.errorMessage!!,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             state.providers.forEach { prestador ->
-                PrestadorCard(prestador = prestador, onVerPerfil = { navController.navigate("profile?userId=${prestador.id}") })
+                PrestadorCard(
+                    prestador = prestador,
+                    onVerPerfil = { navController.navigate("profile?userId=${prestador.id}") })
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -86,8 +108,8 @@ private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
             // Fila superior: foto + info
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // Foto del prestador con esquinas redondeadas
-                Image(
-                    painter            = painterResource(id = prestador.imageRes),
+                AsyncImage(
+                    model = prestador.imageUrl,
                     contentDescription = prestador.name,
                     contentScale       = ContentScale.Crop,
                     modifier           = Modifier
@@ -119,7 +141,12 @@ private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
 
                     // Badge especialidad + rating en la misma fila
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        VerviBadge(text     = prestador.specialty,  color    = VerviColors.TextDark, fontSize = 10.sp, outlined = true)
+                        VerviBadge(
+                            text = prestador.specialty,
+                            color = VerviColors.TextDark,
+                            fontSize = 10.sp,
+                            outlined = true
+                        )
 
                         Spacer(modifier = Modifier.width(8.dp))
 
@@ -136,7 +163,10 @@ private fun PrestadorCard(prestador: Provider, onVerPerfil: () -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            VerviOutlinedButton(text = "Ver Perfil", onClick = onVerPerfil)
+            VerviOutlinedButton(
+                text = "Ver Perfil",
+                onClick = onVerPerfil
+            )
         }
     }
 }

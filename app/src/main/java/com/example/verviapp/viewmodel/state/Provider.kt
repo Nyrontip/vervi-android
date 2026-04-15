@@ -1,12 +1,12 @@
-package com.example.verviapp.model
+package com.example.verviapp.viewmodel.state
 
 // Modelo de prestador de servicios
 data class Provider(
-    val id: String,
+    val id: Int,
     val name: String,
     val specialty: String,
     val price: String,
     val rating: Float,
     val reviewCount: Int,
-    val imageRes: Int        // referencia al drawable — luego será URL de API
+    val imageUrl: String
 )

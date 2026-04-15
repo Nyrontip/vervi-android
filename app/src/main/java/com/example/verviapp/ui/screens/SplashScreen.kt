@@ -1,4 +1,4 @@
-package com.example.verviapp
+package com.example.verviapp.ui.screens
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.verviapp.R
 import com.example.verviapp.ui.components.VerviFooterText
 import com.example.verviapp.ui.theme.VerviColors
 import kotlinx.coroutines.delay
@@ -28,14 +29,14 @@ fun SplashScreen(navController: NavController) {
     // Anima el progreso suavemente al valor objetivo
     val animatedProgress by animateFloatAsState(
         targetValue   = progress,
-        animationSpec = tween(durationMillis = 500, easing = LinearEasing),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
         label         = "progressAnimation"
     )
 
-    // Arranca la animación y al terminar abre LoginActivity
+    // Arranca la animación y al terminar abre home
     LaunchedEffect(Unit) {
         progress = 1f
-        delay(500) // espera que termine la animación
+        delay(1000)
         navController.navigate("home")
     }
 
