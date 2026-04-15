@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,94 +24,103 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudUpload
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.VerviButton
 import com.example.verviapp.ui.components.VerviOutlinedButton
-import com.example.verviapp.ui.components.VerviTextField
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.ApplyForServiceEvent
+import com.example.verviapp.viewmodel.ApplyForServiceViewModel
 
 private val SheetBackdrop = Color(0xFFE2E8F0)
 private val FieldMutedBg = Color(0xFFF8FAFC)
 private val EvidenceBorder = Color(0xFFCBD5E1)
-private val ModalSurface = Color(0xFFF6F7F8)
 
 /**
  * Apply-for-service form (bottom-sheet style). UI strings in Spanish; state names in English.
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-fun ApplyForServiceScreen(navController: NavController) {
-    var presentationMessage by remember { mutableStateOf("") }
-    var proposedPrice by remember { mutableStateOf("") }
-    var evidenceUri by remember { mutableStateOf<Uri?>(null) }
-    var immediateAvailability by remember { mutableStateOf(false) }
+fun ApplyForServiceScreen(
+    navController: NavController,
+    requestId: Int,
+    vm: ApplyForServiceViewModel = hiltViewModel()
+) {
+    val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val errorMessage = uiState.error
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val pickEvidence = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri -> evidenceUri = uri }
+    ) { uri -> vm.onEvidenceSelected(uri?.toString()) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SheetBackdrop)
-            .navigationBarsPadding()
+    LaunchedEffect(requestId) {
+        vm.load(requestId)
+    }
+
+    LaunchedEffect(vm) {
+        vm.events.collect { event ->
+            if (event is ApplyForServiceEvent.Submitted) {
+                navController.popBackStack()
+            }
+        }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = { navController.popBackStack() },
+        sheetState = sheetState,
+        containerColor = VerviColors.BottomSheetBackground,
+        scrimColor = VerviColors.Overlay
     ) {
-        // Overlay area above the sheet (as in mockup)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-                .background(Color.Black.copy(alpha = 0.20f))
+        Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .imePadding()
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+    ) {
+        BottomSheetDragHandle()
+
+        Text(
+            text = "Postularse al servicio",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = VerviColors.TextDark,
+            modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            colors = CardDefaults.cardColors(containerColor = ModalSurface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
-            ) {
-                BottomSheetDragHandle()
+        if (uiState.requestTitle.isNotBlank()) {
+            Text(
+                text = uiState.requestTitle,
+                fontSize = 13.sp,
+                color = VerviColors.TextSecondary
+            )
+        }
 
-                Text(
-                    text = "Postularse al servicio",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = VerviColors.TextDark,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
                 // Required message — label with orange asterisk
                 Row(verticalAlignment = Alignment.Bottom) {
@@ -130,8 +139,8 @@ fun ApplyForServiceScreen(navController: NavController) {
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
-                    value = presentationMessage,
-                    onValueChange = { presentationMessage = it },
+                    value = uiState.presentationMessage,
+                    onValueChange = { vm.onPresentationMessageChange(it) },
                     placeholder = {
                         Text(
                             "Cuéntale al cliente por qué eres el mejor para este trabajo...",
@@ -160,8 +169,8 @@ fun ApplyForServiceScreen(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
-                    value = proposedPrice,
-                    onValueChange = { proposedPrice = it },
+                    value = uiState.proposedPrice,
+                    onValueChange = { vm.onProposedPriceChange(it) },
                     placeholder = { Text("$ Ej: 50.000", color = Color(0xFFAAAAAA)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
@@ -185,13 +194,13 @@ fun ApplyForServiceScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 EvidenceDropZone(
-                    evidenceUri = evidenceUri,
+                    evidenceUri = uiState.evidenceUri,
                     onSelectClick = {
                         pickEvidence.launch(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                         )
                     },
-                    onClearClick = { evidenceUri = null }
+                    onClearClick = { vm.onEvidenceSelected(null) }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -201,8 +210,8 @@ fun ApplyForServiceScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Checkbox(
-                        checked = immediateAvailability,
-                        onCheckedChange = { immediateAvailability = it },
+                        checked = uiState.immediateAvailability,
+                        onCheckedChange = { vm.onImmediateAvailabilityChange(it) },
                         colors = CheckboxDefaults.colors(
                             checkedColor = VerviColors.OrangeSecondary,
                             uncheckedColor = VerviColors.TextGray
@@ -221,12 +230,26 @@ fun ApplyForServiceScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(20.dp))
 
                 VerviButton(
-                    text = "Enviar Postulación",
-                    onClick = { navController.popBackStack() },
+                    text = if (uiState.isSubmitting) "Enviando..." else "Enviar Postulacion",
+                    onClick = {
+                        if (!uiState.isSubmitting) {
+                            vm.submit()
+                        }
+                    },
                     color = VerviColors.OrangeSecondary,
                     height = 54.dp,
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = errorMessage,
+                        color = Color(0xFFDC2626),
+                        fontSize = 12.sp,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 TextButton(
                     onClick = { navController.popBackStack() },
@@ -242,7 +265,6 @@ fun ApplyForServiceScreen(navController: NavController) {
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-            }
         }
     }
 }
@@ -267,7 +289,7 @@ private fun BottomSheetDragHandle() {
 
 @Composable
 private fun EvidenceDropZone(
-    evidenceUri: Uri?,
+    evidenceUri: String?,
     onSelectClick: () -> Unit,
     onClearClick: () -> Unit
 ) {

@@ -9,12 +9,9 @@ import com.example.verviapp.ui.theme.VerviAppTheme
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.dialog
 import com.example.verviapp.ui.screens.SplashScreen
 import com.example.verviapp.ui.screens.HomeScreen
 import com.example.verviapp.ui.screens.LoginScreen
@@ -117,8 +114,12 @@ class MainActivity : ComponentActivity() {
                         val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: return@composable
                         ServiceDetailsScreen(navController, serviceId)
                     }
-                    composable("service/apply") {
-                        ApplyForServiceScreen(navController)
+                    dialog(
+                        route = "service/apply/{requestId}",
+                        arguments = listOf(navArgument("requestId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
+                        ApplyForServiceScreen(navController, requestId)
                     }
 
                 }

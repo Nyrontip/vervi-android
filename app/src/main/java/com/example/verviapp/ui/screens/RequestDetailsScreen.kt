@@ -68,6 +68,7 @@ private val defaultHeaderImages = listOf(
 fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewModel = hiltViewModel()) {
     val uiState by vm.uiState.collectAsState()
     val request = uiState.request
+    val requestId = request?.id?.toIntOrNull()
     val images = request?.images?.ifEmpty { defaultHeaderImages } ?: defaultHeaderImages
     val scrollState = rememberScrollState()
     var selectedCarouselIndex by remember { mutableIntStateOf(0) }
@@ -87,7 +88,9 @@ fun RequestDetailsScreen(navController: NavController, vm: RequestDetailsViewMod
                 HorizontalDivider(color = VerviColors.BorderGray)
                 VerviButton(
                     text = "Postularse",
-                    onClick = { navController.navigate("service/apply") },
+                    onClick = {
+                        requestId?.let { navController.navigate("service/apply/$it") }
+                    },
                     color = VerviColors.OrangeSecondary,
                     icon = Icons.AutoMirrored.Filled.Send,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
