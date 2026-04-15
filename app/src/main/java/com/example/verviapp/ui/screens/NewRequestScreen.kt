@@ -1,6 +1,5 @@
 package com.example.verviapp.ui.screens
 
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,6 +38,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.AttachmentSlot
 import com.example.verviapp.ui.components.VerviFooterText
@@ -57,9 +59,8 @@ import com.example.verviapp.ui.components.VerviTextArea
 import com.example.verviapp.ui.components.VerviTextField
 import com.example.verviapp.ui.components.VerviTopBar
 import com.example.verviapp.ui.theme.VerviColors
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.verviapp.viewmodel.NewRequestEvent
+import com.example.verviapp.viewmodel.NewRequestViewModel
 
 /**
  * New request form screen (mockup: form + attachments + CTA).
@@ -67,48 +68,32 @@ import java.util.Locale
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewRequestScreen(navController: NavController) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
-    var budget by remember { mutableStateOf("") }
-    var dateText by remember { mutableStateOf("") }
-    var dateMillis by remember { mutableStateOf<Long?>(null) }
+fun NewRequestScreen(
+    navController: NavController,
+    viewModel: NewRequestViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val categoriesError = uiState.categoriesError
 
     var categoryMenuExpanded by remember { mutableStateOf(false) }
-    val categoryOptions = remember {
-        listOf(
-            "Matemáticas y estadística",
-            "Ciencias e ingeniería",
-            "Humanidades y letras",
-            "Idiomas",
-            "Economía y administración",
-            "Arte y diseño"
-        )
-    }
-
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = dateMillis
+        initialSelectedDateMillis = uiState.dateMillis
     )
 
-    val dateFormat = remember {
-        SimpleDateFormat("MM/dd/yyyy", Locale.US)
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            if (event is NewRequestEvent.Submitted) {
+                navController.popBackStack()
+            }
+        }
     }
-
-    /** Up to 3 images; fixed slot indices. */
-    var attachments by remember { mutableStateOf<List<Uri?>>(listOf(null, null, null)) }
 
     val pickImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
-        val firstEmptyIndex = attachments.indexOfFirst { it == null }
-        if (firstEmptyIndex >= 0) {
-            val next = attachments.toMutableList()
-            next[firstEmptyIndex] = uri
-            attachments = next
-        }
+        viewModel.addAttachment(uri)
     }
 
     Scaffold(
@@ -136,16 +121,16 @@ fun NewRequestScreen(navController: NavController) {
         ) {
             VerviTextField(
                 label = "TÍTULO DE LA TAREA",
-                value = title,
-                onValueChange = { title = it },
+                value = uiState.title,
+                onValueChange = { viewModel.onTitleChange(it) },
                 placeholder = "Ej: Resolver taller de cálculo vectorial",
                 labelSize = 12.sp,
             )
 
             VerviTextArea(
                 label = "DESCRIPCIÓN DETALLADA",
-                value = description,
-                onValueChange = { description = it },
+                value = uiState.description,
+                onValueChange = { viewModel.onDescriptionChange(it) },
                 placeholder = "Describe los entregables, temas específicos y cualquier instrucción adicional...",
                 labelSize = 12.sp,
                 minLines = 5,
@@ -162,18 +147,26 @@ fun NewRequestScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(4.dp))
             ExposedDropdownMenuBox(
                 expanded = categoryMenuExpanded,
-                onExpandedChange = { categoryMenuExpanded = it }
+                onExpandedChange = {
+                    if (!uiState.isLoadingCategories && uiState.categoryOptions.isNotEmpty()) {
+                        categoryMenuExpanded = it
+                    }
+                }
             ) {
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true),
-                    value = category,
+                    value = uiState.category,
                     onValueChange = {},
                     readOnly = true,
                     placeholder = {
                         Text(
-                            "Selecciona una área académica",
+                            if (uiState.isLoadingCategories) {
+                                "Cargando categorias..."
+                            } else {
+                                "Selecciona una area academica"
+                            },
                             color = Color(0xFFAAAAAA)
                         )
                     },
@@ -192,11 +185,11 @@ fun NewRequestScreen(navController: NavController) {
                     expanded = categoryMenuExpanded,
                     onDismissRequest = { categoryMenuExpanded = false }
                 ) {
-                    categoryOptions.forEach { option ->
+                    uiState.categoryOptions.forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option) },
                             onClick = {
-                                category = option
+                                viewModel.onCategorySelected(option)
                                 categoryMenuExpanded = false
                             }
                         )
@@ -204,10 +197,19 @@ fun NewRequestScreen(navController: NavController) {
                 }
             }
 
+            if (categoriesError != null) {
+                Text(
+                    text = categoriesError,
+                    color = Color(0xFFDC2626),
+                    fontSize = 12.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             VerviTextField(
                 label = "PRESUPUESTO ESTIMADO (COP)",
-                value = budget,
-                onValueChange = { budget = it },
+                value = uiState.budget,
+                onValueChange = { viewModel.onBudgetChange(it) },
                 placeholder = "$ 0.00",
                 labelSize = 12.sp,
                 keyboardType = KeyboardType.Decimal
@@ -222,7 +224,7 @@ fun NewRequestScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             OutlinedTextField(
-                value = dateText,
+                value = uiState.dateText,
                 onValueChange = {},
                 readOnly = true,
                 placeholder = { Text("mm/dd/yyyy", color = Color(0xFFAAAAAA)) },
@@ -271,17 +273,13 @@ fun NewRequestScreen(navController: NavController) {
             ) {
                 repeat(3) { index ->
                     AttachmentSlot(
-                        uri = attachments.getOrNull(index),
+                        uri = uiState.attachments.getOrNull(index),
                         onAddClick = {
                             pickImage.launch(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
                         },
-                        onRemoveClick = {
-                            val next = attachments.toMutableList()
-                            if (index < next.size) next[index] = null
-                            attachments = next
-                        },
+                        onRemoveClick = { viewModel.removeAttachment(index) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -291,7 +289,11 @@ fun NewRequestScreen(navController: NavController) {
 
             // CTA — send icon on the right (mockup)
             Button(
-                onClick = { /* TODO: submit to backend */ },
+                onClick = {
+                    if (!uiState.isSubmitting) {
+                        viewModel.submit()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -301,7 +303,7 @@ fun NewRequestScreen(navController: NavController) {
                 )
             ) {
                 Text(
-                    text = "Publicar Solicitud",
+                    text = if (uiState.isSubmitting) "Publicando..." else "Publicar Solicitud",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -312,6 +314,15 @@ fun NewRequestScreen(navController: NavController) {
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)
+                )
+            }
+
+            if (uiState.error != null) {
+                Text(
+                    text = uiState.error ?: "",
+                    color = Color(0xFFDC2626),
+                    fontSize = 12.sp,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -332,8 +343,7 @@ fun NewRequestScreen(navController: NavController) {
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            dateMillis = millis
-                            dateText = dateFormat.format(Date(millis))
+                            viewModel.onDateSelected(millis)
                         }
                         showDatePicker = false
                     }
