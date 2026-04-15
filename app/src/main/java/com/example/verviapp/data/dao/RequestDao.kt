@@ -3,6 +3,7 @@ package com.example.verviapp.data.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.Transaction
 import androidx.room.Query
 import androidx.room.Update
 import com.example.verviapp.data.entity.RequestEntity
@@ -48,6 +49,26 @@ interface RequestDao {
 
     @Query("SELECT * FROM requests WHERE id = :id")
     suspend fun getRequestById(id: Int): RequestEntity?
+
+    @Transaction
+    @Query(
+        """
+        UPDATE requests
+        SET status = :status,
+            buttonText = :buttonText,
+            isActive = 0,
+            closedAt = :closedAt,
+            updatedAt = :updatedAt
+        WHERE id = :requestId
+        """
+    )
+    suspend fun cancelRequest(
+        requestId: Int,
+        status: String,
+        buttonText: String,
+        closedAt: Long,
+        updatedAt: Long
+    ): Int
 
     @Insert
     suspend fun insertRequest(request: RequestEntity): Long
