@@ -129,6 +129,53 @@ interface ServiceDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReview(review: ReviewEntity): Long
+
+    @Query(
+        """
+        SELECT
+            s.id AS serviceId,
+            s.title AS title,
+            s.summary AS summary,
+            s.location AS location,
+            s.totalPriceCop AS totalPriceCop,
+            COALESCE(s.completedAt, s.updatedAt, s.createdAt) AS dateMillis,
+            s.status AS status,
+            CASE
+                WHEN s.providerUserId = :viewerUserId THEN 'Como: Prestador'
+                ELSE 'Como: Cliente'
+            END AS roleLabel,
+            counterpart.name AS counterpartName,
+            counterpart.rating AS counterpartRating,
+            counterpart.location AS counterpartLocation,
+            counterpart.photoUrl AS counterpartAvatarUrl,
+            (
+                SELECT c.lastMessagePreview
+                FROM conversations c
+                WHERE c.serviceId = s.id
+                ORDER BY COALESCE(c.lastMessageAt, c.createdAt) DESC
+                LIMIT 1
+            ) AS chatPreview
+        FROM services s
+        INNER JOIN users counterpart
+            ON counterpart.id = CASE
+                WHEN s.clientUserId = :viewerUserId THEN s.providerUserId
+                ELSE s.clientUserId
+            END
+        WHERE s.id = :serviceId
+        LIMIT 1
+        """
+    )
+    suspend fun getServiceDetailsRow(serviceId: Int, viewerUserId: Int): ServiceDetailsRow?
+
+    @Query(
+        """
+        SELECT imageUrl
+        FROM service_evidence
+        WHERE serviceId = :serviceId
+        ORDER BY sortOrder ASC, id ASC
+        """
+    )
+    suspend fun getServiceEvidenceUrls(serviceId: Int): List<String>
 }
 
 data class ServiceHistoryRow(
@@ -149,5 +196,21 @@ data class ServiceRateRow(
     val existingRating: Int?,
     val existingComment: String?,
     val existingEvidenceImageUrl: String?
+)
+
+data class ServiceDetailsRow(
+    val serviceId: Int,
+    val title: String,
+    val summary: String,
+    val location: String,
+    val totalPriceCop: Long,
+    val dateMillis: Long,
+    val status: String,
+    val roleLabel: String,
+    val counterpartName: String,
+    val counterpartRating: Float,
+    val counterpartLocation: String,
+    val counterpartAvatarUrl: String?,
+    val chatPreview: String?
 )
 

@@ -36,6 +36,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,11 +46,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.verviapp.ui.components.VerviButton
 import com.example.verviapp.ui.components.VerviTopBar
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.ServiceDetailsViewModel
 
 /** Service detail screen — completed job (mockup background). */
 private val ScreenBackground = Color(0xFFF8F7F5)
@@ -57,24 +62,26 @@ private val roleProviderBadgeBg = Color(0xFFFFE8D6)
 private val statusCompletedBg = Color(0xFFE6F4EA)
 private val statusCompletedText = Color(0xFF1E8E3E)
 
-private const val serviceTitleLabel = "Reparación Aire Acondicionado"
-private const val servicePriceDisplay = "$125.000"
-private const val workSummaryBody =
-    "Se realizó la revisión técnica completa del sistema central. Se identificó fuga en el serpentín, se procedió a sellado y recarga de gas refrigerante R-410A. Limpieza profunda de filtros y drenaje incluida."
-
-private val evidenceImageUrls = listOf(
+private val defaultEvidenceImageUrls = listOf(
     "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&h=800&fit=crop",
     "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&h=500&fit=crop",
     "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=400&fit=crop",
     "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=400&fit=crop"
 )
 
-private const val clientAvatarUrl =
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"
-
 @Composable
-fun ServiceDetailsScreen(navController: NavController, serviceId: Int) {
+fun ServiceDetailsScreen(
+    navController: NavController,
+    serviceId: Int,
+    vm: ServiceDetailsViewModel = hiltViewModel()
+) {
+    val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val detail = uiState.detail
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(serviceId) {
+        vm.load(serviceId)
+    }
 
     Scaffold(
         containerColor = ScreenBackground,
@@ -127,8 +134,12 @@ fun ServiceDetailsScreen(navController: NavController, serviceId: Int) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                RoleBadge(text = "Como: Prestador")
-                StatusPill(text = "Completado", background = statusCompletedBg, content = statusCompletedText)
+                RoleBadge(text = detail?.roleLabel ?: "Como: --")
+                StatusPill(
+                    text = detail?.statusText ?: "--",
+                    background = statusCompletedBg,
+                    content = statusCompletedText
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -139,7 +150,7 @@ fun ServiceDetailsScreen(navController: NavController, serviceId: Int) {
                 verticalAlignment = Alignment.Top
             ) {
                 Text(
-                    text = serviceTitleLabel,
+                    text = detail?.title ?: "Cargando servicio...",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = VerviColors.TextDark,
@@ -148,7 +159,7 @@ fun ServiceDetailsScreen(navController: NavController, serviceId: Int) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = servicePriceDisplay,
+                        text = detail?.totalPriceText ?: "$0",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = VerviColors.OrangeSecondary
@@ -174,7 +185,7 @@ fun ServiceDetailsScreen(navController: NavController, serviceId: Int) {
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "14 de Octubre, 2023 • 10:30 AM",
+                    text = detail?.dateText ?: "--",
                     fontSize = 14.sp,
                     color = VerviColors.TextSecondary
                 )
@@ -191,7 +202,7 @@ fun ServiceDetailsScreen(navController: NavController, serviceId: Int) {
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Text(
-                    text = workSummaryBody,
+                    text = detail?.summary ?: "Sin resumen disponible.",
                     modifier = Modifier.padding(16.dp),
                     fontSize = 15.sp,
                     lineHeight = 23.sp,
@@ -203,21 +214,24 @@ fun ServiceDetailsScreen(navController: NavController, serviceId: Int) {
 
             SectionTitle(text = "Evidencia del Servicio")
             Spacer(modifier = Modifier.height(10.dp))
-            EvidenceGrid(imageUrls = evidenceImageUrls)
+            EvidenceGrid(imageUrls = detail?.evidenceImageUrls ?: defaultEvidenceImageUrls)
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            ChatSummaryCard(onOpenChat = { navController.navigate("chat") })
+            ChatSummaryCard(
+                summaryText = detail?.chatSummaryText ?: "Ver conversacion con el usuario",
+                onOpenChat = { navController.navigate("chat") }
+            )
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            SectionTitle(text = "Cliente")
+            SectionTitle(text = "Usuario")
             Spacer(modifier = Modifier.height(8.dp))
             ClientCard(
-                clientName = "Mariana Restrepo",
-                ratingText = "4.9",
-                locationText = "Medellín, Antioquia",
-                avatarUrl = clientAvatarUrl,
+                clientName = detail?.counterpartName ?: "Usuario no disponible",
+                ratingText = detail?.counterpartRatingText ?: "--",
+                locationText = detail?.counterpartLocation ?: "--",
+                avatarUrl = detail?.counterpartAvatarUrl ?: "",
                 onCallClick = { /* TODO: dial */ }
             )
 
@@ -359,7 +373,7 @@ private fun EvidenceGrid(imageUrls: List<String>) {
 }
 
 @Composable
-private fun ChatSummaryCard(onOpenChat: () -> Unit) {
+private fun ChatSummaryCard(summaryText: String, onOpenChat: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -396,7 +410,7 @@ private fun ChatSummaryCard(onOpenChat: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Ver conversación con el cliente",
+                    text = summaryText,
                     fontSize = 13.sp,
                     color = VerviColors.TextSecondary
                 )

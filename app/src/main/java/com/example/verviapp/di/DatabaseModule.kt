@@ -12,6 +12,7 @@ import com.example.verviapp.data.dao.NotificationDao
 import com.example.verviapp.data.database.AppDatabase
 import com.example.verviapp.data.dao.RequestDao
 import com.example.verviapp.data.dao.ServiceDao
+import com.example.verviapp.data.dao.ServiceApplicationDao
 import com.example.verviapp.data.repository.SampleData
 import dagger.Module
 import dagger.Provides
@@ -96,6 +97,10 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideServiceDao(database: AppDatabase): ServiceDao = database.serviceDao()
+
+    @Singleton
+    @Provides
+    fun provideServiceApplicationDao(database: AppDatabase): ServiceApplicationDao = database.serviceApplicationDao()
 
     @Singleton
     @Provides
