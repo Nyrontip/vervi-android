@@ -5,6 +5,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -223,30 +224,39 @@ fun NewRequestScreen(
                 color = VerviColors.TextSecondary
             )
             Spacer(modifier = Modifier.height(4.dp))
-            OutlinedTextField(
-                value = uiState.dateText,
-                onValueChange = {},
-                readOnly = true,
-                placeholder = { Text("mm/dd/yyyy", color = Color(0xFFAAAAAA)) },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showDatePicker = true },
-                shape = RoundedCornerShape(12.dp),
-                trailingIcon = {
-                    Icon(
-                        Icons.Default.CalendarMonth,
-                        contentDescription = null,
-                        tint = VerviColors.TextGray,
-                        modifier = Modifier.size(22.dp)
+                    .clickable { showDatePicker = true }
+            ) {
+                OutlinedTextField(
+                    value = uiState.dateText,
+                    onValueChange = {},
+                    enabled = false,
+                    placeholder = { Text("mm/dd/yyyy", color = Color(0xFFAAAAAA)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    trailingIcon = {
+                        Icon(
+                            Icons.Default.CalendarMonth,
+                            contentDescription = null,
+                            tint = VerviColors.TextGray,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledBorderColor = VerviColors.BorderGray,
+                        disabledContainerColor = Color.White,
+                        disabledTextColor = VerviColors.TextDark,
+                        disabledTrailingIconColor = VerviColors.TextGray,
+                        disabledPlaceholderColor = Color(0xFFAAAAAA),
+                        unfocusedBorderColor = VerviColors.BorderGray,
+                        focusedBorderColor = VerviColors.Blue,
+                        unfocusedContainerColor = Color.White,
+                        focusedContainerColor = Color.White
                     )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = VerviColors.BorderGray,
-                    focusedBorderColor = VerviColors.Blue,
-                    unfocusedContainerColor = Color.White,
-                    focusedContainerColor = Color.White
                 )
-            )
+            }
 
             // Optional attachments
             Row(
