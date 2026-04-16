@@ -24,4 +24,7 @@ interface CategoryDao {
 
     @Query("SELECT name FROM categories ORDER BY name ASC")
     suspend fun getCategoryNames(): List<String>
+
+    @Query("SELECT id FROM categories WHERE name = :name LIMIT 1")
+    suspend fun getCategoryIdByName(name: String): Int?
 }

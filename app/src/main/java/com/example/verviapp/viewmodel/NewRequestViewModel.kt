@@ -4,6 +4,12 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.dao.CategoryDao
+import com.example.verviapp.data.dao.RequestDao
+import com.example.verviapp.data.dao.RequestDetailsDao
+import com.example.verviapp.data.entity.RequestAttachmentEntity
+import com.example.verviapp.data.entity.RequestEntity
+import com.example.verviapp.data.repository.SampleData
+import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.model.NewRequestUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,7 +28,10 @@ sealed class NewRequestEvent {
 
 @HiltViewModel
 class NewRequestViewModel @Inject constructor(
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    private val requestDao: RequestDao,
+    private val requestDetailsDao: RequestDetailsDao,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
@@ -110,16 +119,17 @@ class NewRequestViewModel @Inject constructor(
         val state = _uiState.value
         val budgetValue = state.budget
             .replace("$", "")
+            .replace(".", "")
             .replace(",", "")
             .trim()
-            .toDoubleOrNull()
+            .toLongOrNull()
 
         val validationError = when {
             state.title.isBlank() -> "El titulo es obligatorio"
             state.description.isBlank() -> "La descripcion es obligatoria"
             state.category.isBlank() -> "Selecciona una categoria"
             state.dateMillis == null -> "Selecciona la fecha requerida"
-            budgetValue == null || budgetValue <= 0.0 -> "Ingresa un presupuesto valido"
+            budgetValue == null || budgetValue <= 0L -> "Ingresa un presupuesto valido"
             else -> null
         }
 
@@ -130,9 +140,91 @@ class NewRequestViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSubmitting = true, error = null)
-            // TODO: persistir en base de datos / backend cuando exista la capa de datos.
-            _uiState.value = _uiState.value.copy(isSubmitting = false)
-            _events.emit(NewRequestEvent.Submitted)
+            try {
+                val selectedDateMillis = state.dateMillis ?: run {
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        error = "Selecciona la fecha requerida"
+                    )
+                    return@launch
+                }
+
+                val categoryId = categoryDao.getCategoryIdByName(state.category)
+                if (categoryId == null) {
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        error = "No se pudo resolver la categoria seleccionada"
+                    )
+                    return@launch
+                }
+
+                val userId = sessionManager.getLoggedInUserId() ?: SampleData.DEMO_PROVIDER_USER_ID
+                val now = System.currentTimeMillis()
+                val firstAttachment = state.attachments.firstOrNull()?.toString().orEmpty()
+                val requestId = requestDao.insertRequest(
+                    RequestEntity(
+                        clientUserId = userId,
+                        categoryId = categoryId,
+                        status = "Pendiente",
+                        title = state.title.trim(),
+                        description = state.description.trim(),
+                        date = state.dateText,
+                        location = "Por definir",
+                        budgetCop = budgetValue,
+                        requiredDateMillis = selectedDateMillis,
+                        applications = "0 Postulaciones",
+                        applicationCount = 0,
+                        imageUrl = firstAttachment,
+                        buttonText = "Gestionar",
+                        isUrgent = false,
+                        isActive = true,
+                        createdAt = now,
+                        updatedAt = now
+                    )
+                )
+
+                if (requestId <= 0L) {
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        error = "No se pudo guardar la solicitud"
+                    )
+                    return@launch
+                }
+
+                val attachments = state.attachments
+                    .mapIndexedNotNull { index, uri ->
+                        uri?.toString()?.takeIf { it.isNotBlank() }?.let { rawUri ->
+                            RequestAttachmentEntity(
+                                requestId = requestId.toInt(),
+                                uri = rawUri,
+                                mimeType = resolveMimeType(uri),
+                                sortOrder = index
+                            )
+                        }
+                    }
+
+                if (attachments.isNotEmpty()) {
+                    requestDetailsDao.insertAttachments(attachments)
+                }
+
+                _uiState.value = _uiState.value.copy(isSubmitting = false)
+                _events.emit(NewRequestEvent.Submitted)
+            } catch (t: Throwable) {
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    error = t.message ?: "Error desconocido"
+                )
+            }
+        }
+    }
+
+    private fun resolveMimeType(uri: Uri): String? {
+        val value = uri.toString().lowercase(Locale.US)
+        return when {
+            value.endsWith(".png") -> "image/png"
+            value.endsWith(".webp") -> "image/webp"
+            value.endsWith(".jpg") || value.endsWith(".jpeg") -> "image/jpeg"
+            else -> null
         }
     }
 }
