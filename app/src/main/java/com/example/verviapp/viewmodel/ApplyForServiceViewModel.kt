@@ -29,8 +29,8 @@ class ApplyForServiceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val requestIdArg: Int = savedStateHandle.get<String>("requestId")
-        ?.toIntOrNull()
+    private val requestIdArg: Int = savedStateHandle.get<Int>("requestId")
+        ?: savedStateHandle.get<String>("requestId")?.toIntOrNull()
         ?: 0
 
     private val _uiState = MutableStateFlow(ApplyForServiceUiState())
