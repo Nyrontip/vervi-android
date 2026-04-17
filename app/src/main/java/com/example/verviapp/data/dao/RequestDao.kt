@@ -70,6 +70,26 @@ interface RequestDao {
         updatedAt: Long
     ): Int
 
+    @Transaction
+    @Query(
+        """
+        UPDATE requests
+        SET status = :status,
+            buttonText = :buttonText,
+            isActive = 0,
+            closedAt = :closedAt,
+            updatedAt = :updatedAt
+        WHERE id = :requestId
+        """
+    )
+    suspend fun confirmRequest(
+        requestId: Int,
+        status: String,
+        buttonText: String,
+        closedAt: Long,
+        updatedAt: Long
+    ): Int
+
     @Insert
     suspend fun insertRequest(request: RequestEntity): Long
 

@@ -30,8 +30,8 @@ class ServiceDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val serviceIdArg: Int = savedStateHandle.get<String>("serviceId")
-        ?.toIntOrNull()
+    private val serviceIdArg: Int = savedStateHandle.get<Int>("serviceId")
+        ?: savedStateHandle.get<String>("serviceId")?.toIntOrNull()
         ?: 0
 
     private val _uiState = MutableStateFlow(ServiceDetailsUiState())
