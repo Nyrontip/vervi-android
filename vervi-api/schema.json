@@ -1,0 +1,244 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VerviApp Database Schema",
+  "description": "Complete database schema for VerviApp - Service marketplace platform",
+  "tables": {
+    "users": {
+      "description": "Users table - both clients and service providers",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "email": { "type": "string", "unique": true, "nullable": false },
+        "password": { "type": "string", "nullable": false },
+        "name": { "type": "string", "nullable": false },
+        "bio": { "type": "string", "nullable": true },
+        "location": { "type": "string", "nullable": true },
+        "photoUrl": { "type": "string", "nullable": true },
+        "rating": { "type": "number", "default": 0 },
+        "reviewCount": { "type": "number", "default": 0 },
+        "suggestedPriceCop": { "type": "number", "nullable": true },
+        "isProvider": { "type": "boolean", "default": false },
+        "isOnline": { "type": "boolean", "default": false },
+        "projectCount": { "type": "number", "default": 0 },
+        "requestCount": { "type": "number", "default": 0 },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" },
+        "updatedAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "categories": { "type": "many-to-many", "target": "categories", "joinTable": "user_categories" },
+        "requests": { "type": "one-to-many", "target": "requests", "inverseSide": "client" },
+        "clientServices": { "type": "one-to-many", "target": "services", "inverseSide": "client" },
+        "providerServices": { "type": "one-to-many", "target": "services", "inverseSide": "provider" },
+        "writtenReviews": { "type": "one-to-many", "target": "reviews", "inverseSide": "reviewer" },
+        "receivedReviews": { "type": "one-to-many", "target": "reviews", "inverseSide": "reviewed" },
+        "conversationsA": { "type": "one-to-many", "target": "conversations", "inverseSide": "participantA" },
+        "conversationsB": { "type": "one-to-many", "target": "conversations", "inverseSide": "participantB" },
+        "sentMessages": { "type": "one-to-many", "target": "messages", "inverseSide": "sender" },
+        "notifications": { "type": "one-to-many", "target": "notifications", "inverseSide": "user" }
+      }
+    },
+    "categories": {
+      "description": "Service categories",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "name": { "type": "string", "unique": true, "nullable": false },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "users": { "type": "many-to-many", "target": "users", "inverseSide": "categories" },
+        "requests": { "type": "one-to-many", "target": "requests", "inverseSide": "category" }
+      }
+    },
+    "requests": {
+      "description": "Service requests from clients",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "clientUserId": { "type": "integer", "nullable": true, "foreignKey": { "table": "users", "column": "id" } },
+        "categoryId": { "type": "integer", "nullable": true, "foreignKey": { "table": "categories", "column": "id" } },
+        "status": { "type": "enum", "enum": ["Borrador", "Pendiente", "En curso", "Cerrado"], "default": "Borrador" },
+        "title": { "type": "string", "nullable": false },
+        "description": { "type": "text", "nullable": true },
+        "location": { "type": "string", "nullable": true },
+        "budgetCop": { "type": "number", "nullable": true },
+        "requiredDateMillis": { "type": "number", "nullable": true },
+        "imageUrl": { "type": "string", "nullable": true },
+        "isUrgent": { "type": "boolean", "default": false },
+        "isActive": { "type": "boolean", "default": true },
+        "applicationCount": { "type": "number", "default": 0 },
+        "closedAt": { "type": "timestamp", "nullable": true },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" },
+        "updatedAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "client": { "type": "many-to-one", "target": "users", "inverseSide": "requests" },
+        "category": { "type": "many-to-one", "target": "categories", "inverseSide": "requests" },
+        "attachments": { "type": "one-to-many", "target": "request_attachments", "inverseSide": "request", "cascade": true },
+        "applications": { "type": "one-to-many", "target": "service_applications", "inverseSide": "request", "cascade": true },
+        "notifications": { "type": "one-to-many", "target": "notifications", "inverseSide": "request" },
+        "conversations": { "type": "one-to-many", "target": "conversations", "inverseSide": "request" },
+        "services": { "type": "one-to-many", "target": "services", "inverseSide": "request" }
+      }
+    },
+    "request_attachments": {
+      "description": "Attachments for requests",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "requestId": { "type": "integer", "nullable": false, "foreignKey": { "table": "requests", "column": "id", "onDelete": "CASCADE" } },
+        "uri": { "type": "string", "nullable": false },
+        "mimeType": { "type": "string", "nullable": true },
+        "sortOrder": { "type": "number", "default": 0 },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "request": { "type": "many-to-one", "target": "requests", "inverseSide": "attachments" }
+      }
+    },
+    "services": {
+      "description": "Confirmed services between clients and providers",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "requestId": { "type": "integer", "nullable": true, "foreignKey": { "table": "requests", "column": "id", "onDelete": "SET NULL" } },
+        "clientUserId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "providerUserId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "title": { "type": "string", "nullable": false },
+        "summary": { "type": "string", "nullable": true },
+        "location": { "type": "string", "nullable": true },
+        "totalPriceCop": { "type": "number", "nullable": false },
+        "scheduledAt": { "type": "timestamp", "nullable": true },
+        "startedAt": { "type": "timestamp", "nullable": true },
+        "completedAt": { "type": "timestamp", "nullable": true },
+        "status": { "type": "enum", "enum": ["SCHEDULED", "IN_PROGRESS", "COMPLETED", "CANCELLED"], "default": "SCHEDULED" },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" },
+        "updatedAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "request": { "type": "many-to-one", "target": "requests", "inverseSide": "services" },
+        "client": { "type": "many-to-one", "target": "users", "inverseSide": "clientServices" },
+        "provider": { "type": "many-to-one", "target": "users", "inverseSide": "providerServices" },
+        "evidence": { "type": "one-to-many", "target": "service_evidence", "inverseSide": "service", "cascade": true },
+        "reviews": { "type": "one-to-many", "target": "reviews", "inverseSide": "service", "cascade": true },
+        "conversations": { "type": "one-to-many", "target": "conversations", "inverseSide": "service" },
+        "notifications": { "type": "one-to-many", "target": "notifications", "inverseSide": "service" }
+      }
+    },
+    "service_evidence": {
+      "description": "Evidence files for completed services",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "serviceId": { "type": "integer", "nullable": false, "foreignKey": { "table": "services", "column": "id", "onDelete": "CASCADE" } },
+        "imageUrl": { "type": "string", "nullable": false },
+        "caption": { "type": "string", "nullable": true },
+        "sortOrder": { "type": "number", "default": 0 },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "service": { "type": "many-to-one", "target": "services", "inverseSide": "evidence" }
+      }
+    },
+    "service_applications": {
+      "description": "Applications from providers to requests",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "requestId": { "type": "integer", "nullable": false, "foreignKey": { "table": "requests", "column": "id", "onDelete": "CASCADE" } },
+        "providerUserId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "presentationMessage": { "type": "text", "nullable": false },
+        "proposedPriceCop": { "type": "number", "nullable": true },
+        "evidenceUri": { "type": "string", "nullable": true },
+        "immediateAvailability": { "type": "boolean", "default": false },
+        "status": { "type": "enum", "enum": ["PENDING", "ACCEPTED", "REJECTED"], "default": "PENDING" },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" },
+        "updatedAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "request": { "type": "many-to-one", "target": "requests", "inverseSide": "applications" },
+        "provider": { "type": "many-to-one", "target": "users", "inverseSide": "providerServices" },
+        "notifications": { "type": "one-to-many", "target": "notifications", "inverseSide": "application" }
+      }
+    },
+    "reviews": {
+      "description": "Reviews for services",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "serviceId": { "type": "integer", "nullable": false, "foreignKey": { "table": "services", "column": "id", "onDelete": "CASCADE" } },
+        "reviewerUserId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "reviewedUserId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "rating": { "type": "number", "nullable": false },
+        "comment": { "type": "text", "nullable": true },
+        "evidenceImageUrl": { "type": "string", "nullable": true },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "service": { "type": "many-to-one", "target": "services", "inverseSide": "reviews" },
+        "reviewer": { "type": "many-to-one", "target": "users", "inverseSide": "writtenReviews" },
+        "reviewed": { "type": "many-to-one", "target": "users", "inverseSide": "receivedReviews" }
+      }
+    },
+    "notifications": {
+      "description": "User notifications",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "userId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "title": { "type": "string", "nullable": false },
+        "description": { "type": "text", "nullable": false },
+        "type": { "type": "enum", "enum": ["APPLICATION", "MESSAGE", "CONFIRMED", "PAYMENT", "REMINDER"], "nullable": false },
+        "isUnread": { "type": "boolean", "default": true },
+        "requestId": { "type": "integer", "nullable": true, "foreignKey": { "table": "requests", "column": "id", "onDelete": "SET NULL" } },
+        "serviceId": { "type": "integer", "nullable": true, "foreignKey": { "table": "services", "column": "id", "onDelete": "SET NULL" } },
+        "conversationId": { "type": "integer", "nullable": true, "foreignKey": { "table": "conversations", "column": "id", "onDelete": "SET NULL" } },
+        "applicationId": { "type": "integer", "nullable": true, "foreignKey": { "table": "service_applications", "column": "id", "onDelete": "SET NULL" } },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "user": { "type": "many-to-one", "target": "users", "inverseSide": "notifications" },
+        "request": { "type": "many-to-one", "target": "requests", "inverseSide": "notifications" },
+        "service": { "type": "many-to-one", "target": "services", "inverseSide": "notifications" },
+        "conversation": { "type": "many-to-one", "target": "conversations", "inverseSide": "notifications" },
+        "application": { "type": "many-to-one", "target": "service_applications", "inverseSide": "notifications" }
+      }
+    },
+    "conversations": {
+      "description": "Chat conversations between users",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "participantAUserId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "participantBUserId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "requestId": { "type": "integer", "nullable": true, "foreignKey": { "table": "requests", "column": "id", "onDelete": "SET NULL" } },
+        "serviceId": { "type": "integer", "nullable": true, "foreignKey": { "table": "services", "column": "id", "onDelete": "SET NULL" } },
+        "lastMessagePreview": { "type": "string", "nullable": true },
+        "lastMessageAt": { "type": "timestamp", "nullable": true },
+        "createdAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "participantA": { "type": "many-to-one", "target": "users", "inverseSide": "conversationsA" },
+        "participantB": { "type": "many-to-one", "target": "users", "inverseSide": "conversationsB" },
+        "request": { "type": "many-to-one", "target": "requests", "inverseSide": "conversations" },
+        "service": { "type": "many-to-one", "target": "services", "inverseSide": "conversations" },
+        "messages": { "type": "one-to-many", "target": "messages", "inverseSide": "conversation", "cascade": true },
+        "notifications": { "type": "one-to-many", "target": "notifications", "inverseSide": "conversation" }
+      }
+    },
+    "messages": {
+      "description": "Chat messages within conversations",
+      "columns": {
+        "id": { "type": "integer", "primary": true, "generated": true },
+        "conversationId": { "type": "integer", "nullable": false, "foreignKey": { "table": "conversations", "column": "id", "onDelete": "CASCADE" } },
+        "senderUserId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "body": { "type": "text", "nullable": false },
+        "attachmentUri": { "type": "string", "nullable": true },
+        "isRead": { "type": "boolean", "default": false },
+        "sentAt": { "type": "timestamp", "default": "CURRENT_TIMESTAMP" }
+      },
+      "relations": {
+        "conversation": { "type": "many-to-one", "target": "conversations", "inverseSide": "messages" },
+        "sender": { "type": "many-to-one", "target": "users", "inverseSide": "sentMessages" }
+      }
+    },
+    "user_categories": {
+      "description": "Many-to-many relation between users and categories",
+      "columns": {
+        "userId": { "type": "integer", "nullable": false, "foreignKey": { "table": "users", "column": "id", "onDelete": "CASCADE" } },
+        "categoryId": { "type": "integer", "nullable": false, "foreignKey": { "table": "categories", "column": "id", "onDelete": "CASCADE" } }
+      },
+      "primaryKey": ["userId", "categoryId"]
+    }
+  }
+}

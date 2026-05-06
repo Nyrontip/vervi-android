@@ -1,0 +1,1491 @@
+{
+  "tables": {
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "photoUrl": {
+          "name": "photoUrl",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "rating": {
+          "name": "rating",
+          "type": "double precision",
+          "default": 0,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "reviewCount": {
+          "name": "reviewCount",
+          "type": "integer",
+          "default": 0,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "suggestedPriceCop": {
+          "name": "suggestedPriceCop",
+          "type": "bigint",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "isProvider": {
+          "name": "isProvider",
+          "type": "boolean",
+          "default": false,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "isOnline": {
+          "name": "isOnline",
+          "type": "boolean",
+          "default": false,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "projectCount": {
+          "name": "projectCount",
+          "type": "integer",
+          "default": 0,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "requestCount": {
+          "name": "requestCount",
+          "type": "integer",
+          "default": 0,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "users_pkey": {
+          "name": "users_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        },
+        "users_email_key": {
+          "name": "users_email_key",
+          "unique": true,
+          "columns": [
+            "email"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "UNIQUE_email": {
+          "type": "UNIQUE",
+          "name": "UNIQUE_email",
+          "columnNames": [
+            "email"
+          ]
+        }
+      }
+    },
+    "categories": {
+      "name": "categories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "categories_pkey": {
+          "name": "categories_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        },
+        "categories_name_key": {
+          "name": "categories_name_key",
+          "unique": true,
+          "columns": [
+            "name"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "UNIQUE_name": {
+          "type": "UNIQUE",
+          "name": "UNIQUE_name",
+          "columnNames": [
+            "name"
+          ]
+        }
+      }
+    },
+    "requests": {
+      "name": "requests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "clientUserId": {
+          "name": "clientUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "categoryId": {
+          "name": "categoryId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "status": {
+          "name": "status",
+          "type": "RequestStatus",
+          "default": "EnCurso",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "budgetCop": {
+          "name": "budgetCop",
+          "type": "bigint",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "requiredDateMillis": {
+          "name": "requiredDateMillis",
+          "type": "bigint",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "isUrgent": {
+          "name": "isUrgent",
+          "type": "boolean",
+          "default": false,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "isActive": {
+          "name": "isActive",
+          "type": "boolean",
+          "default": true,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "applicationCount": {
+          "name": "applicationCount",
+          "type": "integer",
+          "default": 0,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "closedAt": {
+          "name": "closedAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "requests_pkey": {
+          "name": "requests_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "ClientRequests": {
+          "type": "FOREIGN KEY",
+          "name": "ClientRequests",
+          "columnNames": [
+            "clientUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        },
+        "CategoryRequests": {
+          "type": "FOREIGN KEY",
+          "name": "CategoryRequests",
+          "columnNames": [
+            "categoryId"
+          ],
+          "targetTableName": "categories",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "NO_ACTION"
+        }
+      }
+    },
+    "request_attachments": {
+      "name": "request_attachments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "uri": {
+          "name": "uri",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "mimeType": {
+          "name": "mimeType",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "sortOrder": {
+          "name": "sortOrder",
+          "type": "integer",
+          "default": 0,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "request_attachments_pkey": {
+          "name": "request_attachments_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "RequestAttachments": {
+          "type": "FOREIGN KEY",
+          "name": "RequestAttachments",
+          "columnNames": [
+            "requestId"
+          ],
+          "targetTableName": "requests",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        }
+      }
+    },
+    "services": {
+      "name": "services",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "clientUserId": {
+          "name": "clientUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "providerUserId": {
+          "name": "providerUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "totalPriceCop": {
+          "name": "totalPriceCop",
+          "type": "bigint",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "scheduledAt": {
+          "name": "scheduledAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "startedAt": {
+          "name": "startedAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "completedAt": {
+          "name": "completedAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "status": {
+          "name": "status",
+          "type": "ServiceStatus",
+          "default": "SCHEDULED",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "services_pkey": {
+          "name": "services_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "RequestServices": {
+          "type": "FOREIGN KEY",
+          "name": "RequestServices",
+          "columnNames": [
+            "requestId"
+          ],
+          "targetTableName": "requests",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "SET_NULL"
+        },
+        "ClientServices": {
+          "type": "FOREIGN KEY",
+          "name": "ClientServices",
+          "columnNames": [
+            "clientUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        },
+        "ProviderServices": {
+          "type": "FOREIGN KEY",
+          "name": "ProviderServices",
+          "columnNames": [
+            "providerUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        }
+      }
+    },
+    "service_evidence": {
+      "name": "service_evidence",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "serviceId": {
+          "name": "serviceId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "caption": {
+          "name": "caption",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "sortOrder": {
+          "name": "sortOrder",
+          "type": "integer",
+          "default": 0,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "service_evidence_pkey": {
+          "name": "service_evidence_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "ServiceEvidence": {
+          "type": "FOREIGN KEY",
+          "name": "ServiceEvidence",
+          "columnNames": [
+            "serviceId"
+          ],
+          "targetTableName": "services",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        }
+      }
+    },
+    "service_applications": {
+      "name": "service_applications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "providerUserId": {
+          "name": "providerUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "presentationMessage": {
+          "name": "presentationMessage",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "proposedPriceCop": {
+          "name": "proposedPriceCop",
+          "type": "bigint",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "evidenceUri": {
+          "name": "evidenceUri",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "immediateAvailability": {
+          "name": "immediateAvailability",
+          "type": "boolean",
+          "default": false,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "status": {
+          "name": "status",
+          "type": "ApplicationStatus",
+          "default": "PENDING",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "service_applications_pkey": {
+          "name": "service_applications_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "RequestApplications": {
+          "type": "FOREIGN KEY",
+          "name": "RequestApplications",
+          "columnNames": [
+            "requestId"
+          ],
+          "targetTableName": "requests",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        },
+        "ProviderApplications": {
+          "type": "FOREIGN KEY",
+          "name": "ProviderApplications",
+          "columnNames": [
+            "providerUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        }
+      }
+    },
+    "reviews": {
+      "name": "reviews",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "serviceId": {
+          "name": "serviceId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "reviewerUserId": {
+          "name": "reviewerUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "reviewedUserId": {
+          "name": "reviewedUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "rating": {
+          "name": "rating",
+          "type": "double precision",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "evidenceImageUrl": {
+          "name": "evidenceImageUrl",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "reviews_pkey": {
+          "name": "reviews_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "ServiceReviews": {
+          "type": "FOREIGN KEY",
+          "name": "ServiceReviews",
+          "columnNames": [
+            "serviceId"
+          ],
+          "targetTableName": "services",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        },
+        "WrittenReviews": {
+          "type": "FOREIGN KEY",
+          "name": "WrittenReviews",
+          "columnNames": [
+            "reviewerUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        },
+        "ReceivedReviews": {
+          "type": "FOREIGN KEY",
+          "name": "ReceivedReviews",
+          "columnNames": [
+            "reviewedUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        }
+      }
+    },
+    "notifications": {
+      "name": "notifications",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "type": {
+          "name": "type",
+          "type": "NotificationType",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "isUnread": {
+          "name": "isUnread",
+          "type": "boolean",
+          "default": true,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "serviceId": {
+          "name": "serviceId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "conversationId": {
+          "name": "conversationId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "applicationId": {
+          "name": "applicationId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "notifications_pkey": {
+          "name": "notifications_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "UserNotifications": {
+          "type": "FOREIGN KEY",
+          "name": "UserNotifications",
+          "columnNames": [
+            "userId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        },
+        "RequestNotifications": {
+          "type": "FOREIGN KEY",
+          "name": "RequestNotifications",
+          "columnNames": [
+            "requestId"
+          ],
+          "targetTableName": "requests",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "SET_NULL"
+        },
+        "ServiceNotifications": {
+          "type": "FOREIGN KEY",
+          "name": "ServiceNotifications",
+          "columnNames": [
+            "serviceId"
+          ],
+          "targetTableName": "services",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "SET_NULL"
+        },
+        "ConversationNotifications": {
+          "type": "FOREIGN KEY",
+          "name": "ConversationNotifications",
+          "columnNames": [
+            "conversationId"
+          ],
+          "targetTableName": "conversations",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "SET_NULL"
+        },
+        "ApplicationNotifications": {
+          "type": "FOREIGN KEY",
+          "name": "ApplicationNotifications",
+          "columnNames": [
+            "applicationId"
+          ],
+          "targetTableName": "service_applications",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "SET_NULL"
+        }
+      }
+    },
+    "conversations": {
+      "name": "conversations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "participantAUserId": {
+          "name": "participantAUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "participantBUserId": {
+          "name": "participantBUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "serviceId": {
+          "name": "serviceId",
+          "type": "integer",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "lastMessagePreview": {
+          "name": "lastMessagePreview",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "lastMessageAt": {
+          "name": "lastMessageAt",
+          "type": "timestamp(3)",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "conversations_pkey": {
+          "name": "conversations_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "ConversationParticipantA": {
+          "type": "FOREIGN KEY",
+          "name": "ConversationParticipantA",
+          "columnNames": [
+            "participantAUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        },
+        "ConversationParticipantB": {
+          "type": "FOREIGN KEY",
+          "name": "ConversationParticipantB",
+          "columnNames": [
+            "participantBUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        },
+        "RequestConversations": {
+          "type": "FOREIGN KEY",
+          "name": "RequestConversations",
+          "columnNames": [
+            "requestId"
+          ],
+          "targetTableName": "requests",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "SET_NULL"
+        },
+        "ServiceConversations": {
+          "type": "FOREIGN KEY",
+          "name": "ServiceConversations",
+          "columnNames": [
+            "serviceId"
+          ],
+          "targetTableName": "services",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "SET_NULL"
+        }
+      }
+    },
+    "messages": {
+      "name": "messages",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "conversationId": {
+          "name": "conversationId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "senderUserId": {
+          "name": "senderUserId",
+          "type": "integer",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "default": null,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "attachmentUri": {
+          "name": "attachmentUri",
+          "type": "text",
+          "default": null,
+          "notNull": false,
+          "comment": null,
+          "check": null
+        },
+        "isRead": {
+          "name": "isRead",
+          "type": "boolean",
+          "default": false,
+          "notNull": true,
+          "comment": null,
+          "check": null
+        },
+        "sentAt": {
+          "name": "sentAt",
+          "type": "timestamp(3)",
+          "default": "CURRENT_TIMESTAMP",
+          "notNull": true,
+          "comment": null,
+          "check": null
+        }
+      },
+      "comment": null,
+      "indexes": {
+        "messages_pkey": {
+          "name": "messages_pkey",
+          "unique": true,
+          "columns": [
+            "id"
+          ],
+          "type": ""
+        }
+      },
+      "constraints": {
+        "PRIMARY_id": {
+          "type": "PRIMARY KEY",
+          "name": "PRIMARY_id",
+          "columnNames": [
+            "id"
+          ]
+        },
+        "ConversationMessages": {
+          "type": "FOREIGN KEY",
+          "name": "ConversationMessages",
+          "columnNames": [
+            "conversationId"
+          ],
+          "targetTableName": "conversations",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        },
+        "SentMessages": {
+          "type": "FOREIGN KEY",
+          "name": "SentMessages",
+          "columnNames": [
+            "senderUserId"
+          ],
+          "targetTableName": "users",
+          "targetColumnNames": [
+            "id"
+          ],
+          "updateConstraint": "NO_ACTION",
+          "deleteConstraint": "CASCADE"
+        }
+      }
+    }
+  },
+  "enums": {
+    "RequestStatus": {
+      "name": "RequestStatus",
+      "values": [
+        "Borrador",
+        "Pendiente",
+        "EnCurso",
+        "Cerrado"
+      ],
+      "comment": null
+    },
+    "ServiceStatus": {
+      "name": "ServiceStatus",
+      "values": [
+        "SCHEDULED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "CANCELLED"
+      ],
+      "comment": null
+    },
+    "ApplicationStatus": {
+      "name": "ApplicationStatus",
+      "values": [
+        "PENDING",
+        "ACCEPTED",
+        "REJECTED"
+      ],
+      "comment": null
+    },
+    "NotificationType": {
+      "name": "NotificationType",
+      "values": [
+        "APPLICATION",
+        "MESSAGE",
+        "CONFIRMED",
+        "PAYMENT",
+        "REMINDER"
+      ],
+      "comment": null
+    }
+  },
+  "extensions": {}
+}

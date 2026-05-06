@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int            @id @default(autoincrement())
+  email              String         @unique
+  password           String
+  name               String
+  bio                String?
+  location           String?
+  photoUrl           String?
+  rating             Float          @default(0)
+  reviewCount        Int            @default(0)
+  suggestedPriceCop  BigInt?
+  isProvider         Boolean        @default(false)
+  isOnline           Boolean        @default(false)
+  projectCount       Int            @default(0)
+  requestCount       Int            @default(0)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  categories         Category[]     @relation("UserCategories")
+  requests           Request[]      @relation("ClientRequests")
+  clientServices     Service[]      @relation("ClientServices")
+  providerServices   Service[]      @relation("ProviderServices")
+  serviceApplications ServiceApplication[] @relation("ProviderApplications")
+  writtenReviews     Review[]       @relation("WrittenReviews")
+  receivedReviews    Review[]       @relation("ReceivedReviews")
+  conversationsA     Conversation[] @relation("ConversationParticipantA")
+  conversationsB     Conversation[] @relation("ConversationParticipantB")
+  sentMessages       Message[]      @relation("SentMessages")
+  notifications      Notification[] @relation("UserNotifications")
+
+  @@map("users")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  users   User[]   @relation("UserCategories")
+  requests Request[] @relation("CategoryRequests")
+
+  @@map("categories")
+}
+
+model Request {
+  id                Int           @id @default(autoincrement())
+  clientUserId      Int?
+  categoryId        Int?
+  status            RequestStatus @default(EnCurso)
+  title             String
+  description       String?
+  location          String?
+  budgetCop         BigInt?
+  requiredDateMillis BigInt?
+  imageUrl          String?
+  isUrgent          Boolean       @default(false)
+  isActive          Boolean       @default(true)
+  applicationCount  Int           @default(0)
+  closedAt          DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  client            User?         @relation("ClientRequests", fields: [clientUserId], references: [id])
+  category          Category?     @relation("CategoryRequests", fields: [categoryId], references: [id])
+  attachments       RequestAttachment[] @relation("RequestAttachments")
+  applications      ServiceApplication[] @relation("RequestApplications")
+  notifications     Notification[] @relation("RequestNotifications")
+  conversations     Conversation[] @relation("RequestConversations")
+  services          Service[]     @relation("RequestServices")
+
+  @@map("requests")
+}
+
+enum RequestStatus {
+  Borrador
+  Pendiente
+  EnCurso
+  Cerrado
+}
+
+model RequestAttachment {
+  id         Int      @id @default(autoincrement())
+  requestId  Int
+  uri        String
+  mimeType   String?
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  request    Request  @relation("RequestAttachments", fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@map("request_attachments")
+}
+
+model Service {
+  id            Int           @id @default(autoincrement())
+  requestId     Int?
+  clientUserId  Int
+  providerUserId Int
+  title         String
+  summary       String?
+  location      String?
+  totalPriceCop BigInt
+  scheduledAt   DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  status        ServiceStatus @default(SCHEDULED)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  request       Request?      @relation("RequestServices", fields: [requestId], references: [id], onDelete: SetNull)
+  client        User          @relation("ClientServices", fields: [clientUserId], references: [id], onDelete: Cascade)
+  provider      User          @relation("ProviderServices", fields: [providerUserId], references: [id], onDelete: Cascade)
+  evidence      ServiceEvidence[] @relation("ServiceEvidence")
+  reviews       Review[]      @relation("ServiceReviews")
+  conversations Conversation[] @relation("ServiceConversations")
+  notifications Notification[] @relation("ServiceNotifications")
+
+  @@map("services")
+}
+
+enum ServiceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model ServiceEvidence {
+  id        Int      @id @default(autoincrement())
+  serviceId Int
+  imageUrl  String
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  service   Service  @relation("ServiceEvidence", fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("service_evidence")
+}
+
+model ServiceApplication {
+  id                  Int                   @id @default(autoincrement())
+  requestId           Int
+  providerUserId      Int
+  presentationMessage String
+  proposedPriceCop    BigInt?
+  evidenceUri         String?
+  immediateAvailability Boolean              @default(false)
+  status              ApplicationStatus     @default(PENDING)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  request       Request       @relation("RequestApplications", fields: [requestId], references: [id], onDelete: Cascade)
+  provider      User          @relation("ProviderApplications", fields: [providerUserId], references: [id], onDelete: Cascade)
+  notifications Notification[] @relation("ApplicationNotifications")
+
+  @@map("service_applications")
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Review {
+  id               Int      @id @default(autoincrement())
+  serviceId        Int
+  reviewerUserId   Int
+  reviewedUserId   Int
+  rating           Float
+  comment          String?
+  evidenceImageUrl String?
+  createdAt        DateTime @default(now())
+
+  service   Service @relation("ServiceReviews", fields: [serviceId], references: [id], onDelete: Cascade)
+  reviewer  User    @relation("WrittenReviews", fields: [reviewerUserId], references: [id], onDelete: Cascade)
+  reviewed  User    @relation("ReceivedReviews", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Notification {
+  id            Int              @id @default(autoincrement())
+  userId        Int
+  title         String
+  description   String
+  type          NotificationType
+  isUnread      Boolean          @default(true)
+  requestId     Int?
+  serviceId    Int?
+  conversationId Int?
+  applicationId Int?
+  createdAt     DateTime        @default(now())
+
+  user          User            @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  request       Request?        @relation("RequestNotifications", fields: [requestId], references: [id], onDelete: SetNull)
+  service       Service?        @relation("ServiceNotifications", fields: [serviceId], references: [id], onDelete: SetNull)
+  conversation Conversation?   @relation("ConversationNotifications", fields: [conversationId], references: [id], onDelete: SetNull)
+  application   ServiceApplication? @relation("ApplicationNotifications", fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@map("notifications")
+}
+
+enum NotificationType {
+  APPLICATION
+  MESSAGE
+  CONFIRMED
+  PAYMENT
+  REMINDER
+}
+
+model Conversation {
+  id                 Int       @id @default(autoincrement())
+  participantAUserId Int
+  participantBUserId Int
+  requestId          Int?
+  serviceId          Int?
+  lastMessagePreview String?
+  lastMessageAt      DateTime?
+  createdAt          DateTime  @default(now())
+
+  participantA User          @relation("ConversationParticipantA", fields: [participantAUserId], references: [id], onDelete: Cascade)
+  participantB User          @relation("ConversationParticipantB", fields: [participantBUserId], references: [id], onDelete: Cascade)
+  request      Request?      @relation("RequestConversations", fields: [requestId], references: [id], onDelete: SetNull)
+  service      Service?      @relation("ServiceConversations", fields: [serviceId], references: [id], onDelete: SetNull)
+  messages     Message[]    @relation("ConversationMessages")
+  notifications Notification[] @relation("ConversationNotifications")
+
+  @@map("conversations")
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  conversationId Int
+  senderUserId   Int
+  body           String
+  attachmentUri String?
+  isRead         Boolean  @default(false)
+  sentAt         DateTime @default(now())
+
+  conversation Conversation @relation("ConversationMessages", fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderUserId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
