@@ -3,9 +3,9 @@ package com.example.verviapp.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.verviapp.data.dao.CategoryDao
-import com.example.verviapp.data.dao.UserDao
-import com.example.verviapp.data.entity.UserCategoryCrossRef
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.RequestRepository
+import com.example.verviapp.data.repository.UserRepository
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.EditProfileState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,8 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditProfileViewModel @Inject constructor(
-    private val userDao: UserDao,
-    private val categoryDao: CategoryDao,
+    private val userRepository: UserRepository,
+    private val requestRepository: RequestRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -46,30 +46,45 @@ class EditProfileViewModel @Inject constructor(
                 return@launch
             }
 
-            val userWithCategories = userDao.getUserWithCategoriesById(userId)
-            if (userWithCategories == null) {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    errorMessage = "No se pudo cargar el perfil"
-                )
-                return@launch
+            when (val result = userRepository.getUserById(userId)) {
+                is ApiResult.Success -> {
+                    val user = result.data
+                    _state.value = _state.value.copy(
+                        name = user.name,
+                        bio = user.bio ?: "",
+                        photoUrl = user.photoUrl ?: "",
+                        price = user.suggestedPriceCop?.let { currencyFormatter.format(it) } ?: "",
+                        location = user.location ?: "",
+                        isProvider = user.isProvider,
+                        categories = user.categories?.map { it.name } ?: emptyList(),
+                        isLoading = false,
+                        errorMessage = null
+                    )
+                }
+                is ApiResult.Error -> {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        errorMessage = result.message
+                    )
+                }
             }
 
-            val selectedCategories = userWithCategories.categories.map { it.name }
-            val allCategories = categoryDao.getCategoryNames()
+            loadCategoriesForEdit()
+        }
+    }
 
-            _state.value = _state.value.copy(
-                name = userWithCategories.user.name,
-                bio = userWithCategories.user.bio,
-                photoUrl = userWithCategories.user.photoUrl,
-                price = userWithCategories.user.suggestedPriceCop?.let { currencyFormatter.format(it) } ?: "",
-                location = userWithCategories.user.location,
-                isProvider = userWithCategories.user.isProvider,
-                categories = selectedCategories,
-                availableCategories = allCategories.filterNot { it in selectedCategories },
-                isLoading = false,
-                errorMessage = null
-            )
+    private fun loadCategoriesForEdit() {
+        viewModelScope.launch {
+            when (val result = requestRepository.loadCategories()) {
+                is ApiResult.Success -> {
+                    val allCategoryNames = result.data.map { it.name }
+                    val selectedCategories = _state.value.categories
+                    val availableCategories = allCategoryNames.filterNot { it in selectedCategories }
+                    _state.value = _state.value.copy(availableCategories = availableCategories)
+                }
+                is ApiResult.Error -> {
+                }
+            }
         }
     }
 
@@ -108,58 +123,33 @@ class EditProfileViewModel @Inject constructor(
 
             _state.value = currentState.copy(isSaving = true, errorMessage = null)
 
-            try {
-                val userId = editableUserId()
-                if (userId == null) {
-                    _state.value = _state.value.copy(
-                        isSaving = false,
-                        errorMessage = "No hay sesión activa"
-                    )
-                    return@launch
-                }
-
-                val currentUser = userDao.getUserById(userId)
-                if (currentUser == null) {
-                    _state.value = _state.value.copy(
-                        isSaving = false,
-                        errorMessage = "No se encontró el usuario a editar"
-                    )
-                    return@launch
-                }
-
-                val updatedUser = currentUser.copy(
-                    name = normalizedName,
-                    bio = currentState.bio.trim(),
-                    location = currentState.location.trim(),
-                    isProvider = currentState.isProvider,
-                    suggestedPriceCop = parsePrice(currentState.price),
-                    updatedAt = System.currentTimeMillis()
-                )
-                userDao.updateUser(updatedUser)
-
-                val normalizedCategories = currentState.categories
-                    .map { it.trim() }
-                    .filter { it.isNotBlank() }
-                    .distinct()
-
-                categoryDao.deleteUserCategoriesByUserId(userId)
-                if (normalizedCategories.isNotEmpty()) {
-                    val categories = categoryDao.getCategoriesByNames(normalizedCategories)
-                    if (categories.isNotEmpty()) {
-                        categoryDao.insertUserCategories(
-                            categories.map { category ->
-                                UserCategoryCrossRef(userId = userId, categoryId = category.id)
-                            }
-                        )
-                    }
-                }
-
-                _state.value = _state.value.copy(isSaving = false, saveSuccess = true, errorMessage = null)
-            } catch (t: Throwable) {
+            val userId = editableUserId()
+            if (userId == null) {
                 _state.value = _state.value.copy(
                     isSaving = false,
-                    errorMessage = t.message ?: "No se pudo guardar el perfil"
+                    errorMessage = "No hay sesión activa"
                 )
+                return@launch
+            }
+
+            when (val result = userRepository.updateUser(
+                id = userId,
+                name = normalizedName,
+                bio = currentState.bio.trim(),
+                location = currentState.location.trim(),
+                isProvider = currentState.isProvider,
+                suggestedPriceCop = parsePrice(currentState.price),
+                photoUrl = currentState.photoUrl.ifBlank { null }
+            )) {
+                is ApiResult.Success -> {
+                    _state.value = _state.value.copy(isSaving = false, saveSuccess = true, errorMessage = null)
+                }
+                is ApiResult.Error -> {
+                    _state.value = _state.value.copy(
+                        isSaving = false,
+                        errorMessage = result.message
+                    )
+                }
             }
         }
     }

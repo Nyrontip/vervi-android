@@ -68,6 +68,15 @@ dependencies {
     implementation(libs.roomKtx)
     ksp(libs.roomCompiler)
 
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofitMoshi)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLogging)
+    implementation(libs.moshi)
+    implementation(libs.moshiKotlin)
+    ksp(libs.moshiCodegen)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
