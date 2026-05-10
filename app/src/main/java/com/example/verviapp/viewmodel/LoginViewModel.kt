@@ -2,8 +2,8 @@ package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.verviapp.data.dao.UserDao
-import com.example.verviapp.data.entity.UserEntity
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.AuthRepository
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.AuthState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,11 +17,12 @@ import kotlinx.coroutines.launch
 sealed class AuthEvent {
     object LoginSuccess : AuthEvent()
     object RegisterSuccess : AuthEvent()
+    data class Error(val message: String) : AuthEvent()
 }
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userDao: UserDao,
+    private val authRepository: AuthRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -41,25 +42,18 @@ class LoginViewModel @Inject constructor(
 
             _state.value = _state.value.copy(isLoading = true, errorMessage = null)
 
-            try {
-                val user = userDao.getUserByEmail(normalizedEmail)
-                if (user == null || user.password != password) {
+            when (val result = authRepository.login(normalizedEmail, password)) {
+                is ApiResult.Success -> {
+                    _state.value = _state.value.copy(isLoading = false, errorMessage = null)
+                    _events.emit(AuthEvent.LoginSuccess)
+                }
+                is ApiResult.Error -> {
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        errorMessage = "Correo o contraseña inválidos"
+                        errorMessage = result.message
                     )
-                    return@launch
+                    _events.emit(AuthEvent.Error(result.message))
                 }
-
-                sessionManager.saveUserSession(user.id)
-
-                _state.value = _state.value.copy(isLoading = false, errorMessage = null)
-                _events.emit(AuthEvent.LoginSuccess)
-            } catch (t: Throwable) {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    errorMessage = t.message ?: "No se pudo iniciar sesión"
-                )
             }
         }
     }
@@ -80,41 +74,19 @@ class LoginViewModel @Inject constructor(
 
             _state.value = _state.value.copy(isLoading = true, errorMessage = null)
 
-            try {
-                val existingUser = userDao.getUserByEmail(normalizedEmail)
-                if (existingUser != null) {
+            when (val result = authRepository.register(normalizedName, normalizedEmail, password)) {
+                is ApiResult.Success -> {
+                    sessionManager.saveUserSession(result.data.id)
+                    _state.value = _state.value.copy(isLoading = false, errorMessage = null)
+                    _events.emit(AuthEvent.RegisterSuccess)
+                }
+                is ApiResult.Error -> {
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        errorMessage = "Este correo ya está registrado"
+                        errorMessage = result.message
                     )
-                    return@launch
+                    _events.emit(AuthEvent.Error(result.message))
                 }
-
-                val insertResult = userDao.insertUser(
-                    UserEntity(
-                        name = normalizedName,
-                        email = normalizedEmail,
-                        password = password
-                    )
-                )
-
-                if (insertResult == -1L) {
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        errorMessage = "No se pudo registrar el usuario"
-                    )
-                    return@launch
-                }
-
-                sessionManager.saveUserSession(insertResult.toInt())
-
-                _state.value = _state.value.copy(isLoading = false, errorMessage = null)
-                _events.emit(AuthEvent.RegisterSuccess)
-            } catch (t: Throwable) {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    errorMessage = t.message ?: "No se pudo registrar"
-                )
             }
         }
     }

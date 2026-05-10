@@ -22,6 +22,8 @@ Registra un nuevo usuario en la plataforma.
 
 **Endpoint:** `POST /auth/register`
 
+**Headers:** Ninguno (público)
+
 **Body:**
 ```json
 {
@@ -40,7 +42,7 @@ Registra un nuevo usuario en la plataforma.
 }
 ```
 
-**Respuesta Exitosa (201):**
+**Respuesta Exitosa (201):** Usuario creado (password hasheado).
 ```json
 {
   "id": 1,
@@ -50,6 +52,8 @@ Registra un nuevo usuario en la plataforma.
   "createdAt": "2026-05-06T10:00:00.000Z"
 }
 ```
+
+**Códigos:** `201`, `400`
 
 **Ejemplo:**
 ```bash
@@ -69,6 +73,8 @@ curl -X POST http://localhost:3000/api/auth/register \
 Inicia sesión y devuelve un token JWT.
 
 **Endpoint:** `POST /auth/login`
+
+**Headers:** Ninguno (público)
 
 **Body:**
 ```json
@@ -90,6 +96,8 @@ Inicia sesión y devuelve un token JWT.
 }
 ```
 
+**Códigos:** `200`, `401`
+
 **Ejemplo:**
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
@@ -99,6 +107,10 @@ curl -X POST http://localhost:3000/api/auth/login \
     "password": "miPassword123"
   }'
 ```
+
+**Autenticación para endpoints protegidos:**
+- Header: `Authorization: Bearer <token>`
+- Secret: `JWT_SECRET` (desde `.env`)
 
 ---
 
@@ -2000,19 +2012,14 @@ curl -X DELETE http://localhost:3000/api/notifications/1
 
 ---
 
-## Autenticación
-
-La API usa autenticación JWT. Para endpoints protegidos, incluye el token en el header:
-
-```
-Authorization: Bearer <access_token>
-```
-
----
-
 ## Notas
 
 - Todos los timestamps están en formato ISO 8601 (UTC)
 - Los precios están en COP (Pesos Colombianos)
 - Los IDs de recursos son siempre números enteros
 - Los body de POST/PUT aceptan campos parciales para actualizaciones
+- Todos los endpoints son públicos (sin protección JWT excepto `GET /users/profile/me`)
+- Sin paginación implementada
+- CORS habilitado para todos los orígenes
+- Passwords almacenados hasheados con bcrypt
+- JWT payload contiene: `sub`, `email`, `isProvider`

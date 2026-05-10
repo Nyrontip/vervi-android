@@ -9,12 +9,28 @@ class SessionManager @Inject constructor(
     private val prefs: SharedPreferences
 ) {
 
-    fun saveUserSession(userId: Int) {
-        prefs.edit().putInt(KEY_USER_ID, userId).apply()
+    fun saveUserSession(userId: Int, token: String? = null) {
+        prefs.edit()
+            .putInt(KEY_USER_ID, userId)
+            .apply()
+        if (token != null) {
+            saveAuthToken(token)
+        }
+    }
+
+    fun saveAuthToken(token: String) {
+        prefs.edit().putString(KEY_AUTH_TOKEN, token).apply()
+    }
+
+    fun getAuthToken(): String? {
+        return prefs.getString(KEY_AUTH_TOKEN, null)
     }
 
     fun clearSession() {
-        prefs.edit().remove(KEY_USER_ID).apply()
+        prefs.edit()
+            .remove(KEY_USER_ID)
+            .remove(KEY_AUTH_TOKEN)
+            .apply()
     }
 
     fun getLoggedInUserId(): Int? {
@@ -26,5 +42,6 @@ class SessionManager @Inject constructor(
 
     private companion object {
         const val KEY_USER_ID = "session_user_id"
+        const val KEY_AUTH_TOKEN = "auth_token"
     }
 }

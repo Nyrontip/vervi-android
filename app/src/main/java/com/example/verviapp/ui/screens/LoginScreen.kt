@@ -37,11 +37,14 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                AuthEvent.LoginSuccess,
-                AuthEvent.RegisterSuccess -> {
+                is AuthEvent.LoginSuccess,
+                is AuthEvent.RegisterSuccess -> {
                     navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
                     }
+                }
+                is AuthEvent.Error -> {
+                    // Error ya manejado en state.errorMessage
                 }
             }
         }

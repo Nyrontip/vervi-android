@@ -2,8 +2,9 @@ package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.verviapp.data.dao.UserDao
-import com.example.verviapp.data.entity.UserWithCategories
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.AuthRepository
+import com.example.verviapp.data.repository.UserRepository
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.ProfileState
 import com.example.verviapp.viewmodel.state.User
@@ -11,9 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
@@ -21,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userDao: UserDao,
+    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -29,7 +28,6 @@ class ProfileViewModel @Inject constructor(
     val state: StateFlow<ProfileState> = _state.asStateFlow()
     private val currencyFormatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
     private var lastRequestedUserId: Int? = null
-    private var profileJob: Job? = null
 
     init {
         loadProfile()
@@ -39,7 +37,6 @@ class ProfileViewModel @Inject constructor(
         val requestedUserId = userId?.toIntOrNull() ?: sessionManager.getLoggedInUserId()
         lastRequestedUserId = requestedUserId
         if (requestedUserId == null) {
-            profileJob?.cancel()
             _state.value = _state.value.copy(isLoading = false, user = User())
             return
         }
@@ -60,48 +57,46 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun logout() {
-        sessionManager.clearSession()
+        authRepository.logout()
     }
 
     private fun observeProfile(userId: Int) {
-        profileJob?.cancel()
-        profileJob = viewModelScope.launch {
+        viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
-            userDao.observeUserWithCategoriesById(userId)
-                .catch {
+
+            when (val result = userRepository.getUserById(userId)) {
+                is ApiResult.Success -> {
+                    val user = result.data
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        user = user.toUiUser()
+                    )
+                }
+                is ApiResult.Error -> {
                     _state.value = _state.value.copy(isLoading = false, user = User())
                 }
-                .collectLatest { userWithCategories ->
-                    if (userWithCategories == null) {
-                        _state.value = _state.value.copy(isLoading = false, user = User())
-                    } else {
-                        _state.value = _state.value.copy(
-                            isLoading = false,
-                            user = userWithCategories.toUiUser()
-                        )
-                    }
-                }
+            }
         }
     }
 
-    private fun UserWithCategories.toUiUser(): User {
-        val price = user.suggestedPriceCop?.let { "\$${currencyFormatter.format(it)}" } ?: "A convenir"
-        val categoryNames = categories.map { it.name }
+    private fun com.example.verviapp.data.remote.dto.UserDto.toUiUser(): User {
+        val price = suggestedPriceCop?.let { "\$${currencyFormatter.format(it)}" } ?: "A convenir"
+        val categoryNames = categories?.map { it.name } ?: emptyList()
 
         return User(
-            id = user.id.toString(),
-            name = user.name,
-            email = user.email,
-            bio = user.bio.ifBlank { "Sin biografía" },
-            location = user.location.ifBlank { "Sin ubicación" },
-            photoUrl = user.photoUrl,
-            rating = user.rating,
-            reviewCount = user.reviewCount,
+            id = id.toString(),
+            name = name,
+            email = email,
+            bio = bio ?: "Sin biografía",
+            location = location ?: "Sin ubicación",
+            photoUrl = photoUrl ?: "",
+            rating = rating,
+            reviewCount = reviewCount,
             suggestedPrice = price,
             categories = if (categoryNames.isEmpty()) listOf("Sin categoría") else categoryNames,
-            isProvider = user.isProvider,
-            projectCount = user.projectCount,
-            requestCount = user.requestCount
+            isProvider = isProvider,
+            projectCount = projectCount,
+            requestCount = requestCount
         )
     }
 }
