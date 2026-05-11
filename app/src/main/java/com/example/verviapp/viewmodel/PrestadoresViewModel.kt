@@ -2,37 +2,28 @@ package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
-import com.example.verviapp.data.dao.CategoryDao
-import com.example.verviapp.data.dao.UserDao
-import com.example.verviapp.data.entity.UserWithCategories
-import com.example.verviapp.viewmodel.state.Provider
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.ProvidersRepository
+import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.viewmodel.state.ProvidersState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import java.text.NumberFormat
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class PrestadoresViewModel @Inject constructor(
-    private val userDao: UserDao,
-    private val categoryDao: CategoryDao
+    private val providersRepository: ProvidersRepository,
+    private val requestRepository: RequestRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProvidersState())
     val state: StateFlow<ProvidersState> = _state.asStateFlow()
-    private var searchJob: Job? = null
-    private var categoriesJob: Job? = null
-    private val currencyFormatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
 
     init {
-        observeCategories()
+        loadCategories()
         executeSearch()
     }
 
@@ -49,63 +40,42 @@ class PrestadoresViewModel @Inject constructor(
         executeSearch()
     }
 
-    private fun observeCategories() {
-        categoriesJob?.cancel()
-        categoriesJob = viewModelScope.launch {
-            runCatching { categoryDao.getCategoryNames() }
-                .onSuccess { categories ->
+    private fun loadCategories() {
+        viewModelScope.launch {
+            when (val result = requestRepository.loadCategories()) {
+                is ApiResult.Success -> {
+                    val categories = result.data.map { it.name }
                     _state.value = _state.value.copy(categories = listOf("Todos") + categories)
                 }
-                .onFailure {
+                is ApiResult.Error -> {
                     _state.value = _state.value.copy(categories = listOf("Todos"))
                 }
+            }
         }
     }
 
     private fun executeSearch() {
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            userDao
-                .observeProviders(
-                    text = _state.value.searchQuery.trim(),
-                    category = _state.value.selectedCategory
-                )
-                .onStart {
-                    _state.value = _state.value.copy(isLoading = true, errorMessage = null)
-                }
-                .catch { throwable ->
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        errorMessage = throwable.message ?: "No se pudo cargar la lista de prestadores"
-                    )
-                }
-                .collect { providers ->
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true, errorMessage = null)
+
+            when (val result = providersRepository.loadProviders(
+                searchQuery = _state.value.searchQuery.trim(),
+                category = _state.value.selectedCategory
+            )) {
+                is ApiResult.Success -> {
                     _state.value = _state.value.copy(
                         isLoading = false,
                         errorMessage = null,
-                        providers = providers.map { it.toUiModel() }
+                        providers = result.data
                     )
                 }
-        }
-    }
-
-    private fun UserWithCategories.toUiModel(): Provider {
-        val formattedPrice = user.suggestedPriceCop?.let { value ->
-            "\$${currencyFormatter.format(value)} COP"
-        } ?: "A convenir"
-
-        val specialtyText = categories.firstOrNull()?.name ?: "Sin categoria"
-
-        return Provider(
-            id = user.id,
-            name = user.name,
-            specialty = specialtyText.uppercase(),
-            price = formattedPrice,
-            rating = user.rating,
-            reviewCount = user.reviewCount,
-            imageUrl = user.photoUrl.ifBlank {
-                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=600&fit=crop"
+                is ApiResult.Error -> {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        errorMessage = result.message
+                    )
+                }
             }
-        )
+        }
     }
 }
