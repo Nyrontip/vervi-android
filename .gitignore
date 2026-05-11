@@ -45,4 +45,5 @@ vervi-api/node_modules/
 vervi-api/dist/
 vervi-api/.env
 vervi-api/*.db
+vervi-api/*.ps1
 vervi-api/*.db-journal

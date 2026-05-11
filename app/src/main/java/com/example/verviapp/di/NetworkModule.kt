@@ -3,6 +3,7 @@ package com.example.verviapp.di
 import android.content.Context
 import com.example.verviapp.data.remote.VerviApi
 import com.example.verviapp.data.session.SessionManager
+import com.example.verviapp.BuildConfig
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -21,8 +22,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    private const val BASE_URL = "https://outclass-oxidizing-cataract.ngrok-free.dev/api/"
 
     @Provides
     @Singleton
@@ -71,7 +70,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.VERVI_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
