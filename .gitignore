@@ -35,6 +35,7 @@ google-services.json
 # Kotlin/Java compilados
 *.class
 *.kotlin_module
+.kotlin/
 
 # MacOS
 .DS_Store
