@@ -49,13 +49,15 @@ fun HomeScreen(
                             tint = VerviColors.TextDark
                         )
                     }
-                    IconButton(onClick = {
-                        navController.navigate("notifications")
-                    }) {
-                        Icon(
-                            Icons.Default.Notifications, contentDescription = "Notificaciones",
-                            tint = VerviColors.TextDark
-                        )
+                    if (hasSession) {
+                        IconButton(onClick = {
+                            navController.navigate("notifications")
+                        }) {
+                            Icon(
+                                Icons.Default.Notifications, contentDescription = "Notificaciones",
+                                tint = VerviColors.TextDark
+                            )
+                        }
                     }
                 }
             )

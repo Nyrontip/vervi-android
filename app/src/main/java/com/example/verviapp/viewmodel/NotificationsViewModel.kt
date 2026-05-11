@@ -2,19 +2,13 @@ package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import android.text.format.DateUtils
-import com.example.verviapp.data.dao.NotificationDao
-import com.example.verviapp.data.entity.NotificationEntity
-import com.example.verviapp.data.repository.SampleData
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.NotificationsRepository
 import com.example.verviapp.viewmodel.state.NotificationItem
-import com.example.verviapp.viewmodel.state.NotificationType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,85 +21,77 @@ data class NotificationsUiState(
 
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(
-    private val notificationDao: NotificationDao
+    private val repository: NotificationsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NotificationsUiState())
     val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
-    private var notificationsJob: Job? = null
 
     init {
-        observeNotifications()
+        loadNotifications()
     }
 
     fun selectTab(index: Int) {
+        if (_uiState.value.selectedTab == index) return
         _uiState.value = _uiState.value.copy(selectedTab = index)
-        observeNotifications()
+        loadNotifications()
     }
 
     fun markAsRead(item: NotificationItem) {
         if (!item.unread) return
 
         viewModelScope.launch {
-            try {
-                notificationDao.markAsRead(item.id)
-            } catch (throwable: Throwable) {
-                _uiState.value = _uiState.value.copy(
-                    error = throwable.message ?: "No fue posible marcar la notificacion"
-                )
+            when (repository.markAsRead(item.id)) {
+                is ApiResult.Success -> {
+                    // Reflejar el cambio localmente sin recargar todo
+                    val updated = _uiState.value.notifications.map {
+                        if (it.id == item.id) it.copy(unread = false) else it
+                    }
+                    _uiState.value = _uiState.value.copy(notifications = updated)
+                }
+                is ApiResult.Error -> { /* silencioso: no bloquear al usuario */ }
             }
         }
     }
 
+    fun retry() {
+        loadNotifications()
+    }
 
-    private fun observeNotifications() {
-        notificationsJob?.cancel()
-        notificationsJob = viewModelScope.launch {
+    private fun loadNotifications() {
+        val userId = repository.getLoggedInUserId()
+        if (userId == null) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = "Debes iniciar sesión para ver tus notificaciones"
+            )
+            return
+        }
+
+        viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            val flow = if (_uiState.value.selectedTab == 0) {
-                notificationDao.observeNotifications(SampleData.NOTIFICATIONS_USER_ID)
+            val result = if (_uiState.value.selectedTab == 0) {
+                repository.getAll(userId)
             } else {
-                notificationDao.observeUnreadNotifications(SampleData.NOTIFICATIONS_USER_ID)
+                repository.getUnread(userId)
             }
 
-            flow
-                .map { entities -> entities.map { it.toUiItem() } }
-                .catch { throwable ->
+            when (result) {
+                is ApiResult.Success -> {
                     _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = throwable.message ?: "Error al cargar notificaciones"
-                    )
-                }
-                .collect { items ->
-                    _uiState.value = _uiState.value.copy(
-                        notifications = items,
+                        notifications = result.data,
                         isLoading = false,
                         error = null
                     )
                 }
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.message
+                    )
+                }
+            }
         }
     }
-
-    private fun NotificationEntity.toUiItem(): NotificationItem {
-        val relativeTime = DateUtils.getRelativeTimeSpanString(
-            createdAt,
-            System.currentTimeMillis(),
-            DateUtils.MINUTE_IN_MILLIS
-        ).toString()
-
-        return NotificationItem(
-            id = id,
-            title = title,
-            description = description,
-            time = relativeTime,
-            type = type.toNotificationType(),
-            unread = isUnread
-        )
-    }
-
-    private fun String.toNotificationType(): NotificationType {
-        return NotificationType.entries.firstOrNull { it.name == this } ?: NotificationType.REMINDER
-    }
 }
-
