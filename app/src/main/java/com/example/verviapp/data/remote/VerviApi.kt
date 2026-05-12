@@ -67,4 +67,15 @@ interface VerviApi {
 
     @PUT("notifications/user/{userId}/read-all")
     suspend fun markAllNotificationsRead(@Path("userId") userId: Int): Response<Unit>
+
+    // ── Chat ────────────────────────────────────────────────────
+
+    @POST("chat/conversations/find-or-create")
+    suspend fun findOrCreateConversation(@Body request: FindOrCreateConversationRequest): Response<ConversationDto>
+
+    @GET("chat/messages/{conversationId}")
+    suspend fun getMessages(@Path("conversationId") conversationId: Int): Response<List<MessageDto>>
+
+    @POST("chat/messages")
+    suspend fun sendMessage(@Body request: CreateMessageRequest): Response<MessageDto>
 }

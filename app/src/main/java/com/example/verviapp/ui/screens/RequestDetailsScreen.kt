@@ -14,8 +14,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -89,6 +91,7 @@ fun RequestDetailsScreen(
             else
                 request?.client?.rating?.let { "$it calificación" }
             val personAvatar = if (uiState.isOwner) uiState.provider?.avatarUrl else request?.client?.avatarUrl
+            val scope = rememberCoroutineScope()
 
             RequestDetailsCard(
                 title = request?.title ?: "Cargando solicitud...",
@@ -101,7 +104,19 @@ fun RequestDetailsScreen(
                 publisherName = personName,
                 publisherRating = personRating,
                 publisherAvatarUrl = personAvatar,
-                onPublisherChatClick = { navController.navigate("chat") }
+                showChat = uiState.isOwner,
+                onPublisherChatClick = {
+                    request?.id?.toIntOrNull()?.let { requestIdInt ->
+                        uiState.providerUserId?.let { providerId ->
+                            scope.launch {
+                                val convId = vm.openChat(providerId, requestIdInt)
+                                if (convId != null) {
+                                    navController.navigate("chat/$convId")
+                                }
+                            }
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -35,7 +35,8 @@ fun PublisherCard(
     name: String,
     ratingLine: String,
     avatarUrl: String?,
-    onChatClick: () -> Unit,
+    showChat: Boolean = true,
+    onChatClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -71,13 +72,15 @@ fun PublisherCard(
             )
         }
 
-        CircularActionButton(
-            icon = Icons.AutoMirrored.Outlined.Chat,
-            contentDescription = "Chat",
-            onClick = onChatClick,
-            tint = VerviColors.Primary,
-            backgroundColor = Color(0xFFF0F4F8)
-        )
+        if (showChat) {
+            CircularActionButton(
+                icon = Icons.AutoMirrored.Outlined.Chat,
+                contentDescription = "Chat",
+                onClick = onChatClick,
+                tint = VerviColors.Primary,
+                backgroundColor = Color(0xFFF0F4F8)
+            )
+        }
     }
 }
 

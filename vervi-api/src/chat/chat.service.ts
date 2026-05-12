@@ -36,6 +36,23 @@ export class ChatService {
     return this.conversationsRepository.save(conversation);
   }
 
+  async findOrCreateConversation(
+    participantAUserId: number,
+    participantBUserId: number,
+    requestId?: number,
+  ): Promise<Conversation> {
+    const existing = await this.conversationsRepository.findOne({
+      where: [
+        { participantAUserId, participantBUserId, requestId },
+        { participantAUserId: participantBUserId, participantBUserId: participantAUserId, requestId },
+      ],
+      relations: ['participantA', 'participantB', 'request'],
+    });
+    if (existing) return existing;
+
+    return this.createConversation({ participantAUserId, participantBUserId, requestId });
+  }
+
   async findMessagesByConversation(conversationId: number): Promise<Message[]> {
     return this.messagesRepository.find({ where: { conversationId }, relations: ['sender'] });
   }

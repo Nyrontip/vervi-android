@@ -123,6 +123,39 @@ data class NotificationDto(
 )
 
 @JsonClass(generateAdapter = true)
+data class ConversationDto(
+    @Json(name = "id") val id: Int,
+    @Json(name = "participantAUserId") val participantAUserId: Int,
+    @Json(name = "participantBUserId") val participantBUserId: Int,
+    @Json(name = "requestId") val requestId: Int? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class FindOrCreateConversationRequest(
+    @Json(name = "participantAUserId") val participantAUserId: Int,
+    @Json(name = "participantBUserId") val participantBUserId: Int,
+    @Json(name = "requestId") val requestId: Int? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class MessageDto(
+    @Json(name = "id") val id: Int,
+    @Json(name = "conversationId") val conversationId: Int,
+    @Json(name = "senderUserId") val senderUserId: Int,
+    @Json(name = "body") val body: String,
+    @Json(name = "isRead") val isRead: Boolean,
+    @Json(name = "sentAt") val sentAt: String?,
+    @Json(name = "sender") val sender: UserDto? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class CreateMessageRequest(
+    @Json(name = "conversationId") val conversationId: Int,
+    @Json(name = "senderUserId") val senderUserId: Int,
+    @Json(name = "body") val body: String
+)
+
+@JsonClass(generateAdapter = true)
 data class ApiError(
     @Json(name = "message") val message: String,
     @Json(name = "statusCode") val statusCode: Int? = null

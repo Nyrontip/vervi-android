@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.remote.dto.RequestDto
 import com.example.verviapp.data.remote.dto.ServiceSummaryDto
 import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.ChatRepository
 import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.ClientSummary
@@ -25,12 +26,14 @@ data class RequestDetailsUiState(
     val error: String? = null,
     val request: RequestDetailItem? = null,
     val isOwner: Boolean = false,
-    val provider: ClientSummary? = null
+    val provider: ClientSummary? = null,
+    val providerUserId: Int? = null
 )
 
 @HiltViewModel
 class RequestDetailsViewModel @Inject constructor(
     private val repository: RequestRepository,
+    private val chatRepository: ChatRepository,
     private val sessionManager: SessionManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -73,10 +76,12 @@ class RequestDetailsViewModel @Inject constructor(
                     val currentUserId = sessionManager.getLoggedInUserId()
                     val owner = currentUserId != null && currentUserId == dto.clientUserId
 
+                    val resolvedProvider = dto.resolveProvider()
                     _uiState.value = _uiState.value.copy(
                         request = dto.toDetailItem(),
                         isOwner = owner,
-                        provider = dto.resolveProvider(),
+                        provider = resolvedProvider?.first,
+                        providerUserId = resolvedProvider?.second,
                         isLoading = false
                     )
                 }
@@ -91,7 +96,7 @@ class RequestDetailsViewModel @Inject constructor(
     }
 
     /** Devuelve el proveedor asociado al servicio más reciente, si existe. */
-    private fun RequestDto.resolveProvider(): ClientSummary? {
+    private fun RequestDto.resolveProvider(): Pair<ClientSummary, Int>? {
         val latest = services
             ?.filter { it.provider != null }
             ?.maxByOrNull { parseTimeOrZero(it.createdAt) }
@@ -104,7 +109,14 @@ class RequestDetailsViewModel @Inject constructor(
             location = user.location ?: "",
             phone = null,
             avatarUrl = user.photoUrl?.takeIf(String::isNotBlank)
-        )
+        ) to latest.providerUserId
+    }
+
+    suspend fun openChat(providerUserId: Int, requestId: Int): Int? {
+        return when (val result = chatRepository.findOrCreateConversation(providerUserId, requestId)) {
+            is ApiResult.Success -> result.data.id
+            is ApiResult.Error -> null
+        }
     }
 
     private fun parseTimeOrZero(iso: String?): Long {

@@ -41,7 +41,8 @@ fun RequestDetailsCard(
     publisherName: String?,
     publisherRating: String?,
     publisherAvatarUrl: String?,
-    onPublisherChatClick: () -> Unit,
+    showChat: Boolean = true,
+    onPublisherChatClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -110,6 +111,7 @@ fun RequestDetailsCard(
                     name = publisherName,
                     ratingLine = publisherRating ?: "Sin calificaciones",
                     avatarUrl = publisherAvatarUrl,
+                    showChat = showChat,
                     onChatClick = onPublisherChatClick
                 )
             } else {

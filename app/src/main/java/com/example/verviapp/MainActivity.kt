@@ -84,8 +84,9 @@ class MainActivity : ComponentActivity() {
                         val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: return@dialog
                         RateServiceScreen(navController, serviceId)
                     }
-                    composable("chat") {
-                        ChatScreen(navController)
+                    composable("chat/{conversationId}", arguments = listOf(navArgument("conversationId") { type = NavType.IntType })) { backStackEntry ->
+                        val convId = backStackEntry.arguments?.getInt("conversationId") ?: return@composable
+                        ChatScreen(conversationId = convId, navController = navController)
                     }
                     composable("request/details") {
                         RequestDetailsScreen(navController)

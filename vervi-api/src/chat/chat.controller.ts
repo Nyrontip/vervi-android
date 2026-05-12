@@ -42,6 +42,14 @@ export class ChatController {
     return this.chatService.createConversation(conversationData);
   }
 
+  @Post('conversations/find-or-create')
+  @ApiOperation({ summary: 'Find or create a conversation', description: 'Find an existing conversation between two users for a request, or create a new one' })
+  @ApiResponse({ status: 201, description: 'Conversation found or created' })
+  @ApiBody({ schema: { example: { participantAUserId: 1, participantBUserId: 2, requestId: 1 } } })
+  findOrCreateConversation(@Body() body: { participantAUserId: number; participantBUserId: number; requestId?: number }) {
+    return this.chatService.findOrCreateConversation(body.participantAUserId, body.participantBUserId, body.requestId);
+  }
+
   @Get('messages/:conversationId')
   @ApiOperation({ summary: 'Get messages by conversation', description: 'Retrieve all messages for a specific conversation' })
   @ApiParam({ name: 'conversationId', type: Number, description: 'Conversation ID' })

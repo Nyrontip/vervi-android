@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.verviapp.ui.components.VerviSmallButton
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.AnimatedVisibility
@@ -355,13 +355,15 @@ fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modi
 
 @Composable
 fun ChatScreen(
+    conversationId: Int,
     navController: NavController,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(conversationId) {
+        viewModel.init(conversationId)
+    }
 
     val state by viewModel.uiState.collectAsState()
-
-    val messages = state.messages
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -392,12 +394,46 @@ fun ChatScreen(
             }
         }
     ) { innerPadding ->
-        ChatMessagesList(
-            messages = messages,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
-        )
+        when {
+            state.isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = VerviColors.Blue)
+                }
+            }
+            state.error != null -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = state.error!!,
+                            color = VerviColors.TextGray,
+                            fontSize = 14.sp
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        VerviSmallButton(
+                            text = "Reintentar",
+                            color = VerviColors.Blue,
+                            onClick = { viewModel.retry() }
+                        )
+                    }
+                }
+            }
+            else -> {
+                ChatMessagesList(
+                    messages = state.messages,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .consumeWindowInsets(innerPadding)
+                )
+            }
+        }
     }
 }
