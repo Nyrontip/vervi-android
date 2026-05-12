@@ -50,21 +50,27 @@ async function seed() {
     (1, 1, 'Pendiente', 'Instalación de 5 interruptores', 'Necesito instalar 5 interruptores modernos en mi apartamento nuevo. Los materiales los tengo, solo necesito la mano de obra calificada.', 'Bogotá, Chapinero', 150000, false, true, 2, 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&h=400&fit=crop'),
     (1, 2, 'Pendiente', 'Reparación de fuga en cocina', 'Hay una fuga de agua bajo el lavabo de la cocina. Ya intenté apretar las conexiones pero sigue goteando. Urgente.', 'Bogotá, Chapinero', 80000, true, true, 1, 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&h=400&fit=crop'),
     (1, 4, 'Borrador', 'Pintura de sala y habitación', 'Quiero pintar la sala y dos habitaciones. Colores neutros. Aprox 60m2 en total.', 'Bogotá, Usaquén', 350000, false, true, 0, 'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=600&h=400&fit=crop'),
+    (1, 10, 'Pendiente', 'Construcción de deck en patio trasero', 'Quiero construir un deck de madera de 4m x 3m en el patio trasero. Con barandal.', 'Bogotá, Chapinero', 800000, false, true, 0, 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=600&h=400&fit=crop'),
     (2, 3, 'Pendiente', 'Construir estantería para sala', 'Necesito una estantería de madera para la sala, medidas 2m x 1m. Estilo moderno con estantes abiertos.', 'Bogotá, Suba', 250000, false, true, 1, 'https://images.unsplash.com/photo-1597006335775-98b7e2bc28f8?w=600&h=400&fit=crop'),
     (2, 5, 'En curso', 'Mantenimiento de jardín', 'Podar árboles, cortar pasto y limpiar el jardín frontal. Herramientas las tengo.', 'Bogotá, Suba', 100000, false, true, 2, 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&h=400&fit=crop'),
-    (2, 8, 'Pendiente', 'Instalación de aire acondicionado', 'Instalar aire acondicionado split en habitación principal. El equipo ya está comprado.', 'Bogotá, Suba', 400000, true, true, 0, 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&h=400&fit=crop')
+    (2, 8, 'Pendiente', 'Instalación de aire acondicionado', 'Instalar aire acondicionado split en habitación principal. El equipo ya está comprado.', 'Bogotá, Suba', 400000, true, true, 0, 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&h=400&fit=crop'),
+    (1, 6, 'Pendiente', 'Limpieza profunda de apartamento', 'Necesito limpieza general de apartamento de 70m2. Incluye baños, cocina y vidrios.', 'Bogotá, Chapinero', 120000, false, true, 0, 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&h=400&fit=crop'),
+    (2, 9, 'Borrador', 'Reparación de TV LED', 'Mi televisor LED de 55" no enciende. Hace un clic y se apaga.', 'Bogotá, Suba', 150000, false, true, 0, 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&h=400&fit=crop'),
+    (1, 7, 'Pendiente', 'Mudanza de apartamento', 'Mudanza de apartamento pequeño (1 persona) de Chapinero a Usaquén. Incluye muebles básicos.', 'Bogotá, Chapinero a Usaquén', 200000, false, true, 0, 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=600&h=400&fit=crop')
   `);
   console.log('✅ Requests seeded');
 
   // ── Service Applications ────────────────────────────────────
   await dataSource.query(`
     INSERT INTO service_applications ("requestId", "providerUserId", "presentationMessage", "proposedPriceCop", "immediateAvailability", status) VALUES 
-    (1, 3, 'Soy electricista certificado con más de 10 años de experiencia. Puedo hacer el trabajo mañana.', 130000, true, 'PENDING'),
-    (1, 4, 'Tengo disponibilidad inmediata y herramientas profesionales para instalar los interruptores.', 145000, true, 'PENDING'),
+    (1, 3, 'Soy electricista certificado con más de 10 años de experiencia. Puedo hacer el trabajo mañana.', 130000, true, 'ACCEPTED'),
+    (1, 4, 'Tengo disponibilidad inmediata y herramientas profesionales para instalar los interruptores.', 145000, true, 'REJECTED'),
     (2, 4, 'Especializada en reparaciones de tuberías y fugas. Puedo llegar en 2 horas.', 75000, true, 'ACCEPTED'),
-    (4, 5, 'Carpintero con 15 años de experiencia. Puedo hacer el diseño que necesites con maderas de alta calidad.', 230000, false, 'PENDING'),
-    (5, 3, 'Servicio de jardinería completo. Incluye disposición de residuos vegetales.', 90000, true, 'PENDING'),
-    (5, 5, 'Equipo completo para mantenimiento de jardines grandes. Trabajo garantizado.', 110000, true, 'PENDING')
+    (4, 5, 'Carpintero con 15 años de experiencia. Puedo hacer el diseño que necesites con maderas de alta calidad.', 230000, false, 'ACCEPTED'),
+    (5, 3, 'Servicio de jardinería completo. Incluye disposición de residuos vegetales.', 90000, true, 'ACCEPTED'),
+    (5, 5, 'Equipo completo para mantenimiento de jardines grandes. Trabajo garantizado.', 110000, true, 'REJECTED'),
+    (6, 4, 'Instalación profesional de aire acondicionado. Certificada.', 180000, true, 'ACCEPTED'),
+    (6, 3, 'Técnico en refrigeración con 8 años de experiencia.', 170000, true, 'REJECTED')
   `);
   console.log('✅ Applications seeded');
 
@@ -72,8 +78,11 @@ async function seed() {
   await dataSource.query(`
     INSERT INTO services ("requestId", "clientUserId", "providerUserId", title, summary, location, "totalPriceCop", status, "scheduledAt") VALUES 
     (2, 1, 4, 'Reparación de fuga en cocina', 'Se reparó la fuga y se cambió válvula de paso completa', 'Bogotá, Chapinero', 75000, 'COMPLETED', '2026-05-01 09:00:00'),
-    (5, 2, 3, 'Mantenimiento de jardín completo', 'Se podaron árboles, cortó pasto y se limpió el jardín', 'Bogotá, Suba', 90000, 'IN_PROGRESS', '2026-05-12 08:00:00'),
-    (4, 2, 5, 'Diseño y construcción de estantería', 'Estantería a medida 2m x 1m en roble, 5 estantes', 'Bogotá, Suba', 230000, 'SCHEDULED', '2026-05-15 10:00:00')
+    (5, 2, 3, 'Mantenimiento de jardín completo', 'Se podaron árboles, cortó pasto y se limpió el jardín frontal', 'Bogotá, Suba', 90000, 'IN_PROGRESS', '2026-05-12 08:00:00'),
+    (4, 2, 5, 'Diseño y construcción de estantería', 'Estantería a medida 2m x 1m en roble macizo con 5 estantes ajustables', 'Bogotá, Suba', 230000, 'SCHEDULED', '2026-05-15 10:00:00'),
+    (1, 1, 3, 'Instalación de interruptores eléctricos', 'Instalación completa de 5 interruptores con materiales incluidos', 'Bogotá, Chapinero', 130000, 'SCHEDULED', '2026-05-14 14:00:00'),
+    (3, 1, 5, 'Pintura de sala y dos habitaciones', 'Pintura completa de sala + 2 habitaciones con pintura vinilo tipo 1', 'Bogotá, Usaquén', 350000, 'COMPLETED', '2026-04-20 08:00:00'),
+    (6, 2, 4, 'Instalación de aire acondicionado', 'Instalación de split 12000 BTU en habitación principal', 'Bogotá, Suba', 180000, 'CANCELLED', '2026-05-10 09:00:00')
   `);
   console.log('✅ Services seeded');
 
@@ -81,7 +90,7 @@ async function seed() {
   await dataSource.query(`
     INSERT INTO reviews ("serviceId", "reviewerUserId", "reviewedUserId", rating, comment) VALUES 
     (1, 1, 4, 5, 'Excelente trabajo, muy profesional y puntual. Quedé muy satisfecho!'),
-    (1, 1, 3, 4, 'Buen trabajo, llegó a tiempo aunque cobra un poco caro.')
+    (5, 1, 5, 4, 'Buena calidad en la pintura, terminaron en el tiempo acordado.')
   `);
   console.log('✅ Reviews seeded');
 
@@ -122,18 +131,25 @@ async function seed() {
   // ── Notifications ───────────────────────────────────────────
   await dataSource.query(`
     INSERT INTO notifications ("userId", title, description, type, "isUnread", "requestId", "applicationId") VALUES 
-    (1, 'Nueva postulación', 'Juan Pérez ha postulado a tu solicitud de instalación de interruptores', 'APPLICATION', true, 1, 1),
-    (1, 'Nueva postulación', 'María García ha postulado a tu solicitud de instalación de interruptores', 'APPLICATION', true, 1, 2),
-    (1, 'Postulación aceptada', 'María García aceptó tu solicitud de reparación de fuga', 'CONFIRMED', false, 2, 3),
-    (2, 'Nueva postulación', 'Pedro Gómez ha postulado a tu solicitud de construcción de estantería', 'APPLICATION', true, 4, 4),
-    (2, 'Nueva postulación', 'Juan Pérez ha postulado a tu solicitud de mantenimiento de jardín', 'APPLICATION', true, 5, 5),
-    (2, 'Nueva postulación', 'Pedro Gómez ha postulado a tu solicitud de mantenimiento de jardín', 'APPLICATION', true, 5, 6),
-    (4, 'Servicio confirmado', 'Tu servicio de reparación de fuga ha sido programado. Cliente: Carlos López. Fecha: 1 de mayo.', 'CONFIRMED', false, 2, NULL),
-    (3, 'Nuevo mensaje', 'Carlos López te ha enviado un mensaje sobre la instalación de interruptores', 'MESSAGE', true, 1, NULL),
+    (1, 'Postulación aceptada', 'Juan Pérez ha sido asignado a tu solicitud de instalación de interruptores', 'CONFIRMED', true, 1, 1),
+    (1, 'Postulación rechazada', 'María García no continuará con la instalación de interruptores', 'APPLICATION', false, 1, 2),
+    (1, 'Servicio completado', 'La reparación de fuga en tu cocina ha sido completada con éxito', 'CONFIRMED', false, 2, 3),
+    (1, 'Nuevo mensaje', 'Juan Pérez te ha escrito sobre los interruptores', 'MESSAGE', true, 1, NULL),
+    (1, 'Recordatorio', 'Tienes una instalación de interruptores programada para mañana a las 2pm', 'REMINDER', true, 1, NULL),
+    (2, 'Postulación aceptada', 'Pedro Gómez ha sido asignado a tu solicitud de estantería', 'CONFIRMED', true, 4, 4),
+    (2, 'Postulación aceptada', 'Juan Pérez ha sido asignado al mantenimiento de tu jardín', 'CONFIRMED', true, 5, 5),
+    (2, 'Postulación rechazada', 'Pedro Gómez no realizará el mantenimiento del jardín', 'APPLICATION', false, 5, 6),
+    (2, 'Nuevo mensaje', 'Juan Pérez confirmó asistencia para el jardín mañana', 'MESSAGE', true, 5, NULL),
+    (4, 'Servicio asignado', 'Has sido asignada a la instalación de aire acondicionado en Suba', 'CONFIRMED', true, 6, 7),
+    (4, 'Servicio completado', 'Reparación de fuga completada. Cliente: Carlos López. Pago: $75,000', 'CONFIRMED', false, 2, NULL),
+    (4, 'Recordatorio', 'Tienes una instalación de aire acondicionado programada', 'REMINDER', true, 6, NULL),
+    (3, 'Nuevo mensaje', 'Carlos López te ha enviado un mensaje sobre los interruptores', 'MESSAGE', true, 1, NULL),
     (3, 'Servicio asignado', 'Has sido asignado al mantenimiento de jardín de Sofia Hernández', 'CONFIRMED', false, 5, NULL),
-    (4, 'Recordatorio', 'Recuerda que tienes una reparación programada para mañana a las 9am', 'REMINDER', true, 2, NULL),
+    (3, 'Recordatorio', 'Llegarás mañana a las 8am para el jardín de Sofia Hernández', 'REMINDER', true, 5, NULL),
     (5, 'Nuevo mensaje', 'Sofia Hernández te ha escrito sobre la estantería', 'MESSAGE', true, 4, NULL),
-    (1, 'Pago realizado', 'Tu pago por la reparación de fuga ha sido procesado: $75,000 COP', 'PAYMENT', false, 2, NULL)
+    (5, 'Servicio asignado', 'Estantería para Sofia Hernández programada para el 15 de mayo', 'CONFIRMED', true, 4, NULL),
+    (1, 'Pago realizado', 'Tu pago por la reparación de fuga ha sido procesado: $75,000 COP', 'PAYMENT', false, 2, NULL),
+    (2, 'Pago pendiente', 'Pago por mantenimiento de jardín: $90,000 COP. Se procesará al completar.', 'PAYMENT', true, 5, NULL)
   `);
   console.log('✅ Notifications seeded');
 
