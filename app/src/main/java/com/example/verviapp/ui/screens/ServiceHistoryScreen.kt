@@ -19,6 +19,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.ServiceHistoryEvent
 import com.example.verviapp.viewmodel.ServiceHistoryViewModel
 
 @Composable
@@ -29,12 +30,10 @@ fun ServiceHistoryScreen(navController: NavController, vm: ServiceHistoryViewMod
     LaunchedEffect(Unit) {
         vm.navigationEvents.collect { event ->
             when (event) {
-                is com.example.verviapp.viewmodel.ServiceHistoryEvent.OpenDetails -> {
+                is ServiceHistoryEvent.OpenDetails -> {
                     navController.navigate("service/details/${event.item.serviceId}")
                 }
-                is com.example.verviapp.viewmodel.ServiceHistoryEvent.OpenRate -> {
-                    navController.navigate("service/rate/${event.item.serviceId}")
-                }
+                else -> {}
             }
         }
     }
@@ -129,7 +128,7 @@ fun ServiceHistoryScreen(navController: NavController, vm: ServiceHistoryViewMod
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "Los servicios aparecerán aquí cuando tengas solicitudes aceptadas",
+                                text = "Cuando tus aplicaciones sean aceptadas",
                                 fontSize = 13.sp,
                                 color = VerviColors.TextGray
                             )
@@ -150,8 +149,7 @@ fun ServiceHistoryScreen(navController: NavController, vm: ServiceHistoryViewMod
                         ) { service ->
                             VerviServiceHistoryCard(
                                 item = service,
-                                onClick = { vm.onServiceClick(service) },
-                                onRate = { vm.onRate(service) }
+                                onClick = { vm.onServiceClick(service) }
                             )
                         }
                     }

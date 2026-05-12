@@ -894,12 +894,13 @@ fun VerviRequestCard(
 fun VerviServiceHistoryCard(
     item: ServiceHistoryItem,
     onClick: () -> Unit,
-    onRate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
             .background(VerviColors.CardBackground, RoundedCornerShape(12.dp))
             .border(1.dp, VerviColors.BorderGray, RoundedCornerShape(12.dp))
             .padding(16.dp)
@@ -909,8 +910,19 @@ fun VerviServiceHistoryCard(
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+
+                VerviStatusBadge(
+                    text = item.status,
+                    color = when (item.status) {
+                        "SCHEDULED" -> Color(0xFFF59E0B)
+                        "IN_PROGRESS" -> Color(0xFF10B981)
+                        "COMPLETED" -> Color(0xFF3B82F6)
+                        "CANCELLED" -> Color(0xFFEF4444)
+                        else -> Color.Gray
+                    }
+                )
 
                 Text(
                     text = item.title,
@@ -960,56 +972,6 @@ fun VerviServiceHistoryCard(
                         )
                     }
                 }
-            }
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        Divider()
-
-        Spacer(Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            if (item.rating != null) {
-                VerviRatingStars(item.rating)
-            } else {
-                VerviBadge(
-                    text = "SIN CALIFICAR",
-                    color = VerviColors.TextGray,
-                    outlined = true
-                )
-            }
-
-            Row(
-                modifier = Modifier.clickable {
-                    if (item.rating != null) onClick() else onRate()
-                },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (item.rating != null) "Ver detalles" else "Calificar ahora",
-                    color = VerviColors.Blue,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp
-                )
-
-                Spacer(Modifier.width(4.dp))
-
-                Icon(
-                    imageVector =
-                        if (item.rating != null)
-                            Icons.Default.ChevronRight
-                        else
-                            Icons.Default.Star,
-                    contentDescription = null,
-                    tint = VerviColors.Blue,
-                    modifier = Modifier.size(18.dp)
-                )
             }
         }
     }

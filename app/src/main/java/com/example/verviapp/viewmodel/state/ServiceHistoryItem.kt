@@ -7,5 +7,5 @@ data class ServiceHistoryItem(
     val date: String,
     val price: String,
     val imageUrl: String,
-    val rating: Float?,
+    val status: String,
 )

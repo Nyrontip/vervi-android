@@ -29,7 +29,6 @@ data class ServiceHistoryUiState(
 
 sealed class ServiceHistoryEvent {
     data class OpenDetails(val item: ServiceHistoryItem) : ServiceHistoryEvent()
-    data class OpenRate(val item: ServiceHistoryItem) : ServiceHistoryEvent()
 }
 
 @HiltViewModel
@@ -56,10 +55,6 @@ class ServiceHistoryViewModel @Inject constructor(
 
     fun onServiceClick(item: ServiceHistoryItem) {
         viewModelScope.launch { _navigationEvents.emit(ServiceHistoryEvent.OpenDetails(item)) }
-    }
-
-    fun onRate(item: ServiceHistoryItem) {
-        viewModelScope.launch { _navigationEvents.emit(ServiceHistoryEvent.OpenRate(item)) }
     }
 
     fun retry() {
@@ -114,8 +109,16 @@ class ServiceHistoryViewModel @Inject constructor(
             date = dateStr,
             price = formattedPrice,
             imageUrl = "",
-            rating = null
+            status = status.toStatusLabel()
         )
+    }
+
+    private fun String.toStatusLabel(): String = when (this) {
+        "SCHEDULED" -> "Programado"
+        "IN_PROGRESS" -> "En curso"
+        "COMPLETED" -> "Completado"
+        "CANCELLED" -> "Cancelado"
+        else -> this
     }
 
     private companion object {
