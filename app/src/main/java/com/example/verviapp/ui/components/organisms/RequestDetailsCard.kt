@@ -17,9 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import com.example.verviapp.ui.components.VerviStatusBadge
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.verviapp.ui.components.atoms.StatusBadge
 import com.example.verviapp.ui.components.molecules.BudgetDisplay
 import com.example.verviapp.ui.components.molecules.InfoPillRow
 import com.example.verviapp.ui.components.molecules.PublisherCard
@@ -64,7 +64,16 @@ fun RequestDetailsCard(
                     color = VerviColors.TextDark,
                     modifier = Modifier.weight(1f)
                 )
-                StatusBadge(text = status)
+                VerviStatusBadge(
+                    text = status,
+                    color = when (status) {
+                        "Borrador" -> Color.Gray
+                        "Pendiente" -> Color(0xFFF59E0B)
+                        "En curso" -> Color(0xFF10B981)
+                        "Cerrado" -> Color(0xFF3B82F6)
+                        else -> VerviColors.TextGray
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
