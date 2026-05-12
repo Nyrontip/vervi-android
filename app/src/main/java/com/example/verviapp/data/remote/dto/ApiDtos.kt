@@ -86,13 +86,12 @@ data class RequestDto(
     @Json(name = "services") val services: List<ServiceSummaryDto>? = null
 )
 
-@JsonClass(generateAdapter = true)
 data class ServiceSummaryDto(
-    @Json(name = "id") val id: Int,
-    @Json(name = "providerUserId") val providerUserId: Int,
-    @Json(name = "provider") val provider: UserDto?,
-    @Json(name = "title") val title: String,
-    @Json(name = "createdAt") val createdAt: String?
+    val id: Int,
+    val providerUserId: Int,
+    val provider: UserDto?,
+    val title: String,
+    val createdAt: String?
 )
 
 @JsonClass(generateAdapter = true)
@@ -122,17 +121,20 @@ data class NotificationDto(
     @Json(name = "createdAt") val createdAt: String
 )
 
-@JsonClass(generateAdapter = true)
 data class ConversationDto(
-    @Json(name = "id") val id: Int,
-    @Json(name = "participantAUserId") val participantAUserId: Int,
-    @Json(name = "participantBUserId") val participantBUserId: Int,
-    @Json(name = "requestId") val requestId: Int? = null,
-    @Json(name = "participantA") val participantA: UserDto? = null,
-    @Json(name = "participantB") val participantB: UserDto? = null
+    val id: Int,
+    val participantAUserId: Int,
+    val participantBUserId: Int,
+    val requestId: Int? = null,
+    val participantA: UserDto? = null,
+    val participantB: UserDto? = null
 )
 
-@JsonClass(generateAdapter = true)
+data class EvidenceDto(
+    val imageUrl: String,
+    val caption: String? = null
+)
+
 data class ServiceDto(
     @Json(name = "id") val id: Int,
     @Json(name = "title") val title: String,
@@ -143,34 +145,33 @@ data class ServiceDto(
     @Json(name = "clientUserId") val clientUserId: Int,
     @Json(name = "providerUserId") val providerUserId: Int,
     @Json(name = "client") val client: UserDto?,
+    @Json(name = "provider") val provider: UserDto?,
     @Json(name = "requestId") val requestId: Int?,
     @Json(name = "createdAt") val createdAt: String?,
-    @Json(name = "completedAt") val completedAt: String?
+    @Json(name = "completedAt") val completedAt: String?,
+    @Json(name = "evidence") val evidence: List<EvidenceDto>? = null
 )
 
-@JsonClass(generateAdapter = true)
 data class FindOrCreateConversationRequest(
-    @Json(name = "participantAUserId") val participantAUserId: Int,
-    @Json(name = "participantBUserId") val participantBUserId: Int,
-    @Json(name = "requestId") val requestId: Int? = null
+    val participantAUserId: Int,
+    val participantBUserId: Int,
+    val requestId: Int? = null
 )
 
-@JsonClass(generateAdapter = true)
 data class MessageDto(
-    @Json(name = "id") val id: Int,
-    @Json(name = "conversationId") val conversationId: Int,
-    @Json(name = "senderUserId") val senderUserId: Int,
-    @Json(name = "body") val body: String,
-    @Json(name = "isRead") val isRead: Boolean,
-    @Json(name = "sentAt") val sentAt: String?,
-    @Json(name = "sender") val sender: UserDto? = null
+    val id: Int,
+    val conversationId: Int,
+    val senderUserId: Int,
+    val body: String,
+    val isRead: Boolean,
+    val sentAt: String?,
+    val sender: UserDto? = null
 )
 
-@JsonClass(generateAdapter = true)
 data class CreateMessageRequest(
-    @Json(name = "conversationId") val conversationId: Int,
-    @Json(name = "senderUserId") val senderUserId: Int,
-    @Json(name = "body") val body: String
+    val conversationId: Int,
+    val senderUserId: Int,
+    val body: String
 )
 
 @JsonClass(generateAdapter = true)
