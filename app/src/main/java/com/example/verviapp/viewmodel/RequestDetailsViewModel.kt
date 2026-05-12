@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.remote.dto.RequestDto
 import com.example.verviapp.data.repository.ApiResult
 import com.example.verviapp.data.repository.RequestRepository
-import com.example.verviapp.viewmodel.state.ChatSummary
+import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.ClientSummary
 import com.example.verviapp.viewmodel.state.RequestDetailItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,12 +22,14 @@ import javax.inject.Inject
 data class RequestDetailsUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val request: RequestDetailItem? = null
+    val request: RequestDetailItem? = null,
+    val isOwner: Boolean = false
 )
 
 @HiltViewModel
 class RequestDetailsViewModel @Inject constructor(
     private val repository: RequestRepository,
+    private val sessionManager: SessionManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -65,8 +67,13 @@ class RequestDetailsViewModel @Inject constructor(
 
             when (val result = repository.getRequestDetail(requestId)) {
                 is ApiResult.Success -> {
+                    val dto = result.data
+                    val currentUserId = sessionManager.getLoggedInUserId()
+                    val owner = currentUserId != null && currentUserId == dto.clientUserId
+
                     _uiState.value = _uiState.value.copy(
-                        request = result.data.toDetailItem(),
+                        request = dto.toDetailItem(),
+                        isOwner = owner,
                         isLoading = false
                     )
                 }

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -831,15 +832,34 @@ fun VerviRequestCard(
             }
         }
 
-        AsyncImage(
-            model = request.imageUrl,
-            contentDescription = request.title,
-            contentScale = ContentScale.Crop,
-
+        Box(
             modifier = Modifier
                 .size(96.dp)
                 .clip(RoundedCornerShape(12.dp))
-        )
+        ) {
+            if (request.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = request.imageUrl,
+                    contentDescription = request.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(VerviColors.BorderGray.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Image,
+                        contentDescription = null,
+                        tint = VerviColors.TextGray,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+        }
     }
 }
 

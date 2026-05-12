@@ -19,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.RequestEvent
 import com.example.verviapp.viewmodel.RequestManagementViewModel
 
 // -----------------------------
@@ -33,7 +34,7 @@ fun RequestsScreen(navController: NavController, vm: RequestManagementViewModel 
     LaunchedEffect(Unit) {
         vm.events.collect { ev ->
             when (ev) {
-                is com.example.verviapp.viewmodel.RequestEvent.CreateNew -> {
+                is RequestEvent.CreateNew -> {
                     navController.navigate("request/new")
                 }
                 else -> {}

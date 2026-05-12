@@ -100,11 +100,14 @@ class MainActivity : ComponentActivity() {
                         val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
                         RequestCancelScreen(navController, requestId)
                     }
-                    dialog(
+                    composable("request/applications/{requestId}") {
+                        // TODO: pantalla de postulaciones para el dueño de la solicitud
+                    }
+                    composable(
                         route = "request/confirm/{requestId}",
                         arguments = listOf(navArgument("requestId") { type = NavType.IntType })
                     ) { backStackEntry ->
-                        val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
+                        val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@composable
                         RequestConfirmScreen(navController, requestId)
                     }
                     composable(
