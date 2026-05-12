@@ -126,19 +126,38 @@ async function seed() {
   `);
   console.log('✅ Additional conversations seeded');
 
-  // ── Additional messages ────────────────────────────────────
+  // ── Additional messages (using subqueries for conversation IDs) ─
   await dataSource.query(`
-    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt") VALUES 
-    (5, 3, 'Hola María, tienes disponibilidad para revisar mi baño?', true, '2026-05-12 13:00:00'),
-    (5, 4, 'Sí claro, puedo ir hoy a las 4pm. Te parece?', true, '2026-05-12 13:15:00'),
-    (5, 3, 'Perfecto, te espero. Gracias!', true, '2026-05-12 13:30:00'),
-    (5, 4, 'Ya estoy aquí. Voy a revisar la tubería.', true, '2026-05-12 16:00:00'),
-    (5, 3, 'Gracias por venir tan rápido, el baño quedó impecable.', false, '2026-05-12 15:00:00'),
-    (6, 4, 'Buenas Juan, puedes instalarme un ventilador de techo?', true, '2026-05-12 15:00:00'),
-    (6, 3, 'Claro! Cuándo te viene bien?', true, '2026-05-12 15:15:00'),
-    (6, 4, 'Mañana a las 10am?', true, '2026-05-12 15:30:00'),
-    (6, 3, 'Perfecto, allá estaré.', true, '2026-05-12 15:45:00'),
-    (6, 4, 'El ventilador quedó perfecto, muchas gracias!', false, '2026-05-12 16:30:00')
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 3, 'Hola María, tienes disponibilidad para revisar mi baño?', true, '2026-05-12 13:00:00'
+    FROM conversations c WHERE c."participantAUserId" = 3 AND c."participantBUserId" = 4 AND c."requestId" = 11;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 4, 'Sí claro, puedo ir hoy a las 4pm. Te parece?', true, '2026-05-12 13:15:00'
+    FROM conversations c WHERE c."participantAUserId" = 3 AND c."participantBUserId" = 4 AND c."requestId" = 11;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 3, 'Perfecto, te espero. Gracias!', true, '2026-05-12 13:30:00'
+    FROM conversations c WHERE c."participantAUserId" = 3 AND c."participantBUserId" = 4 AND c."requestId" = 11;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 4, 'Ya estoy aquí. Voy a revisar la tubería.', true, '2026-05-12 16:00:00'
+    FROM conversations c WHERE c."participantAUserId" = 3 AND c."participantBUserId" = 4 AND c."requestId" = 11;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 3, 'Gracias por venir tan rápido, el baño quedó impecable.', false, '2026-05-12 15:00:00'
+    FROM conversations c WHERE c."participantAUserId" = 3 AND c."participantBUserId" = 4 AND c."requestId" = 11;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 4, 'Buenas Juan, puedes instalarme un ventilador de techo?', true, '2026-05-12 15:00:00'
+    FROM conversations c WHERE c."participantAUserId" = 4 AND c."participantBUserId" = 3 AND c."requestId" = 12;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 3, 'Claro! Cuándo te viene bien?', true, '2026-05-12 15:15:00'
+    FROM conversations c WHERE c."participantAUserId" = 4 AND c."participantBUserId" = 3 AND c."requestId" = 12;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 4, 'Mañana a las 10am?', true, '2026-05-12 15:30:00'
+    FROM conversations c WHERE c."participantAUserId" = 4 AND c."participantBUserId" = 3 AND c."requestId" = 12;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 3, 'Perfecto, allá estaré.', true, '2026-05-12 15:45:00'
+    FROM conversations c WHERE c."participantAUserId" = 4 AND c."participantBUserId" = 3 AND c."requestId" = 12;
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt")
+    SELECT c.id, 4, 'El ventilador quedó perfecto, muchas gracias!', false, '2026-05-12 16:30:00'
+    FROM conversations c WHERE c."participantAUserId" = 4 AND c."participantBUserId" = 3 AND c."requestId" = 12;
   `);
   console.log('✅ Additional messages seeded');
 
