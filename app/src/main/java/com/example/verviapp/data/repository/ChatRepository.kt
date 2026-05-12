@@ -51,6 +51,7 @@ class ChatRepository @Inject constructor(
 
     fun toUiMessages(dtos: List<MessageDto>, currentUserId: Int): List<ChatMessageState> = dtos.map { dto ->
         ChatMessageState(
+            id = dto.id,
             text = dto.body,
             time = parseBogotaTime(dto.sentAt),
             isUser = dto.senderUserId == currentUserId,

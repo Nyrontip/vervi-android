@@ -12,7 +12,7 @@ data class ServiceDetailItem(
     val counterpartName: String,
     val counterpartRatingText: String,
     val counterpartLocation: String,
-    val counterpartAvatarUrl: String,
+    val counterpartAvatarUrl: String? = null,
     val evidenceImageUrls: List<String>,
     val chatSummaryText: String
 )

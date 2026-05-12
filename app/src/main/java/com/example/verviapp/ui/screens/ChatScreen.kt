@@ -306,7 +306,7 @@ fun ChatTopBar(
             .fillMaxWidth()
             .background(VerviColors.Primary)
             .statusBarsPadding()
-            .padding(vertical = 4.dp, horizontal = 5.dp),
+            .padding(vertical = 12.dp, horizontal = 5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButtonCircle(
@@ -320,7 +320,7 @@ fun ChatTopBar(
             } else {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(44.dp)
                         .clip(CircleShape)
                         .background(VerviColors.Primary.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
@@ -356,7 +356,7 @@ fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modi
         }
         items(
             items = messages,
-            key = { it.hashCode() }
+            key = { it.id }
         ) { message ->
             ChatMessageItem(message)
         }

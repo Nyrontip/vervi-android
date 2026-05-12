@@ -70,6 +70,9 @@ interface VerviApi {
 
     // ── Servicios ──────────────────────────────────────────────
 
+    @GET("services/{id}")
+    suspend fun getServiceById(@Path("id") id: Int): Response<ServiceDto>
+
     @GET("services/provider/{providerId}")
     suspend fun getServicesByProvider(@Path("providerId") providerId: Int): Response<List<ServiceDto>>
 

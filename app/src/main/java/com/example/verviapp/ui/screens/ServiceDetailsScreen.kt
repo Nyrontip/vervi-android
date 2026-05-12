@@ -1,73 +1,38 @@
 package com.example.verviapp.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.Phone
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.verviapp.ui.components.VerviButton
-import com.example.verviapp.ui.components.VerviTopBar
+import com.example.verviapp.ui.components.*
+import com.example.verviapp.ui.components.molecules.PublisherCard
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.ServiceDetailsViewModel
+import kotlinx.coroutines.launch
 
-/** Service detail screen — completed job (mockup background). */
 private val ScreenBackground = Color(0xFFF8F7F5)
-
-private val roleProviderBadgeBg = Color(0xFFFFE8D6)
-private val statusCompletedBg = Color(0xFFE6F4EA)
-private val statusCompletedText = Color(0xFF1E8E3E)
-
-private val defaultEvidenceImageUrls = listOf(
-    "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&h=800&fit=crop",
-    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&h=500&fit=crop",
-    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400&h=400&fit=crop"
-)
 
 @Composable
 fun ServiceDetailsScreen(
@@ -75,9 +40,10 @@ fun ServiceDetailsScreen(
     serviceId: Int,
     vm: ServiceDetailsViewModel = hiltViewModel()
 ) {
-    val uiState by vm.uiState.collectAsStateWithLifecycle()
+    val uiState by vm.uiState.collectAsState()
     val detail = uiState.detail
     val scrollState = rememberScrollState()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(serviceId) {
         vm.load(serviceId)
@@ -87,18 +53,9 @@ fun ServiceDetailsScreen(
         containerColor = ScreenBackground,
         topBar = {
             VerviTopBar(
-                title = "Detalles del Servicio",
+                title = "Detalle del Servicio",
                 onBack = { navController.popBackStack() },
-                barContainerColor = ScreenBackground,
-                actions = {
-                    IconButton(onClick = { /* TODO: share */ }) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "Compartir",
-                            tint = VerviColors.TextDark
-                        )
-                    }
-                }
+                barContainerColor = ScreenBackground
             )
         },
         bottomBar = {
@@ -110,132 +67,215 @@ fun ServiceDetailsScreen(
             ) {
                 HorizontalDivider(color = VerviColors.BorderGray)
                 VerviButton(
-                    text = "Calificar Servicio",
-                    onClick = { navController.navigate("service/rate/$serviceId") },
-                    color = VerviColors.OrangeSecondary,
-                    icon = Icons.Default.Star,
+                    text = "Ver conversación",
+                    onClick = {
+                        val counterpartId = uiState.counterpartUserId
+                        if (counterpartId != null) {
+                            scope.launch {
+                                val convId = vm.openChat(counterpartId, null)
+                                if (convId != null) {
+                                    navController.navigate("chat/$convId")
+                                }
+                            }
+                        }
+                    },
+                    color = VerviColors.Blue,
+                    icon = Icons.Outlined.Chat,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
                     height = 54.dp
                 )
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(ScreenBackground)
-                .padding(innerPadding)
-                .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                RoleBadge(text = detail?.roleLabel ?: "Como: --")
-                StatusPill(
-                    text = detail?.statusText ?: "--",
-                    background = statusCompletedBg,
-                    content = statusCompletedText
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Text(
-                    text = detail?.title ?: "Cargando servicio...",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = VerviColors.TextDark,
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = detail?.totalPriceText ?: "$0",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = VerviColors.OrangeSecondary
-                    )
-                    Text(
-                        text = "COP TOTAL",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = VerviColors.TextSecondary,
-                        letterSpacing = 0.8.sp
-                    )
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = VerviColors.Blue)
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.CalendarToday,
-                    contentDescription = null,
-                    tint = VerviColors.TextSecondary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = detail?.dateText ?: "--",
-                    fontSize = 14.sp,
-                    color = VerviColors.TextSecondary
-                )
+            uiState.error != null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = VerviColors.CancelRed,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = uiState.error!!,
+                            fontSize = 14.sp,
+                            color = VerviColors.TextDark,
+                            modifier = Modifier.padding(horizontal = 32.dp),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        VerviSmallButton(
+                            text = "Reintentar",
+                            color = VerviColors.Blue,
+                            onClick = { vm.retry() },
+                            modifier = Modifier.widthIn(min = 180.dp)
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(22.dp))
+            else -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(ScreenBackground)
+                        .padding(innerPadding)
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Spacer(Modifier.height(8.dp))
 
-            SectionTitle(text = "Resumen del Trabajo")
-            Spacer(modifier = Modifier.height(8.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Text(
-                    text = detail?.summary ?: "Sin resumen disponible.",
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 15.sp,
-                    lineHeight = 23.sp,
-                    color = Color(0xFF4B5563)
-                )
+                    // Status badge with proper colors
+                    detail?.statusText?.let { status ->
+                        val statusColor = when (status) {
+                            "Programado" -> Color(0xFFF59E0B)
+                            "En curso" -> Color(0xFF10B981)
+                            "Completado" -> Color(0xFF3B82F6)
+                            "Cancelado" -> Color(0xFFEF4444)
+                            else -> VerviColors.TextGray
+                        }
+                        com.example.verviapp.ui.components.VerviStatusBadge(
+                            text = status,
+                            color = statusColor
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Title + Price
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(
+                            text = detail?.title ?: "Cargando servicio...",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = VerviColors.TextDark,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = detail?.totalPriceText ?: "$0",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = VerviColors.OrangeSecondary
+                            )
+                            Text(
+                                text = "COP TOTAL",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = VerviColors.TextSecondary,
+                                letterSpacing = 0.8.sp
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Date
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.CalendarToday,
+                            contentDescription = null,
+                            tint = VerviColors.TextSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = detail?.dateText ?: "--",
+                            fontSize = 14.sp,
+                            color = VerviColors.TextSecondary
+                        )
+                    }
+
+                    Spacer(Modifier.height(22.dp))
+
+                    // Summary
+                    SectionTitle(text = "Resumen del Trabajo")
+                    Spacer(Modifier.height(8.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = VerviColors.CardBackground),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Text(
+                            text = detail?.summary?.takeIf { it.isNotBlank() } ?: "Sin resumen disponible.",
+                            modifier = Modifier.padding(16.dp),
+                            fontSize = 15.sp,
+                            lineHeight = 23.sp,
+                            color = VerviColors.TextPrimary
+                        )
+                    }
+
+                    Spacer(Modifier.height(22.dp))
+
+                    // Evidence
+                    SectionTitle(text = "Evidencia del Servicio")
+                    Spacer(Modifier.height(10.dp))
+                    val evidenceUrls = detail?.evidenceImageUrls ?: emptyList()
+                    if (evidenceUrls.isNotEmpty()) {
+                        EvidenceGrid(imageUrls = evidenceUrls)
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(VerviColors.BorderGray.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Image,
+                                    contentDescription = null,
+                                    tint = VerviColors.TextGray,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    text = "Sin evidencia disponible",
+                                    fontSize = 13.sp,
+                                    color = VerviColors.TextGray
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(22.dp))
+
+                    // Counterpart
+                    SectionTitle(text = if (uiState.isOwner) "Cliente" else "Proveedor")
+                    Spacer(Modifier.height(8.dp))
+                    if (detail != null) {
+                        PublisherCard(
+                            name = detail.counterpartName,
+                            ratingLine = detail.counterpartRatingText,
+                            avatarUrl = detail.counterpartAvatarUrl,
+                            showChat = false
+                        )
+                    }
+
+                    Spacer(Modifier.height(88.dp))
+                }
             }
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            SectionTitle(text = "Evidencia del Servicio")
-            Spacer(modifier = Modifier.height(10.dp))
-            EvidenceGrid(imageUrls = detail?.evidenceImageUrls ?: defaultEvidenceImageUrls)
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            ChatSummaryCard(
-                summaryText = detail?.chatSummaryText ?: "Ver conversacion con el usuario",
-                onOpenChat = { navController.navigate("chat") }
-            )
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            SectionTitle(text = "Usuario")
-            Spacer(modifier = Modifier.height(8.dp))
-            ClientCard(
-                clientName = detail?.counterpartName ?: "Usuario no disponible",
-                ratingText = detail?.counterpartRatingText ?: "--",
-                locationText = detail?.counterpartLocation ?: "--",
-                avatarUrl = detail?.counterpartAvatarUrl ?: "",
-                onCallClick = { /* TODO: dial */ }
-            )
-
-            Spacer(modifier = Modifier.height(88.dp))
         }
     }
 }
@@ -251,249 +291,30 @@ private fun SectionTitle(text: String) {
 }
 
 @Composable
-private fun RoleBadge(text: String) {
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(roleProviderBadgeBg)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Person,
-            contentDescription = null,
-            tint = VerviColors.OrangeSecondary,
-            modifier = Modifier.size(18.dp)
-        )
-        Text(
-            text = text,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = VerviColors.TextDark
-        )
-    }
-}
-
-@Composable
-private fun StatusPill(text: String, background: Color, content: Color) {
-    Text(
-        text = text,
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(background)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Bold,
-        color = content
-    )
-}
-
-@Composable
 private fun EvidenceGrid(imageUrls: List<String>) {
-    val main = imageUrls.getOrNull(0).orEmpty()
-    val mid = imageUrls.getOrNull(1).orEmpty()
-    val topRight = imageUrls.getOrNull(2).orEmpty()
-    val bottomRight = imageUrls.getOrNull(3).orEmpty()
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        AsyncImage(
-            model = main,
-            contentDescription = "Evidencia 1",
-            modifier = Modifier
-                .weight(0.42f)
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
-        )
-        Column(
-            modifier = Modifier.weight(0.58f),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        imageUrls.chunked(2).forEach { row ->
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                AsyncImage(
-                    model = mid,
-                    contentDescription = "Evidencia 2",
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    AsyncImage(
-                        model = topRight,
-                        contentDescription = "Evidencia 3",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+                row.forEach { url ->
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .weight(1f)
+                            .height(160.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color.Black.copy(alpha = 0.45f)),
-                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "+2",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                        AsyncImage(
+                            model = url,
+                            contentDescription = "Evidencia",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
                         )
                     }
                 }
-            }
-            AsyncImage(
-                model = bottomRight,
-                contentDescription = "Evidencia 4",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
-            )
-        }
-    }
-}
-
-@Composable
-private fun ChatSummaryCard(summaryText: String, onOpenChat: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onOpenChat() },
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(VerviColors.OrangeSecondary.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.Chat,
-                    contentDescription = null,
-                    tint = VerviColors.OrangeSecondary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Resumen de Chat",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = VerviColors.TextDark
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = summaryText,
-                    fontSize = 13.sp,
-                    color = VerviColors.TextSecondary
-                )
-            }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = VerviColors.TextGray
-            )
-        }
-    }
-}
-
-@Composable
-private fun ClientCard(
-    clientName: String,
-    ratingText: String,
-    locationText: String,
-    avatarUrl: String,
-    onCallClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AsyncImage(
-                model = avatarUrl,
-                contentDescription = "Cliente",
-                modifier = Modifier
-                    .size(52.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = clientName,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = VerviColors.TextDark
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Star,
-                        contentDescription = null,
-                        tint = VerviColors.StarFilled,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = ratingText,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = VerviColors.TextDark
-                    )
-                    Text(
-                        text = " • $locationText",
-                        fontSize = 14.sp,
-                        color = VerviColors.TextSecondary
-                    )
-                }
-            }
-            IconButton(onClick = onCallClick) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(VerviColors.OrangeSecondary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Phone,
-                        contentDescription = "Llamar",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
+                if (row.size < 2) {
+                    Spacer(Modifier.weight(1f))
                 }
             }
         }
