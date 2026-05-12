@@ -127,7 +127,9 @@ data class ConversationDto(
     @Json(name = "id") val id: Int,
     @Json(name = "participantAUserId") val participantAUserId: Int,
     @Json(name = "participantBUserId") val participantBUserId: Int,
-    @Json(name = "requestId") val requestId: Int? = null
+    @Json(name = "requestId") val requestId: Int? = null,
+    @Json(name = "participantA") val participantA: UserDto? = null,
+    @Json(name = "participantB") val participantB: UserDto? = null
 )
 
 @JsonClass(generateAdapter = true)

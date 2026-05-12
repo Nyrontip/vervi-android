@@ -296,7 +296,11 @@ fun ChatInput(
 // ---------- TOP BAR ----------
 
 @Composable
-fun ChatTopBar(onBack: () -> Unit) {
+fun ChatTopBar(
+    name: String,
+    avatarUrl: String?,
+    onBack: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -311,19 +315,27 @@ fun ChatTopBar(onBack: () -> Unit) {
         ) { onBack() }
         Spacer(Modifier.width(8.dp))
         Box {
-            Avatar(
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuBbXJ6mwDBe7aVLNNLYT3qvuXHAzHznWBIhM55cvQSvU3-8xDX56fHQDumSJVMqGfoYWmwPoX4mSuQWf4VALZUafhYNLfT4pb--W3VdnHpbdtPORb_0_2LyxIII_-1wFKn0AjefyIk25IPTNcdTGF-vr3HOEcEuuPyi2AW9ZjRRMgwr04DSwDnUxNB35QZ4HzznnUcv80f768GU2yLXN1lnsoOHF1yKM8_DM4NX6MSHXjeBbTTRZS2fIU5_kRzqGaM830P3vJKh7akT"
-            )
-            /*StatusDot(
-                modifier = Modifier.align(
-                    Alignment.BottomEnd
-                )
-            )¨*/
+            if (avatarUrl != null) {
+                Avatar(avatarUrl)
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(VerviColors.Primary.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = VerviColors.TextWhite
+                    )
+                }
+            }
         }
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f)) {
-            Text("Carlos Ruiz", fontWeight = FontWeight.SemiBold, color = VerviColors.TextWhite)
-            Text("Proveedor de Limpieza", fontSize = 12.sp, color = VerviColors.TextWhite)
+            Text(name, fontWeight = FontWeight.SemiBold, color = VerviColors.TextWhite)
         }
     }
 }
@@ -369,7 +381,11 @@ fun ChatScreen(
         modifier = Modifier.fillMaxSize(),
         containerColor = VerviColors.BgColor,
         topBar = {
-            ChatTopBar { navController.popBackStack() }
+            ChatTopBar(
+                name = state.otherParticipantName ?: "Chat",
+                avatarUrl = state.otherParticipantAvatar,
+                onBack = { navController.popBackStack() }
+            )
         },
         bottomBar = {
             Column(

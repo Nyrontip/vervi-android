@@ -76,6 +76,9 @@ interface VerviApi {
     @GET("chat/messages/{conversationId}")
     suspend fun getMessages(@Path("conversationId") conversationId: Int): Response<List<MessageDto>>
 
+    @GET("chat/conversations/{id}")
+    suspend fun getConversation(@Path("id") id: Int): Response<ConversationDto>
+
     @POST("chat/messages")
     suspend fun sendMessage(@Body request: CreateMessageRequest): Response<MessageDto>
 }

@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.repository.ApiResult
 import com.example.verviapp.data.repository.ChatRepository
-import com.example.verviapp.viewmodel.state.ChatMessageState
 import com.example.verviapp.viewmodel.state.ChatUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +25,7 @@ class ChatViewModel @Inject constructor(
     fun init(convId: Int) {
         if (conversationId == convId) return
         conversationId = convId
-        loadMessages()
+        loadConversation()
     }
 
     fun onInputChange(text: String) {
@@ -66,11 +65,33 @@ class ChatViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(showAttachments = !_uiState.value.showAttachments)
     }
 
+    private fun loadConversation() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+            when (val result = repository.getConversation(conversationId)) {
+                is ApiResult.Success -> {
+                    val other = repository.otherParticipant(result.data)
+                    _uiState.value = _uiState.value.copy(
+                        otherParticipantName = other?.name,
+                        otherParticipantAvatar = other?.photoUrl?.takeIf(String::isNotBlank)
+                    )
+                    loadMessages()
+                }
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.message
+                    )
+                }
+            }
+        }
+    }
+
     private fun loadMessages() {
         if (conversationId == 0) return
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             when (val result = repository.getMessages(conversationId)) {
                 is ApiResult.Success -> {
                     _uiState.value = _uiState.value.copy(
