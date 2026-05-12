@@ -95,9 +95,28 @@ class RequestRepository @Inject constructor(
     suspend fun getUserRequests(clientId: Int, activeOnly: Boolean?): ApiResult<List<RequestDto>> =
         fetchList { api.getRequestsByClient(clientId) }
 
+    suspend fun getRequestDetail(requestId: Int): ApiResult<RequestDto> =
+        fetchOne { api.getRequestById(requestId) }
+
     fun getLoggedInUserId(): Int? = sessionManager.getLoggedInUserId()
 
     // ── Helpers ────────────────────────────────────────────────
+
+    private suspend fun fetchOne(
+        apiCall: suspend () -> Response<RequestDto>
+    ): ApiResult<RequestDto> = try {
+        val response = apiCall()
+        if (response.isSuccessful && response.body() != null) {
+            ApiResult.Success(response.body()!!)
+        } else {
+            ApiResult.Error(
+                response.errorBody()?.string() ?: "Solicitud no encontrada",
+                response.code()
+            )
+        }
+    } catch (e: Exception) {
+        ApiResult.Error(e.message ?: "Error de conexión")
+    }
 
     private suspend fun fetchList(
         apiCall: suspend () -> Response<List<RequestDto>>
