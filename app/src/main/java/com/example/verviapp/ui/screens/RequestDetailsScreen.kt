@@ -50,16 +50,20 @@ fun RequestDetailsScreen(
 
     Scaffold(
         containerColor = VerviColors.BackgroundLight,
-        bottomBar = {
-            RequestActionBar(
-                isOwner = uiState.isOwner,
-                onApplyClick = {
-                    requestId?.let { navController.navigate("service/apply/$it") }
-                },
-                onViewApplicationsClick = {
-                    requestId?.let { navController.navigate("request/applications/$it") }
-                }
-            )
+        bottomBar = if (uiState.isLoading) {
+            { /* No mostrar action bar mientras carga */ }
+        } else {
+            {
+                RequestActionBar(
+                    isOwner = uiState.isOwner,
+                    onApplyClick = {
+                        requestId?.let { navController.navigate("service/apply/$it") }
+                    },
+                    onViewApplicationsClick = {
+                        requestId?.let { navController.navigate("request/applications/$it") }
+                    }
+                )
+            }
         }
     ) { innerPadding ->
         Column(

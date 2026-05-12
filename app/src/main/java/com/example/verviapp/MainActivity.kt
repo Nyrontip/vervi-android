@@ -103,11 +103,11 @@ class MainActivity : ComponentActivity() {
                     composable("request/applications/{requestId}") {
                         // TODO: pantalla de postulaciones para el dueño de la solicitud
                     }
-                    composable(
+                    dialog(
                         route = "request/confirm/{requestId}",
                         arguments = listOf(navArgument("requestId") { type = NavType.IntType })
                     ) { backStackEntry ->
-                        val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@composable
+                        val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
                         RequestConfirmScreen(navController, requestId)
                     }
                     composable(
