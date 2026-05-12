@@ -37,10 +37,10 @@ fun RequestDetailsCard(
     date: String,
     location: String,
     description: String,
+    publisherLabel: String,
     publisherName: String?,
     publisherRating: String?,
     publisherAvatarUrl: String?,
-    isOwner: Boolean,
     onPublisherChatClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -95,9 +95,9 @@ fun RequestDetailsCard(
 
             Spacer(modifier = Modifier.height(26.dp))
 
-            // Publisher section
+            // Publisher/provider section
             Text(
-                text = if (isOwner) "PUBLICADO POR" else "PROVEEDOR",
+                text = publisherLabel,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF9AA2AF),

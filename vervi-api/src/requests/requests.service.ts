@@ -15,7 +15,10 @@ export class RequestsService {
   }
 
   async findById(id: number): Promise<Request | null> {
-    return this.requestsRepository.findOne({ where: { id }, relations: ['client', 'category', 'attachments', 'applications', 'services'] });
+    return this.requestsRepository.findOne({
+      where: { id },
+      relations: ['client', 'category', 'attachments', 'applications', 'services', 'services.provider'],
+    });
   }
 
   async findByClientId(clientId: number): Promise<Request[]> {

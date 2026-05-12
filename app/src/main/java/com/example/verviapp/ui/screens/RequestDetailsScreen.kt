@@ -78,6 +78,14 @@ fun RequestDetailsScreen(
             )
 
             // Main content card
+            val personLabel = if (uiState.isOwner) "PROVEEDOR" else "PUBLICADO POR"
+            val personName = if (uiState.isOwner) uiState.provider?.name else request?.client?.name
+            val personRating = if (uiState.isOwner)
+                uiState.provider?.rating?.let { "$it calificación" }
+            else
+                request?.client?.rating?.let { "$it calificación" }
+            val personAvatar = if (uiState.isOwner) uiState.provider?.avatarUrl else request?.client?.avatarUrl
+
             RequestDetailsCard(
                 title = request?.title ?: "Cargando solicitud...",
                 status = request?.status ?: "--",
@@ -85,10 +93,10 @@ fun RequestDetailsScreen(
                 date = request?.date ?: "--",
                 location = request?.location ?: request?.client?.location ?: "--",
                 description = request?.description ?: "Sin descripción disponible.",
-                publisherName = request?.client?.name,
-                publisherRating = request?.client?.rating?.let { "$it calificación" },
-                publisherAvatarUrl = request?.client?.avatarUrl,
-                isOwner = uiState.isOwner,
+                publisherLabel = personLabel,
+                publisherName = personName,
+                publisherRating = personRating,
+                publisherAvatarUrl = personAvatar,
                 onPublisherChatClick = { navController.navigate("chat") }
             )
 

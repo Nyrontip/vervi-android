@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.remote.dto.RequestDto
+import com.example.verviapp.data.remote.dto.ServiceSummaryDto
 import com.example.verviapp.data.repository.ApiResult
 import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.data.session.SessionManager
@@ -23,7 +24,8 @@ data class RequestDetailsUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val request: RequestDetailItem? = null,
-    val isOwner: Boolean = false
+    val isOwner: Boolean = false,
+    val provider: ClientSummary? = null
 )
 
 @HiltViewModel
@@ -74,6 +76,7 @@ class RequestDetailsViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         request = dto.toDetailItem(),
                         isOwner = owner,
+                        provider = dto.resolveProvider(),
                         isLoading = false
                     )
                 }
@@ -85,6 +88,30 @@ class RequestDetailsViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    /** Devuelve el proveedor asociado al servicio más reciente, si existe. */
+    private fun RequestDto.resolveProvider(): ClientSummary? {
+        val latest = services
+            ?.filter { it.provider != null }
+            ?.maxByOrNull { parseTimeOrZero(it.createdAt) }
+            ?: return null
+
+        val user = latest.provider ?: return null
+        return ClientSummary(
+            name = user.name,
+            rating = user.rating.takeIf { it > 0f },
+            location = user.location ?: "",
+            phone = null,
+            avatarUrl = user.photoUrl?.takeIf(String::isNotBlank)
+        )
+    }
+
+    private fun parseTimeOrZero(iso: String?): Long {
+        if (iso == null) return 0L
+        return try {
+            isoParser.parse(iso)?.time ?: 0L
+        } catch (_: Exception) { 0L }
     }
 
     private fun RequestDto.toDetailItem(): RequestDetailItem {

@@ -82,7 +82,17 @@ data class RequestDto(
     @Json(name = "category") val category: CategoryDto?,
     @Json(name = "client") val client: UserDto?,
     @Json(name = "createdAt") val createdAt: String?,
-    @Json(name = "updatedAt") val updatedAt: String?
+    @Json(name = "updatedAt") val updatedAt: String?,
+    @Json(name = "services") val services: List<ServiceSummaryDto>? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class ServiceSummaryDto(
+    @Json(name = "id") val id: Int,
+    @Json(name = "providerUserId") val providerUserId: Int,
+    @Json(name = "provider") val provider: UserDto?,
+    @Json(name = "title") val title: String,
+    @Json(name = "createdAt") val createdAt: String?
 )
 
 @JsonClass(generateAdapter = true)
