@@ -760,11 +760,14 @@ fun VerviStatusBadge(
 fun VerviRequestCard(
     navController: NavController,
     request: RequestItem,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
             .background(VerviColors.CardBackground, RoundedCornerShape(12.dp))
             .border(1.dp, VerviColors.BorderGray, RoundedCornerShape(12.dp))
             .padding(12.dp),
@@ -806,7 +809,7 @@ fun VerviRequestCard(
                     VerviSmallButton(
                         text = "Eliminar",
                         color = VerviColors.CancelRed,
-                        onClick = { navController.navigate("request/details/${request.id}") },
+                        onClick = { navController.navigate("request/cancel/${request.id}") },
                         modifier = Modifier.weight(1f)
                     )
                 } else {

@@ -19,7 +19,11 @@ export class RequestsService {
   }
 
   async findByClientId(clientId: number): Promise<Request[]> {
-    return this.requestsRepository.find({ where: { clientUserId: clientId }, relations: ['client', 'category', 'attachments'] });
+    return this.requestsRepository.find({
+      where: { clientUserId: clientId },
+      order: { createdAt: 'DESC' },
+      relations: ['client', 'category', 'attachments'],
+    });
   }
 
   async create(requestData: Partial<Request>): Promise<Request> {

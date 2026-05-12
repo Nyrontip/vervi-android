@@ -6,12 +6,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.ui.graphics.Color
+import com.example.verviapp.data.remote.dto.RequestDto
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.viewmodel.state.RequestItem
-import com.example.verviapp.data.dao.RequestDao
-import com.example.verviapp.data.entity.RequestEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -31,11 +33,11 @@ sealed class RequestEvent {
 
 @HiltViewModel
 class RequestManagementViewModel @Inject constructor(
-    private val requestDao: RequestDao
+    private val repository: RequestRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RequestUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<RequestUiState> = _uiState.asStateFlow()
 
     private val _events = MutableSharedFlow<RequestEvent>()
     val events = _events.asSharedFlow()
@@ -45,13 +47,9 @@ class RequestManagementViewModel @Inject constructor(
     }
 
     fun selectTab(index: Int) {
+        if (_uiState.value.selectedTab == index) return
         _uiState.value = _uiState.value.copy(selectedTab = index)
-        val activeOnly = when (index) {
-            0 -> true
-            1 -> false
-            else -> null
-        }
-        loadRequests(activeOnly)
+        loadRequests()
     }
 
     fun onOpen(item: RequestItem) {
@@ -62,35 +60,54 @@ class RequestManagementViewModel @Inject constructor(
         viewModelScope.launch { _events.emit(RequestEvent.CreateNew) }
     }
 
-    fun refresh() { loadRequests() }
+    fun retry() {
+        loadRequests()
+    }
 
-    private fun loadRequests(activeOnly: Boolean? = null) {
+    private fun loadRequests() {
+        val userId = repository.getLoggedInUserId()
+        if (userId == null) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = "Debes iniciar sesión"
+            )
+            return
+        }
+
         viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-                val flow = when (activeOnly) {
-                    true -> requestDao.getRequestsByStatus(true)
-                    false -> requestDao.getRequestsByStatus(false)
-                    null -> requestDao.getAllRequests()
-                }
+            when (val result = repository.getUserRequests(userId, null)) {
+                is ApiResult.Success -> {
+                    val allRequests = result.data
+                    val activeOnly = _uiState.value.selectedTab == 0
 
-                flow.collect { entities ->
-                    val items = entities.map { entity -> mapEntityToRequestItem(entity) }
-                    _uiState.value = _uiState.value.copy(requests = items, isLoading = false)
+                    val filtered = if (activeOnly) {
+                        allRequests.filter { it.isActive }
+                    } else {
+                        allRequests.filter { !it.isActive }
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        requests = filtered.map { it.toUiItem() },
+                        isLoading = false,
+                        error = null
+                    )
                 }
-            } catch (t: Throwable) {
-                _uiState.value = _uiState.value.copy(error = t.message ?: "Error desconocido", isLoading = false)
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.message
+                    )
+                }
             }
         }
     }
 
-    /**
-     * Mapea RequestEntity de Room a RequestItem para UI.
-     * Usa los datos disponibles en la entidad; los colores y íconos se calculan según el status.
-     */
-    private fun mapEntityToRequestItem(entity: RequestEntity): RequestItem {
-        val (statusColor, buttonText, secondaryIcon) = when (entity.status) {
+    private fun RequestDto.toUiItem(): RequestItem {
+        val dateStr = createdAt?.take(10) ?: ""
+
+        val (statusColor, buttonText, secondaryIcon) = when (status) {
             "En curso" -> Triple(Color(0xFF10B981), "Gestionar", Icons.Default.MoreHoriz)
             "Pendiente" -> Triple(Color(0xFFF59E0B), "Gestionar", Icons.Default.MoreHoriz)
             "Borrador" -> Triple(Color.Gray, "Continuar", Icons.Default.DeleteOutline)
@@ -98,16 +115,15 @@ class RequestManagementViewModel @Inject constructor(
         }
 
         return RequestItem(
-            id = entity.id,
-            status = entity.status,
+            id = id,
+            status = status,
             statusColor = statusColor,
-            title = entity.title,
-            date = entity.date,
-            applications = entity.applications,
-            imageUrl = entity.imageUrl,
+            title = title,
+            date = dateStr,
+            applications = "$applicationCount Postulaciones",
+            imageUrl = imageUrl ?: "",
             buttonText = buttonText,
             secondaryIcon = secondaryIcon
         )
     }
 }
-

@@ -2,6 +2,8 @@ package com.example.verviapp.data.repository
 
 import com.example.verviapp.data.remote.VerviApi
 import com.example.verviapp.data.remote.dto.*
+import retrofit2.Response
+import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.HomeState
 import com.example.verviapp.viewmodel.state.Service
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +16,8 @@ import javax.inject.Singleton
 
 @Singleton
 class RequestRepository @Inject constructor(
-    private val api: VerviApi
+    private val api: VerviApi,
+    private val sessionManager: SessionManager
 ) {
     private val _homeState = MutableStateFlow(HomeState())
     val homeState: StateFlow<HomeState> = _homeState.asStateFlow()
@@ -85,6 +88,31 @@ class RequestRepository @Inject constructor(
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Error de conexión")
         }
+    }
+
+    // ── Gestión de solicitudes del usuario ──────────────────────
+
+    suspend fun getUserRequests(clientId: Int, activeOnly: Boolean?): ApiResult<List<RequestDto>> =
+        fetchList { api.getRequestsByClient(clientId) }
+
+    fun getLoggedInUserId(): Int? = sessionManager.getLoggedInUserId()
+
+    // ── Helpers ────────────────────────────────────────────────
+
+    private suspend fun fetchList(
+        apiCall: suspend () -> Response<List<RequestDto>>
+    ): ApiResult<List<RequestDto>> = try {
+        val response = apiCall()
+        if (response.isSuccessful) {
+            ApiResult.Success(response.body() ?: emptyList())
+        } else {
+            ApiResult.Error(
+                response.errorBody()?.string() ?: "Error al cargar solicitudes",
+                response.code()
+            )
+        }
+    } catch (e: Exception) {
+        ApiResult.Error(e.message ?: "Error de conexión")
     }
 
     fun onSearchChange(query: String) {
