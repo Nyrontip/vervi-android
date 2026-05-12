@@ -1,5 +1,6 @@
 package com.example.verviapp.ui.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,14 +11,18 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
+import com.example.verviapp.ui.components.VerviSmallButton
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,12 +30,6 @@ import androidx.compose.runtime.*
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.verviapp.viewmodel.NotificationsViewModel
 import com.example.verviapp.viewmodel.state.NotificationType
-
-
-/* ------------------------------------------------ */
-/* SAMPLE DATA */
-/* ------------------------------------------------ */
-// Nota: los datos de ejemplo ahora los provee el repositorio a través del ViewModel.
 
 @Composable
 fun VerviNotificationCard(
@@ -142,7 +141,6 @@ fun NotificationsScreen(
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
-    val notifications = uiState.notifications
 
     Scaffold(
         modifier = Modifier.systemBarsPadding(),
@@ -173,27 +171,221 @@ fun NotificationsScreen(
                 onTabSelected = { viewModel.selectTab(it) }
             )
 
-            // Lista de notificaciones usando componente local
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
-            ) {
-                items(notifications) { item ->
-                    VerviNotificationCard(
-                        title = item.title,
-                        description = item.description,
-                        time = item.time,
-                        type = item.type,
-                        unread = item.unread,
-                        onClick = {
-                            // Marcar como leído al abrir
-                            if (item.unread) viewModel.markAsRead(item)
-                            // Acción según tipo de notificación: por ahora navegamos a detalles genéricos
-                        }
+            when {
+                // ── Cargando ─────────────────────────────────
+                uiState.isLoading -> {
+                    NotificationLoadingContent(
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
+
+                // ── Error ───────────────────────────────────
+                uiState.error != null -> {
+                    NotificationErrorContent(
+                        message = uiState.error!!,
+                        onRetry = { viewModel.retry() },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                // ── Vacío ───────────────────────────────────
+                uiState.notifications.isEmpty() -> {
+                    NotificationEmptyContent(
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                // ── Datos ───────────────────────────────────
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        items(uiState.notifications) { item ->
+                            VerviNotificationCard(
+                                title = item.title,
+                                description = item.description,
+                                time = item.time,
+                                type = item.type,
+                                unread = item.unread,
+                                onClick = {
+                                    if (item.unread) viewModel.markAsRead(item)
+                                }
+                            )
+                        }
+                    }
+                }
             }
+        }
+    }
+}
+
+/* ------------------------------------------------ */
+/* Loading state — shimmer placeholder cards       */
+/* ------------------------------------------------ */
+@Composable
+private fun NotificationLoadingContent(modifier: Modifier = Modifier) {
+    val shimmerColors = listOf(
+        VerviColors.BorderGray.copy(alpha = 0.3f),
+        VerviColors.BorderGray.copy(alpha = 0.7f),
+        VerviColors.BorderGray.copy(alpha = 0.3f)
+    )
+
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val translateAnim = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmerOffset"
+    )
+
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset.Zero,
+        end = Offset(x = translateAnim.value, y = translateAnim.value)
+    )
+
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        items(6) {
+            ShimmerCard(brush)
+        }
+    }
+}
+
+@Composable
+private fun ShimmerCard(brush: Brush) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(VerviColors.CardBackground)
+            .padding(16.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        // Placeholder del ícono — misma altura que el real (48dp)
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(brush)
+        )
+        Spacer(Modifier.width(12.dp))
+
+        // Columna con textos — misma estructura que VerviNotificationCard
+        Column(modifier = Modifier.weight(1f)) {
+            // Fila título + hora
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Título — placeholder compacto
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+                Spacer(Modifier.width(8.dp))
+                // Hora — texto pequeño de 1 línea
+                Box(
+                    modifier = Modifier
+                        .width(48.dp)
+                        .height(14.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            // Descripción — placeholder compacto
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(brush)
+            )
+            // Espaciador inferior para igualar la altura de la card real
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+/* ------------------------------------------------ */
+/* Empty state                                      */
+/* ------------------------------------------------ */
+@Composable
+private fun NotificationEmptyContent(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = Icons.Default.NotificationsNone,
+                contentDescription = null,
+                tint = VerviColors.TextGray,
+                modifier = Modifier.size(64.dp)
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = "No hay notificaciones",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = VerviColors.TextDark
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "Las notificaciones nuevas aparecerán aquí",
+                fontSize = 13.sp,
+                color = VerviColors.TextGray
+            )
+        }
+    }
+}
+
+/* ------------------------------------------------ */
+/* Error state                                      */
+/* ------------------------------------------------ */
+@Composable
+private fun NotificationErrorContent(
+    message: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = VerviColors.CancelRed,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = message,
+                fontSize = 14.sp,
+                color = VerviColors.TextDark,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            )
+            Spacer(Modifier.height(16.dp))
+            VerviSmallButton(
+                text = "Reintentar",
+                color = VerviColors.Blue,
+                onClick = onRetry,
+                modifier = Modifier.widthIn(min = 180.dp)
+            )
         }
     }
 }

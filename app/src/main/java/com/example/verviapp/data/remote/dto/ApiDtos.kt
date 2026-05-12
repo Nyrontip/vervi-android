@@ -101,6 +101,18 @@ data class RequestCreateRequest(
 )
 
 @JsonClass(generateAdapter = true)
+data class NotificationDto(
+    @Json(name = "id") val id: Int,
+    @Json(name = "userId") val userId: Int,
+    @Json(name = "title") val title: String,
+    @Json(name = "description") val description: String,
+    @Json(name = "type") val type: String,
+    @Json(name = "isUnread") val isUnread: Boolean,
+    @Json(name = "requestId") val requestId: Int? = null,
+    @Json(name = "createdAt") val createdAt: String
+)
+
+@JsonClass(generateAdapter = true)
 data class ApiError(
     @Json(name = "message") val message: String,
     @Json(name = "statusCode") val statusCode: Int? = null

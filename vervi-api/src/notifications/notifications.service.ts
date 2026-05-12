@@ -19,11 +19,19 @@ export class NotificationsService {
   }
 
   async findByUserId(userId: number): Promise<Notification[]> {
-    return this.notificationsRepository.find({ where: { userId }, relations: ['request', 'service', 'conversation', 'application'] });
+    return this.notificationsRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      relations: ['request', 'service', 'conversation', 'application'],
+    });
   }
 
   async findUnreadByUserId(userId: number): Promise<Notification[]> {
-    return this.notificationsRepository.find({ where: { userId, isUnread: true }, relations: ['request', 'service', 'conversation', 'application'] });
+    return this.notificationsRepository.find({
+      where: { userId, isUnread: true },
+      order: { createdAt: 'DESC' },
+      relations: ['request', 'service', 'conversation', 'application'],
+    });
   }
 
   async create(notificationData: Partial<Notification>): Promise<Notification> {

@@ -53,4 +53,18 @@ interface VerviApi {
 
     @DELETE("requests/{id}")
     suspend fun deleteRequest(@Path("id") id: Int): Response<Unit>
+
+    // ── Notificaciones ──────────────────────────────────────────
+
+    @GET("notifications/user/{userId}")
+    suspend fun getUserNotifications(@Path("userId") userId: Int): Response<List<NotificationDto>>
+
+    @GET("notifications/user/{userId}/unread")
+    suspend fun getUnreadNotifications(@Path("userId") userId: Int): Response<List<NotificationDto>>
+
+    @PUT("notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") id: Int): Response<Unit>
+
+    @PUT("notifications/user/{userId}/read-all")
+    suspend fun markAllNotificationsRead(@Path("userId") userId: Int): Response<Unit>
 }

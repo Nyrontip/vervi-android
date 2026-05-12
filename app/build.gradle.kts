@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,13 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Cargar secretos desde local.properties (no comitear valores sensibles)
+val localProps = Properties()
+val localPropsFile = rootProject.file("local.properties")
+if (localPropsFile.exists()) {
+    localProps.load(localPropsFile.inputStream())
+}
+val verviBaseUrl: String = localProps.getProperty("VERVI_BASE_URL", "https://localhost:3000")
 android {
     namespace = "com.example.verviapp"
     compileSdk {
@@ -21,6 +30,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Exponer URL en BuildConfig para uso en código Kotlin
+        buildConfigField("String", "VERVI_BASE_URL", "\"$verviBaseUrl\"")
     }
 
 
@@ -39,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
 }

@@ -35,6 +35,7 @@ google-services.json
 # Kotlin/Java compilados
 *.class
 *.kotlin_module
+.kotlin/
 
 # MacOS
 .DS_Store
@@ -45,4 +46,5 @@ vervi-api/node_modules/
 vervi-api/dist/
 vervi-api/.env
 vervi-api/*.db
+vervi-api/*.ps1
 vervi-api/*.db-journal
