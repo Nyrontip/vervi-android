@@ -906,22 +906,26 @@ fun VerviServiceHistoryCard(
             .padding(16.dp)
     ) {
 
-        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
 
+                val statusColor = when (item.status) {
+                    "Programado" -> Color(0xFFF59E0B)
+                    "En curso" -> Color(0xFF10B981)
+                    "Completado" -> Color(0xFF3B82F6)
+                    "Cancelado" -> Color(0xFFEF4444)
+                    else -> Color.Gray
+                }
                 VerviStatusBadge(
                     text = item.status,
-                    color = when (item.status) {
-                        "SCHEDULED" -> Color(0xFFF59E0B)
-                        "IN_PROGRESS" -> Color(0xFF10B981)
-                        "COMPLETED" -> Color(0xFF3B82F6)
-                        "CANCELLED" -> Color(0xFFEF4444)
-                        else -> Color.Gray
-                    }
+                    color = statusColor
                 )
 
                 Text(
@@ -945,10 +949,10 @@ fun VerviServiceHistoryCard(
 
             Spacer(Modifier.width(12.dp))
 
-            Box(
+                Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .size(96.dp)
+                    .clip(RoundedCornerShape(12.dp))
             ) {
                 if (item.imageUrl.isNotBlank()) {
                     AsyncImage(
@@ -968,7 +972,7 @@ fun VerviServiceHistoryCard(
                             imageVector = Icons.Outlined.Image,
                             contentDescription = null,
                             tint = VerviColors.TextGray,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 }
