@@ -933,13 +933,34 @@ fun VerviServiceHistoryCard(
 
             Spacer(Modifier.width(12.dp))
 
-            AsyncImage(
-                model = item.imageUrl,
-                contentDescription = item.title,
+            Box(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(10.dp))
-            )
+            ) {
+                if (item.imageUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = item.imageUrl,
+                        contentDescription = item.title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(VerviColors.BorderGray.copy(alpha = 0.3f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Image,
+                            contentDescription = null,
+                            tint = VerviColors.TextGray,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(12.dp))

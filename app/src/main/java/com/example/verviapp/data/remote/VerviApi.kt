@@ -68,6 +68,11 @@ interface VerviApi {
     @PUT("notifications/user/{userId}/read-all")
     suspend fun markAllNotificationsRead(@Path("userId") userId: Int): Response<Unit>
 
+    // ── Servicios ──────────────────────────────────────────────
+
+    @GET("services/provider/{providerId}")
+    suspend fun getServicesByProvider(@Path("providerId") providerId: Int): Response<List<ServiceDto>>
+
     // ── Chat ────────────────────────────────────────────────────
 
     @POST("chat/conversations/find-or-create")

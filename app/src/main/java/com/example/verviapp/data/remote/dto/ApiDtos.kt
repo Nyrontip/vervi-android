@@ -133,6 +133,22 @@ data class ConversationDto(
 )
 
 @JsonClass(generateAdapter = true)
+data class ServiceDto(
+    @Json(name = "id") val id: Int,
+    @Json(name = "title") val title: String,
+    @Json(name = "summary") val summary: String?,
+    @Json(name = "status") val status: String,
+    @Json(name = "totalPriceCop") val totalPriceCop: Long,
+    @Json(name = "location") val location: String?,
+    @Json(name = "clientUserId") val clientUserId: Int,
+    @Json(name = "providerUserId") val providerUserId: Int,
+    @Json(name = "client") val client: UserDto?,
+    @Json(name = "requestId") val requestId: Int?,
+    @Json(name = "createdAt") val createdAt: String?,
+    @Json(name = "completedAt") val completedAt: String?
+)
+
+@JsonClass(generateAdapter = true)
 data class FindOrCreateConversationRequest(
     @Json(name = "participantAUserId") val participantAUserId: Int,
     @Json(name = "participantBUserId") val participantBUserId: Int,
