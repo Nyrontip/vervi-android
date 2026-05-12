@@ -86,6 +86,74 @@ async function seed() {
   `);
   console.log('✅ Services seeded');
 
+  // ── Service Evidence (for completed services) ──────────────
+  await dataSource.query(`
+    INSERT INTO service_evidence ("serviceId", "imageUrl", caption, "sortOrder") VALUES 
+    (1, 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&h=800&fit=crop', 'Fuga detectada bajo el lavabo', 1),
+    (1, 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&h=800&fit=crop', 'Válvula de paso reemplazada', 2),
+    (1, 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&h=800&fit=crop', 'Prueba de presión exitosa', 3),
+    (5, 'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=600&h=800&fit=crop', 'Sala antes de pintar', 1),
+    (5, 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&h=800&fit=crop', 'Aplicación de primera mano', 2),
+    (5, 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=800&fit=crop', 'Resultado final sala', 3),
+    (5, 'https://images.unsplash.com/photo-1560185009-5e8e9f1a44f5?w=600&h=800&fit=crop', 'Habitación principal terminada', 4)
+  `);
+  console.log('✅ Service evidence seeded');
+
+  // ── Provider-as-Client Requests ────────────────────────────
+  await dataSource.query(`
+    INSERT INTO requests ("clientUserId", "categoryId", status, title, description, location, "budgetCop", "isUrgent", "isActive", "applicationCount", "imageUrl") VALUES 
+    (3, 2, 'Pendiente', 'Reparación de tubería en baño', 'Se tapó la tubería del lavamanos y el agua no drena. Necesito ayuda urgente antes de que empeore.', 'Bogotá, Usaquén', 60000, true, true, 0, 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&h=400&fit=crop'),
+    (4, 1, 'Pendiente', 'Instalación de ventilador de techo', 'Quiero instalar un ventilador de techo en la sala. Ya tengo el ventilador, solo necesito instalación eléctrica.', 'Bogotá, Suba', 90000, false, true, 0, 'https://images.unsplash.com/photo-1595078475328-1ab05d0a6a0e?w=600&h=400&fit=crop'),
+    (5, 6, 'Borrador', 'Limpieza de taller de carpintería', 'Necesito una limpieza profunda de mi taller de carpintería después de un proyecto grande. Aprox 40m2.', 'Bogotá, Teusaquillo', 80000, false, true, 0, 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&h=400&fit=crop')
+  `);
+  console.log('✅ Provider requests seeded');
+
+  // ── Provider-to-Provider Applications ───────────────────────
+  await dataSource.query(`
+    INSERT INTO service_applications ("requestId", "providerUserId", "presentationMessage", "proposedPriceCop", "immediateAvailability", status) VALUES 
+    (11, 4, 'Plomera certificada, puedo ir hoy mismo a revisar la tubería. Tengo equipo especializado.', 55000, true, 'PENDING'),
+    (11, 5, 'Tengo experiencia en reparaciones de baños. Puedo hacer el trabajo mañana.', 50000, true, 'PENDING'),
+    (12, 3, 'Electricista profesional, instalación de ventiladores es mi especialidad.', 80000, true, 'PENDING'),
+    (12, 5, 'Puedo hacer la instalación, también ofrezco servicio de mantenimiento.', 85000, false, 'PENDING')
+  `);
+  console.log('✅ Provider-to-provider applications seeded');
+
+  // ── Additional conversations (provider-to-provider) ────────
+  await dataSource.query(`
+    INSERT INTO conversations ("participantAUserId", "participantBUserId", "requestId", "lastMessagePreview", "lastMessageAt") VALUES 
+    (3, 4, 11, 'Gracias por venir tan rápido, el baño quedó impecable.', '2026-05-12 15:00:00'),
+    (4, 3, 12, 'El ventilador quedó perfecto, muchas gracias!', '2026-05-12 16:30:00')
+  `);
+  console.log('✅ Additional conversations seeded');
+
+  // ── Additional messages ────────────────────────────────────
+  await dataSource.query(`
+    INSERT INTO messages ("conversationId", "senderUserId", body, "isRead", "sentAt") VALUES 
+    (5, 3, 'Hola María, tienes disponibilidad para revisar mi baño?', true, '2026-05-12 13:00:00'),
+    (5, 4, 'Sí claro, puedo ir hoy a las 4pm. Te parece?', true, '2026-05-12 13:15:00'),
+    (5, 3, 'Perfecto, te espero. Gracias!', true, '2026-05-12 13:30:00'),
+    (5, 4, 'Ya estoy aquí. Voy a revisar la tubería.', true, '2026-05-12 16:00:00'),
+    (5, 3, 'Gracias por venir tan rápido, el baño quedó impecable.', false, '2026-05-12 15:00:00'),
+    (6, 4, 'Buenas Juan, puedes instalarme un ventilador de techo?', true, '2026-05-12 15:00:00'),
+    (6, 3, 'Claro! Cuándo te viene bien?', true, '2026-05-12 15:15:00'),
+    (6, 4, 'Mañana a las 10am?', true, '2026-05-12 15:30:00'),
+    (6, 3, 'Perfecto, allá estaré.', true, '2026-05-12 15:45:00'),
+    (6, 4, 'El ventilador quedó perfecto, muchas gracias!', false, '2026-05-12 16:30:00')
+  `);
+  console.log('✅ Additional messages seeded');
+
+  // ── Additional notifications ───────────────────────────────
+  await dataSource.query(`
+    INSERT INTO notifications ("userId", title, description, type, "isUnread", "requestId", "applicationId") VALUES 
+    (3, 'Nueva postulación', 'María García ha postulado a tu solicitud de reparación de tubería', 'APPLICATION', true, 11, 9),
+    (3, 'Nueva postulación', 'Pedro Gómez ha postulado a tu solicitud de reparación de tubería', 'APPLICATION', true, 11, 10),
+    (4, 'Nueva postulación', 'Juan Pérez ha postulado a tu solicitud de instalación de ventilador', 'APPLICATION', true, 12, 11),
+    (4, 'Nueva postulación', 'Pedro Gómez ha postulado a tu solicitud de instalación de ventilador', 'APPLICATION', true, 12, 12),
+    (4, 'Nuevo mensaje', 'Juan Pérez te ha respondido sobre el ventilador', 'MESSAGE', true, 12, NULL),
+    (3, 'Nuevo mensaje', 'María García te ha confirmado visita para el baño', 'MESSAGE', true, 11, NULL)
+  `);
+  console.log('✅ Additional notifications seeded');
+
   // ── Reviews ─────────────────────────────────────────────────
   await dataSource.query(`
     INSERT INTO reviews ("serviceId", "reviewerUserId", "reviewedUserId", rating, comment) VALUES 
