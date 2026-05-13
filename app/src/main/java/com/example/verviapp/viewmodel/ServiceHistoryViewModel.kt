@@ -108,7 +108,7 @@ class ServiceHistoryViewModel @Inject constructor(
             provider = client?.name ?: "Cliente",
             date = dateStr,
             price = formattedPrice,
-            imageUrl = "",
+            imageUrl = imageUrl ?: "",
             status = status.toStatusLabel()
         )
     }
