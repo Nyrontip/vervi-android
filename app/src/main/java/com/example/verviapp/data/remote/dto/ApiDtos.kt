@@ -174,6 +174,18 @@ data class CreateMessageRequest(
     val body: String
 )
 
+data class ApplicationDto(
+    val id: Int,
+    val requestId: Int,
+    val providerUserId: Int,
+    val provider: UserDto? = null,
+    val presentationMessage: String? = null,
+    val proposedPriceCop: Long? = null,
+    val immediateAvailability: Boolean = false,
+    val status: String = "PENDING",
+    val createdAt: String? = null
+)
+
 @JsonClass(generateAdapter = true)
 data class ApiError(
     @Json(name = "message") val message: String,

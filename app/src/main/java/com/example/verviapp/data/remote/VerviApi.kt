@@ -76,6 +76,17 @@ interface VerviApi {
     @GET("services/provider/{providerId}")
     suspend fun getServicesByProvider(@Path("providerId") providerId: Int): Response<List<ServiceDto>>
 
+    // ── Aplicaciones (postulaciones) ──────────────────────────
+
+    @GET("applications/request/{requestId}")
+    suspend fun getApplicationsByRequest(@Path("requestId") requestId: Int): Response<List<ApplicationDto>>
+
+    @PUT("applications/{id}")
+    suspend fun updateApplication(
+        @Path("id") id: Int,
+        @Body request: Map<String, String>
+    ): Response<ApplicationDto>
+
     // ── Chat ────────────────────────────────────────────────────
 
     @POST("chat/conversations/find-or-create")

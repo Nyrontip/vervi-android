@@ -98,6 +98,17 @@ class RequestRepository @Inject constructor(
     suspend fun getRequestDetail(requestId: Int): ApiResult<RequestDto> =
         fetchOne { api.getRequestById(requestId) }
 
+    // ── Postulaciones ───────────────────────────────────────────
+
+    suspend fun getApplicationsByRequest(requestId: Int): ApiResult<List<ApplicationDto>> =
+        fetchAppList { api.getApplicationsByRequest(requestId) }
+
+    suspend fun acceptApplication(applicationId: Int): ApiResult<Unit> =
+        executeAppAction { api.updateApplication(applicationId, mapOf("status" to "ACCEPTED")) }
+
+    suspend fun rejectApplication(applicationId: Int): ApiResult<Unit> =
+        executeAppAction { api.updateApplication(applicationId, mapOf("status" to "REJECTED")) }
+
     fun getLoggedInUserId(): Int? = sessionManager.getLoggedInUserId()
 
     // ── Helpers ────────────────────────────────────────────────
@@ -114,6 +125,32 @@ class RequestRepository @Inject constructor(
                 response.code()
             )
         }
+    } catch (e: Exception) {
+        ApiResult.Error(e.message ?: "Error de conexión")
+    }
+
+    private suspend fun fetchAppList(
+        apiCall: suspend () -> Response<List<ApplicationDto>>
+    ): ApiResult<List<ApplicationDto>> = try {
+        val response = apiCall()
+        if (response.isSuccessful) {
+            ApiResult.Success(response.body() ?: emptyList())
+        } else {
+            ApiResult.Error(
+                response.errorBody()?.string() ?: "Error al cargar postulaciones",
+                response.code()
+            )
+        }
+    } catch (e: Exception) {
+        ApiResult.Error(e.message ?: "Error de conexión")
+    }
+
+    private suspend fun executeAppAction(
+        apiCall: suspend () -> Response<*>
+    ): ApiResult<Unit> = try {
+        val response = apiCall()
+        if (response.isSuccessful) ApiResult.Success(Unit)
+        else ApiResult.Error(response.errorBody()?.string() ?: "Error", response.code())
     } catch (e: Exception) {
         ApiResult.Error(e.message ?: "Error de conexión")
     }

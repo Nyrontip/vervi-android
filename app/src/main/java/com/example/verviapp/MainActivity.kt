@@ -28,6 +28,7 @@ import com.example.verviapp.ui.screens.RequestDetailsScreen
 import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
+import com.example.verviapp.ui.screens.ApplicantsScreen
 import com.example.verviapp.ui.screens.ChatScreen
 
 @AndroidEntryPoint
@@ -101,8 +102,11 @@ class MainActivity : ComponentActivity() {
                         val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
                         RequestCancelScreen(navController, requestId)
                     }
-                    composable("request/applications/{requestId}") {
-                        // TODO: pantalla de postulaciones para el dueño de la solicitud
+                    composable(
+                        route = "request/applications/{requestId}",
+                        arguments = listOf(navArgument("requestId") { type = NavType.IntType })
+                    ) {
+                        ApplicantsScreen(navController)
                     }
                     dialog(
                         route = "request/confirm/{requestId}",
