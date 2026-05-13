@@ -63,7 +63,7 @@ fun RequestDetailsScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showProviderDialog = false
-                    navController.navigate("edit-profile")
+                    navController.navigate("editProfile")
                 }) {
                     Text("Ir a mi perfil")
                 }
