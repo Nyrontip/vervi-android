@@ -20,11 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -56,19 +52,6 @@ fun RequestDetailsScreen(
     // Safety check: ensure selected index is valid
     if (selectedCarouselIndex >= images.size && images.isNotEmpty()) {
         selectedCarouselIndex = 0
-    }
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-    var isFirstResume by remember { mutableStateOf(true) }
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                if (isFirstResume) isFirstResume = false
-                else vm.retry()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     var showProviderDialog by remember { mutableStateOf(false) }
