@@ -68,6 +68,7 @@ export class ServiceApplicationsService {
       summary: app.presentationMessage || 'Servicio confirmado',
       location: app.request.location,
       totalPriceCop: app.proposedPriceCop ?? 0,
+      imageUrl: app.request.imageUrl,
       status: 'SCHEDULED' as any,
     });
     return this.servicesRepository.save(service);

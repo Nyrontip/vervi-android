@@ -14,6 +14,7 @@ data class ServiceDetailItem(
     val counterpartLocation: String,
     val counterpartAvatarUrl: String? = null,
     val evidenceImageUrls: List<String>,
+    val imageUrl: String? = null,
     val chatSummaryText: String
 )
 

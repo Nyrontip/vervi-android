@@ -154,6 +154,24 @@ fun ServiceDetailsScreen(
                         )
                     }
 
+                    // Hero image ilustrativa (heredada de la request)
+                    detail?.imageUrl?.let { url ->
+                        Spacer(Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                        ) {
+                            AsyncImage(
+                                model = url,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+
                     Spacer(Modifier.height(16.dp))
 
                     // Title + Price

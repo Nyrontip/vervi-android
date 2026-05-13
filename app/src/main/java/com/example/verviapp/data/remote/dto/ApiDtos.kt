@@ -149,7 +149,8 @@ data class ServiceDto(
     @Json(name = "requestId") val requestId: Int?,
     @Json(name = "createdAt") val createdAt: String?,
     @Json(name = "completedAt") val completedAt: String?,
-    @Json(name = "evidence") val evidence: List<EvidenceDto>? = null
+    @Json(name = "evidence") val evidence: List<EvidenceDto>? = null,
+    @Json(name = "imageUrl") val imageUrl: String? = null
 )
 
 data class FindOrCreateConversationRequest(

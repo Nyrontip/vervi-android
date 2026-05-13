@@ -110,6 +110,7 @@ class ServiceDetailsViewModel @Inject constructor(
             counterpartLocation = counterpart?.location ?: "",
             counterpartAvatarUrl = counterpart?.photoUrl?.takeIf(String::isNotBlank),
             evidenceImageUrls = evidence?.map { it.imageUrl } ?: emptyList(),
+            imageUrl = imageUrl?.takeIf(String::isNotBlank),
             chatSummaryText = "Ver conversación con ${counterpart?.name ?: "el usuario"}"
         )
     }
