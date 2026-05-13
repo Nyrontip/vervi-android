@@ -4,12 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.repository.ApiResult
 import com.example.verviapp.data.repository.ChatRepository
+import com.example.verviapp.viewmodel.state.ChatMessageState
 import com.example.verviapp.viewmodel.state.ChatUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,6 +25,7 @@ class ChatViewModel @Inject constructor(
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     private var conversationId: Int = 0
+    private var tempIdCounter = 0
 
     fun init(convId: Int) {
         if (conversationId == convId) return
@@ -36,23 +41,31 @@ class ChatViewModel @Inject constructor(
         val text = _uiState.value.inputText.trim()
         if (text.isEmpty() || conversationId == 0) return
 
+        // Optimistic: agregar mensaje inmediatamente
+        val tempId = tempIdCounter--
+        val now = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
+        val currentUserId = repository.getLoggedInUserId()
+
+        val optimistic = ChatMessageState(
+            id = tempId,
+            text = text,
+            time = now,
+            isUser = true,
+            avatar = null
+        )
+        _uiState.value = _uiState.value.copy(
+            messages = _uiState.value.messages + optimistic,
+            inputText = "",
+            isSending = false,
+            showAttachments = false,
+            error = null
+        )
+
+        // Llamada real al backend en background
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isSending = true, error = null)
             when (repository.sendMessage(conversationId, text)) {
-                is ApiResult.Success -> {
-                    _uiState.value = _uiState.value.copy(
-                        inputText = "",
-                        isSending = false,
-                        showAttachments = false
-                    )
-                    loadMessages()
-                }
-                is ApiResult.Error -> {
-                    _uiState.value = _uiState.value.copy(
-                        isSending = false,
-                        error = "No fue posible enviar el mensaje"
-                    )
-                }
+                is ApiResult.Success -> loadMessages()
+                is ApiResult.Error -> { /* el mensaje temporal se reemplaza al recargar */ }
             }
         }
     }
