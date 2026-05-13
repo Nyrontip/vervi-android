@@ -2,6 +2,7 @@ package com.example.verviapp.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,6 +18,7 @@ import com.example.verviapp.viewmodel.ChatViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -216,6 +218,7 @@ fun ChatInput(
     onAddFile: () -> Unit = {}
 ) {
     val isEnabled = text.isNotBlank()
+    var isFocused by remember { mutableStateOf(false) }
 
     val sendColor by animateColorAsState(
         targetValue = if (isEnabled)
@@ -228,7 +231,12 @@ fun ChatInput(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 5.dp),
+            .padding(horizontal = 12.dp, vertical = 5.dp)
+            .border(
+                width = if (isFocused) 1.dp else 0.dp,
+                color = if (isFocused) VerviColors.Primary else Color.Transparent,
+                shape = RoundedCornerShape(28.dp)
+            ),
         shape = RoundedCornerShape(28.dp),
         tonalElevation = 3.dp,
         color = VerviColors.InputBackground
@@ -238,28 +246,13 @@ fun ChatInput(
                 .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            // 📎 Adjuntar (más minimalista)
-            /*IconButton(
-                onClick = onAddFile,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Adjuntar",
-                    tint = VerviColors.Primary
-                )
-            }*/
-
-            // ✏️ Input integrado (sin borde duro)
             TextField(
                 value = text,
                 onValueChange = onTextChange,
-                placeholder = {
-                    Text("Escribe un mensaje…")
-                },
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(1f)
+                    .onFocusChanged { isFocused = it.isFocused },
+                placeholder = { Text("Escribe un mensaje…") },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -267,7 +260,8 @@ fun ChatInput(
                     unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = VerviColors.Primary
                 ),
-                maxLines = 4
+                maxLines = 4,
+                singleLine = true
             )
 
             // ➤ Botón enviar moderno
