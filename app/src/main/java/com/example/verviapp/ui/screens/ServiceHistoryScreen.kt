@@ -41,7 +41,7 @@ fun ServiceHistoryScreen(navController: NavController, vm: ServiceHistoryViewMod
     Scaffold(
         topBar = {
             VerviTopBar(
-                title = "Historial",
+                title = "Historial servicios",
                 onBack = { navController.popBackStack() }
             )
         },
