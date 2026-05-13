@@ -26,7 +26,7 @@ class ApplicantsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val requestId: Int = savedStateHandle.get<Int>("requestId")
+    val requestId: Int = savedStateHandle.get<Int>("requestId")
         ?: savedStateHandle.get<String>("requestId")?.toIntOrNull()
         ?: 0
 

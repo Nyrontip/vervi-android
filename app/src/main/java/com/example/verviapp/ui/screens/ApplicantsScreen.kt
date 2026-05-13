@@ -41,7 +41,9 @@ fun ApplicantsScreen(
 
     LaunchedEffect(Unit) {
         vm.acceptEvent.collect {
-            navController.popBackStack()
+            navController.navigate("request/details/${vm.requestId}") {
+                popUpTo("request/details/${vm.requestId}") { inclusive = true }
+            }
         }
     }
 
