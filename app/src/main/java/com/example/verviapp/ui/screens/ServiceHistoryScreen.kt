@@ -94,10 +94,14 @@ fun ServiceHistoryScreen(navController: NavController, vm: ServiceHistoryViewMod
                                 textAlign = TextAlign.Center
                             )
                             Spacer(Modifier.height(16.dp))
+                            val needsLogin = state.error?.contains("iniciar sesión") == true
                             VerviSmallButton(
-                                text = "Reintentar",
+                                text = if (needsLogin) "Iniciar sesión" else "Reintentar",
                                 color = VerviColors.Blue,
-                                onClick = { vm.retry() },
+                                onClick = {
+                                    if (needsLogin) navController.navigate("login")
+                                    else vm.retry()
+                                },
                                 modifier = Modifier.widthIn(min = 180.dp)
                             )
                         }
