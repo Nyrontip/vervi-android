@@ -27,7 +27,8 @@ data class RequestDetailsUiState(
     val request: RequestDetailItem? = null,
     val isOwner: Boolean = false,
     val provider: ClientSummary? = null,
-    val providerUserId: Int? = null
+    val providerUserId: Int? = null,
+    val clientUserId: Int? = null
 )
 
 @HiltViewModel
@@ -82,6 +83,7 @@ class RequestDetailsViewModel @Inject constructor(
                         isOwner = owner,
                         provider = resolvedProvider?.first,
                         providerUserId = resolvedProvider?.second,
+                        clientUserId = dto.clientUserId,
                         isLoading = false
                     )
                 }

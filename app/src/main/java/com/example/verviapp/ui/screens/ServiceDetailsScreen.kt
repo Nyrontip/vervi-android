@@ -269,7 +269,10 @@ fun ServiceDetailsScreen(
                             name = detail.counterpartName,
                             ratingLine = detail.counterpartRatingText,
                             avatarUrl = detail.counterpartAvatarUrl,
-                            showChat = false
+                            showChat = false,
+                            onAvatarClick = {
+                                uiState.counterpartUserId?.let { navController.navigate("profile?userId=$it") }
+                            }
                         )
                     }
 

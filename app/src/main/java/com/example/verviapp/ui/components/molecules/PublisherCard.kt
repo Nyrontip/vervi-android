@@ -2,6 +2,7 @@ package com.example.verviapp.ui.components.molecules
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,7 @@ fun PublisherCard(
     avatarUrl: String?,
     showChat: Boolean = true,
     onChatClick: () -> Unit = {},
+    onAvatarClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -48,12 +50,14 @@ fun PublisherCard(
             .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Avatar(
-            imageUrl = avatarUrl,
-            contentDescription = "Publicador",
-            modifier = Modifier.size(54.dp),
-            isOnline = true
-        )
+        Box(modifier = Modifier.clickable(onClick = onAvatarClick)) {
+            Avatar(
+                imageUrl = avatarUrl,
+                contentDescription = "Publicador",
+                modifier = Modifier.size(54.dp),
+                isOnline = true
+            )
+        }
 
         Spacer(modifier = Modifier.width(12.dp))
 

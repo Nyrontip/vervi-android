@@ -145,6 +145,10 @@ fun RequestDetailsScreen(
                 publisherRating = personRating,
                 publisherAvatarUrl = personAvatar,
                 showChat = uiState.isOwner,
+                onPublisherAvatarClick = {
+                    val userId = if (uiState.isOwner) uiState.providerUserId else uiState.clientUserId
+                    userId?.let { navController.navigate("profile?userId=$it") }
+                },
                 onPublisherChatClick = {
                     request?.id?.toIntOrNull()?.let { requestIdInt ->
                         uiState.providerUserId?.let { providerId ->
