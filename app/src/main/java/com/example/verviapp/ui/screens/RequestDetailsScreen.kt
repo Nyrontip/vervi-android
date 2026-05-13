@@ -59,9 +59,13 @@ fun RequestDetailsScreen(
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
+    var isFirstResume by remember { mutableStateOf(true) }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) vm.retry()
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (isFirstResume) isFirstResume = false
+                else vm.retry()
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
