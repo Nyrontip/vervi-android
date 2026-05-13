@@ -1,7 +1,9 @@
 package com.example.verviapp.ui.components.organisms
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -13,16 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.verviapp.ui.components.VerviButton
+import com.example.verviapp.ui.components.VerviSmallButton
 import com.example.verviapp.ui.theme.VerviColors
 
-/**
- * Bottom action bar for request details (Apply or View Applications button).
- */
 @Composable
 fun RequestActionBar(
     isOwner: Boolean,
-    onApplyClick: () -> Unit,
-    onViewApplicationsClick: () -> Unit,
+    hasProvider: Boolean = false,
+    onApplyClick: () -> Unit = {},
+    onViewApplicationsClick: () -> Unit = {},
+    onCancelClick: () -> Unit = {},
+    onConfirmClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -32,7 +35,28 @@ fun RequestActionBar(
             .navigationBarsPadding()
     ) {
         HorizontalDivider(color = VerviColors.BorderGray)
-        if (isOwner) {
+
+        if (isOwner && hasProvider) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                VerviSmallButton(
+                    text = "Cancelar",
+                    color = VerviColors.CancelRed,
+                    onClick = onCancelClick,
+                    modifier = Modifier.weight(1f)
+                )
+                VerviSmallButton(
+                    text = "Confirmar",
+                    color = VerviColors.Primary,
+                    onClick = onConfirmClick,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        } else if (isOwner) {
             VerviButton(
                 text = "Ver Postulaciones",
                 onClick = onViewApplicationsClick,

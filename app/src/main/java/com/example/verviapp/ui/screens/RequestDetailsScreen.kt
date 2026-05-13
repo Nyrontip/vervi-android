@@ -82,8 +82,10 @@ fun RequestDetailsScreen(
             { /* No mostrar action bar mientras carga */ }
         } else {
             {
+                val hasProvider = uiState.provider != null
                 RequestActionBar(
                     isOwner = uiState.isOwner,
+                    hasProvider = hasProvider,
                     onApplyClick = {
                         if (!vm.isLoggedIn()) {
                             navController.navigate("login")
@@ -95,6 +97,12 @@ fun RequestDetailsScreen(
                     },
                     onViewApplicationsClick = {
                         requestId?.let { navController.navigate("request/applications/$it") }
+                    },
+                    onCancelClick = {
+                        requestId?.let { navController.navigate("request/cancel/$it") }
+                    },
+                    onConfirmClick = {
+                        requestId?.let { navController.navigate("request/confirm/$it") }
                     }
                 )
             }
