@@ -59,7 +59,11 @@ fun RequestDetailsScreen(
                 RequestActionBar(
                     isOwner = uiState.isOwner,
                     onApplyClick = {
-                        requestId?.let { navController.navigate("service/apply/$it") }
+                        if (vm.isLoggedIn()) {
+                            requestId?.let { navController.navigate("service/apply/$it") }
+                        } else {
+                            navController.navigate("login")
+                        }
                     },
                     onViewApplicationsClick = {
                         requestId?.let { navController.navigate("request/applications/$it") }

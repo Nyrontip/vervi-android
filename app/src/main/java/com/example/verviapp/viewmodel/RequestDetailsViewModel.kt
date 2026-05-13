@@ -112,6 +112,8 @@ class RequestDetailsViewModel @Inject constructor(
         ) to latest.providerUserId
     }
 
+    fun isLoggedIn(): Boolean = sessionManager.isLoggedIn()
+
     suspend fun openChat(providerUserId: Int, requestId: Int): Int? {
         return when (val result = chatRepository.findOrCreateConversation(providerUserId, requestId)) {
             is ApiResult.Success -> result.data.id
