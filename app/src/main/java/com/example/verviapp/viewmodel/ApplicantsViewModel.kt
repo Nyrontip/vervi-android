@@ -6,30 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.remote.dto.ApplicationDto
 import com.example.verviapp.data.repository.ApiResult
 import com.example.verviapp.data.repository.RequestRepository
+import com.example.verviapp.viewmodel.state.ApplicantItem
+import com.example.verviapp.viewmodel.state.ApplicantsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.Locale
 import javax.inject.Inject
-
-data class ApplicantItem(
-    val id: Int,
-    val name: String,
-    val avatarUrl: String?,
-    val rating: Float?,
-    val proposedPrice: String,
-    val message: String,
-    val isAvailable: Boolean,
-    val status: String
-)
-
-data class ApplicantsUiState(
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val applicants: List<ApplicantItem> = emptyList(),
-    val requestTitle: String = ""
-)
 
 @HiltViewModel
 class ApplicantsViewModel @Inject constructor(
@@ -44,6 +30,8 @@ class ApplicantsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ApplicantsUiState())
     val uiState: StateFlow<ApplicantsUiState> = _uiState.asStateFlow()
 
+    private val currencyFormatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
+
     init {
         if (requestId > 0) load()
     }
@@ -55,11 +43,8 @@ class ApplicantsViewModel @Inject constructor(
     fun accept(applicationId: Int) {
         viewModelScope.launch {
             when (repository.acceptApplication(applicationId)) {
-                is ApiResult.Success -> {
-                    // Refrescar la lista
-                    load()
-                }
-                is ApiResult.Error -> { /* silencioso por ahora */ }
+                is ApiResult.Success -> load()
+                is ApiResult.Error -> { /* silencioso */ }
             }
         }
     }
@@ -77,7 +62,6 @@ class ApplicantsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-            // Cargar request title y aplicaciones en paralelo
             val requestResult = repository.getRequestDetail(requestId)
             var reqTitle = ""
             if (requestResult is ApiResult.Success) {
@@ -104,10 +88,13 @@ class ApplicantsViewModel @Inject constructor(
     }
 
     private fun ApplicationDto.toItem(): ApplicantItem {
-        val price = proposedPriceCop?.let { "\$${java.text.NumberFormat.getNumberInstance(java.util.Locale.forLanguageTag("es-CO")).format(it)} COP" } ?: "A convenir"
+        val price = proposedPriceCop?.let {
+            "\$${currencyFormatter.format(it)} COP"
+        } ?: "A convenir"
 
         return ApplicantItem(
             id = id,
+            providerUserId = providerUserId,
             name = provider?.name ?: "Proveedor",
             avatarUrl = provider?.photoUrl?.takeIf(String::isNotBlank),
             rating = provider?.rating?.takeIf { it > 0f },

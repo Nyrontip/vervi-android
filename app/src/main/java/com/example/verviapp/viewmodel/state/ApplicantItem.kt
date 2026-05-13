@@ -1,15 +1,14 @@
 package com.example.verviapp.viewmodel.state
 
 data class ApplicantItem(
-    val applicationId: Int,
+    val id: Int,
     val providerUserId: Int,
     val name: String,
-    val price: String,
-    val rating: Float,
-    val reviews: Int,
+    val avatarUrl: String?,
+    val rating: Float?,
+    val proposedPrice: String,
     val message: String,
-    val imageUrl: String,
-    val status: String,
-    val isImmediateAvailability: Boolean
+    val isAvailable: Boolean,
+    val status: String
 )
 

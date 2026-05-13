@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.verviapp.ui.components.VerviBottomBar
 import com.example.verviapp.ui.components.VerviSmallButton
 import com.example.verviapp.ui.components.VerviTopBar
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.ApplicantsViewModel
+import com.example.verviapp.viewmodel.state.ApplicantItem
 
 @Composable
 fun ApplicantsScreen(
@@ -45,8 +45,7 @@ fun ApplicantsScreen(
                 title = "Postulaciones",
                 onBack = { navController.popBackStack() }
             )
-        },
-        bottomBar = { VerviBottomBar(navController) }
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -103,6 +102,9 @@ fun ApplicantsScreen(
                         items(state.applicants, key = { it.id }) { applicant ->
                             ApplicantCard(
                                 applicant = applicant,
+                                onProfileClick = {
+                                    navController.navigate("profile?userId=${applicant.providerUserId}")
+                                },
                                 onAccept = { vm.accept(applicant.id) },
                                 onReject = { vm.reject(applicant.id) }
                             )
@@ -116,7 +118,8 @@ fun ApplicantsScreen(
 
 @Composable
 private fun ApplicantCard(
-    applicant: com.example.verviapp.viewmodel.ApplicantItem,
+    applicant: ApplicantItem,
+    onProfileClick: () -> Unit,
     onAccept: () -> Unit,
     onReject: () -> Unit
 ) {
@@ -138,7 +141,10 @@ private fun ApplicantCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(onClick = onProfileClick)
+            ) {
                 // Avatar
                 Box(modifier = Modifier.size(52.dp).clip(CircleShape)) {
                     if (applicant.avatarUrl != null) {
