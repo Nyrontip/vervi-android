@@ -76,7 +76,7 @@ class LoginViewModel @Inject constructor(
 
             when (val result = authRepository.register(normalizedName, normalizedEmail, password)) {
                 is ApiResult.Success -> {
-                    sessionManager.saveUserSession(result.data.id)
+                    sessionManager.saveUserSession(result.data.id, result.data.isProvider)
                     _state.value = _state.value.copy(isLoading = false, errorMessage = null)
                     _events.emit(AuthEvent.RegisterSuccess)
                 }

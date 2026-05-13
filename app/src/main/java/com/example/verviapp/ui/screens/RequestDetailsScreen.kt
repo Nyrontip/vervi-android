@@ -17,6 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -50,6 +54,28 @@ fun RequestDetailsScreen(
         selectedCarouselIndex = 0
     }
 
+    var showProviderDialog by remember { mutableStateOf(false) }
+    if (showProviderDialog) {
+        AlertDialog(
+            onDismissRequest = { showProviderDialog = false },
+            title = { Text("Modo prestador") },
+            text = { Text("Debés activar el modo prestador en tu perfil para postularte a solicitudes.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showProviderDialog = false
+                    navController.navigate("edit-profile")
+                }) {
+                    Text("Ir a mi perfil")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showProviderDialog = false }) {
+                    Text("Ahora no")
+                }
+            }
+        )
+    }
+
     Scaffold(
         containerColor = VerviColors.BackgroundLight,
         bottomBar = if (uiState.isLoading) {
@@ -59,10 +85,12 @@ fun RequestDetailsScreen(
                 RequestActionBar(
                     isOwner = uiState.isOwner,
                     onApplyClick = {
-                        if (vm.isLoggedIn()) {
-                            requestId?.let { navController.navigate("service/apply/$it") }
-                        } else {
+                        if (!vm.isLoggedIn()) {
                             navController.navigate("login")
+                        } else if (!vm.isProvider()) {
+                            showProviderDialog = true
+                        } else {
+                            requestId?.let { navController.navigate("service/apply/$it") }
                         }
                     },
                     onViewApplicationsClick = {

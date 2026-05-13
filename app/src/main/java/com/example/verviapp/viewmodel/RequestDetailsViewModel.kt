@@ -113,6 +113,7 @@ class RequestDetailsViewModel @Inject constructor(
     }
 
     fun isLoggedIn(): Boolean = sessionManager.isLoggedIn()
+    fun isProvider(): Boolean = sessionManager.isCurrentUserProvider()
 
     suspend fun openChat(providerUserId: Int, requestId: Int): Int? {
         return when (val result = chatRepository.findOrCreateConversation(providerUserId, requestId)) {
