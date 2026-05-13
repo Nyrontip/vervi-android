@@ -129,6 +129,42 @@ private fun ApplicantCard(
     onAccept: () -> Unit,
     onReject: () -> Unit
 ) {
+    var showAcceptDialog by remember { mutableStateOf(false) }
+    var showRejectDialog by remember { mutableStateOf(false) }
+
+    if (showAcceptDialog) {
+        AlertDialog(
+            onDismissRequest = { showAcceptDialog = false },
+            title = { Text("Aceptar postulación") },
+            text = { Text("Al aceptar esta postulación se creará un servicio y las demás postulaciones serán rechazadas automáticamente.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showAcceptDialog = false
+                    onAccept()
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAcceptDialog = false }) { Text("Cancelar") }
+            }
+        )
+    }
+
+    if (showRejectDialog) {
+        AlertDialog(
+            onDismissRequest = { showRejectDialog = false },
+            title = { Text("Rechazar postulación") },
+            text = { Text("¿Estás seguro de rechazar esta postulación? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showRejectDialog = false
+                    onReject()
+                }) { Text("Rechazar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRejectDialog = false }) { Text("Cancelar") }
+            }
+        )
+    }
     val statusColor = when (applicant.status) {
         "ACCEPTED" -> Color(0xFF10B981)
         "REJECTED" -> Color(0xFFEF4444)
@@ -223,13 +259,13 @@ private fun ApplicantCard(
                     VerviSmallButton(
                         text = "Rechazar",
                         color = VerviColors.CancelRed,
-                        onClick = onReject,
+                        onClick = { showRejectDialog = true },
                         modifier = Modifier.weight(1f)
                     )
                     VerviSmallButton(
                         text = "Aceptar",
                         color = Color(0xFF10B981),
-                        onClick = onAccept,
+                        onClick = { showAcceptDialog = true },
                         modifier = Modifier.weight(1f)
                     )
                 }
