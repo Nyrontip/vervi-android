@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -337,8 +338,13 @@ fun ChatTopBar(
 // ---------- MESSAGES LIST ----------
 
 @Composable
-fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modifier) {
+fun ChatMessagesList(
+    messages: List<ChatMessageState>,
+    listState: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState(),
+    modifier: Modifier = Modifier
+) {
     LazyColumn(
+        state = listState,
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
@@ -370,6 +376,14 @@ fun ChatScreen(
     }
 
     val state by viewModel.uiState.collectAsState()
+    val listState = rememberLazyListState()
+
+    val messages = state.messages
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -438,6 +452,7 @@ fun ChatScreen(
             else -> {
                 ChatMessagesList(
                     messages = state.messages,
+                    listState = listState,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
