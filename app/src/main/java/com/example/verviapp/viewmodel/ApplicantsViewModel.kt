@@ -9,8 +9,11 @@ import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.viewmodel.state.ApplicantItem
 import com.example.verviapp.viewmodel.state.ApplicantsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -30,6 +33,9 @@ class ApplicantsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ApplicantsUiState())
     val uiState: StateFlow<ApplicantsUiState> = _uiState.asStateFlow()
 
+    private val _acceptEvent = MutableSharedFlow<Unit>()
+    val acceptEvent: SharedFlow<Unit> = _acceptEvent.asSharedFlow()
+
     private val currencyFormatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
 
     init {
@@ -43,7 +49,7 @@ class ApplicantsViewModel @Inject constructor(
     fun accept(applicationId: Int) {
         viewModelScope.launch {
             when (repository.acceptApplication(applicationId)) {
-                is ApiResult.Success -> load()
+                is ApiResult.Success -> _acceptEvent.emit(Unit)
                 is ApiResult.Error -> { /* silencioso */ }
             }
         }

@@ -39,6 +39,12 @@ fun ApplicantsScreen(
 ) {
     val state by vm.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        vm.acceptEvent.collect {
+            navController.popBackStack()
+        }
+    }
+
     Scaffold(
         topBar = {
             VerviTopBar(

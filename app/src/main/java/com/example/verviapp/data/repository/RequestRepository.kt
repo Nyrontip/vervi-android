@@ -104,7 +104,7 @@ class RequestRepository @Inject constructor(
         fetchAppList { api.getApplicationsByRequest(requestId) }
 
     suspend fun acceptApplication(applicationId: Int): ApiResult<Unit> =
-        executeAppAction { api.updateApplication(applicationId, mapOf("status" to "ACCEPTED")) }
+        executeAppAction { api.acceptApplication(applicationId) }
 
     suspend fun rejectApplication(applicationId: Int): ApiResult<Unit> =
         executeAppAction { api.updateApplication(applicationId, mapOf("status" to "REJECTED")) }

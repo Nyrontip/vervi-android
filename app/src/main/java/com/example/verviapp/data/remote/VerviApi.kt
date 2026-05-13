@@ -87,6 +87,9 @@ interface VerviApi {
         @Body request: Map<String, String>
     ): Response<ApplicationDto>
 
+    @POST("applications/{id}/accept")
+    suspend fun acceptApplication(@Path("id") id: Int): Response<ServiceDto>
+
     // ── Chat ────────────────────────────────────────────────────
 
     @POST("chat/conversations/find-or-create")
