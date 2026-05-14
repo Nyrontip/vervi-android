@@ -58,6 +58,14 @@ export class ServiceApplicationsController {
     return this.applicationsService.update(+id, applicationData);
   }
 
+  @Post(':id/accept')
+  @ApiOperation({ summary: 'Accept application', description: 'Accept an application, reject others, and create a Service' })
+  @ApiParam({ name: 'id', type: Number, description: 'Application ID' })
+  @ApiResponse({ status: 201, description: 'Service created successfully' })
+  accept(@Param('id') id: string) {
+    return this.applicationsService.acceptApplication(+id);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete application', description: 'Delete an application by ID' })
   @ApiParam({ name: 'id', type: Number, description: 'Application ID' })

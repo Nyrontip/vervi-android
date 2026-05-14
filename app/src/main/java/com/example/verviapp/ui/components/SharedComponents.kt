@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -760,11 +761,14 @@ fun VerviStatusBadge(
 fun VerviRequestCard(
     navController: NavController,
     request: RequestItem,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
             .background(VerviColors.CardBackground, RoundedCornerShape(12.dp))
             .border(1.dp, VerviColors.BorderGray, RoundedCornerShape(12.dp))
             .padding(12.dp),
@@ -806,7 +810,7 @@ fun VerviRequestCard(
                     VerviSmallButton(
                         text = "Eliminar",
                         color = VerviColors.CancelRed,
-                        onClick = { navController.navigate("request/details/${request.id}") },
+                        onClick = { navController.navigate("request/cancel/${request.id}") },
                         modifier = Modifier.weight(1f)
                     )
                 } else {
@@ -828,15 +832,34 @@ fun VerviRequestCard(
             }
         }
 
-        AsyncImage(
-            model = request.imageUrl,
-            contentDescription = request.title,
-            contentScale = ContentScale.Crop,
-
+        Box(
             modifier = Modifier
                 .size(96.dp)
                 .clip(RoundedCornerShape(12.dp))
-        )
+        ) {
+            if (request.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = request.imageUrl,
+                    contentDescription = request.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(VerviColors.BorderGray.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Image,
+                        contentDescription = null,
+                        tint = VerviColors.TextGray,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -871,23 +894,39 @@ fun VerviRequestCard(
 fun VerviServiceHistoryCard(
     item: ServiceHistoryItem,
     onClick: () -> Unit,
-    onRate: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
             .background(VerviColors.CardBackground, RoundedCornerShape(12.dp))
             .border(1.dp, VerviColors.BorderGray, RoundedCornerShape(12.dp))
             .padding(16.dp)
     ) {
 
-        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+
+                val statusColor = when (item.status) {
+                    "Programado" -> Color(0xFFF59E0B)
+                    "En curso" -> Color(0xFF10B981)
+                    "Completado" -> Color(0xFF3B82F6)
+                    "Cancelado" -> Color(0xFFEF4444)
+                    else -> Color.Gray
+                }
+                VerviStatusBadge(
+                    text = item.status,
+                    color = statusColor
+                )
 
                 Text(
                     text = item.title,
@@ -910,62 +949,33 @@ fun VerviServiceHistoryCard(
 
             Spacer(Modifier.width(12.dp))
 
-            AsyncImage(
-                model = item.imageUrl,
-                contentDescription = item.title,
+                Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            )
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        Divider()
-
-        Spacer(Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            if (item.rating != null) {
-                VerviRatingStars(item.rating)
-            } else {
-                VerviBadge(
-                    text = "SIN CALIFICAR",
-                    color = VerviColors.TextGray,
-                    outlined = true
-                )
-            }
-
-            Row(
-                modifier = Modifier.clickable {
-                    if (item.rating != null) onClick() else onRate()
-                },
-                verticalAlignment = Alignment.CenterVertically
+                    .size(96.dp)
+                    .clip(RoundedCornerShape(12.dp))
             ) {
-                Text(
-                    text = if (item.rating != null) "Ver detalles" else "Calificar ahora",
-                    color = VerviColors.Blue,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp
-                )
-
-                Spacer(Modifier.width(4.dp))
-
-                Icon(
-                    imageVector =
-                        if (item.rating != null)
-                            Icons.Default.ChevronRight
-                        else
-                            Icons.Default.Star,
-                    contentDescription = null,
-                    tint = VerviColors.Blue,
-                    modifier = Modifier.size(18.dp)
-                )
+                if (item.imageUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = item.imageUrl,
+                        contentDescription = item.title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(VerviColors.BorderGray.copy(alpha = 0.3f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Image,
+                            contentDescription = null,
+                            tint = VerviColors.TextGray,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
             }
         }
     }

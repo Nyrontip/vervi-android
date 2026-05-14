@@ -3,8 +3,10 @@ package com.example.verviapp.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.verviapp.data.dao.ServiceDao
-import com.example.verviapp.data.repository.SampleData
+import com.example.verviapp.data.remote.dto.ServiceDto
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.ChatRepository
+import com.example.verviapp.data.repository.ServiceRepository
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.ServiceDetailItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,17 +17,21 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 
 data class ServiceDetailsUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val detail: ServiceDetailItem? = null
+    val detail: ServiceDetailItem? = null,
+    val isOwner: Boolean = false,
+    val counterpartUserId: Int? = null
 )
 
 @HiltViewModel
 class ServiceDetailsViewModel @Inject constructor(
-    private val serviceDao: ServiceDao,
+    private val repository: ServiceRepository,
+    private val chatRepository: ChatRepository,
     private val sessionManager: SessionManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -38,52 +44,86 @@ class ServiceDetailsViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        if (serviceIdArg > 0) {
-            load(serviceIdArg)
-        }
+        if (serviceIdArg > 0) load(serviceIdArg)
     }
 
     fun load(serviceId: Int) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            try {
-                val viewerUserId = sessionManager.getLoggedInUserId() ?: SampleData.SERVICE_LOCAL_USER_ID
-                val row = serviceDao.getServiceDetailsRow(serviceId, viewerUserId)
-                if (row == null) {
+            when (val result = repository.getServiceById(serviceId)) {
+                is ApiResult.Success -> {
+                    val dto = result.data
+                    val currentUserId = sessionManager.getLoggedInUserId()
+                    val isProvider = currentUserId == dto.providerUserId
+                    val counterpart = if (isProvider) dto.client else dto.provider
+                    val counterpartId = if (isProvider) dto.clientUserId else dto.providerUserId
+
+                    _uiState.value = _uiState.value.copy(
+                        detail = dto.toDetailItem(isProvider),
+                        isOwner = isProvider,
+                        counterpartUserId = counterpartId,
+                        isLoading = false
+                    )
+                }
+                is ApiResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = "No se encontro el servicio $serviceId"
+                        error = result.message
                     )
-                    return@launch
                 }
-
-                val evidenceUrls = serviceDao.getServiceEvidenceUrls(serviceId)
-                val item = ServiceDetailItem(
-                    serviceId = row.serviceId,
-                    title = row.title,
-                    summary = row.summary.ifBlank { "Sin resumen disponible." },
-                    location = row.location,
-                    totalPriceText = "$${priceFormatter.format(row.totalPriceCop)}",
-                    dateText = dateFormatter.format(Date(row.dateMillis)),
-                    statusText = if (row.status.equals("COMPLETED", ignoreCase = true)) "Completado" else row.status,
-                    roleLabel = row.roleLabel,
-                    counterpartName = row.counterpartName,
-                    counterpartRatingText = String.format(localeEsCo, "%.1f", row.counterpartRating),
-                    counterpartLocation = row.counterpartLocation,
-                    counterpartAvatarUrl = row.counterpartAvatarUrl
-                        ?.takeUnless { it.isBlank() }
-                        ?: DEFAULT_AVATAR_URL,
-                    evidenceImageUrls = evidenceUrls,
-                    chatSummaryText = row.chatPreview ?: "Ver conversacion con el usuario"
-                )
-
-                _uiState.value = _uiState.value.copy(isLoading = false, detail = item)
-            } catch (t: Throwable) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = t.message ?: "Error desconocido"
-                )
             }
+        }
+    }
+
+    suspend fun openChat(counterpartUserId: Int, requestId: Int?): Int? {
+        return when (val result = chatRepository.findOrCreateConversation(counterpartUserId, requestId)) {
+            is ApiResult.Success -> result.data.id
+            is ApiResult.Error -> null
+        }
+    }
+
+    fun retry() {
+        if (serviceIdArg > 0) load(serviceIdArg)
+    }
+
+    private fun ServiceDto.toDetailItem(isProvider: Boolean): ServiceDetailItem {
+        val counterpart = if (isProvider) client else provider
+        val statusLabel = when (status) {
+            "SCHEDULED" -> "Programado"
+            "IN_PROGRESS" -> "En curso"
+            "COMPLETED" -> "Completado"
+            "CANCELLED" -> "Cancelado"
+            else -> status
+        }
+
+        return ServiceDetailItem(
+            serviceId = id,
+            title = title,
+            summary = summary ?: "",
+            location = location ?: "",
+            totalPriceText = "$${priceFormatter.format(totalPriceCop)} COP",
+            dateText = dateFormatter.format(Date(parseDate(createdAt))),
+            statusText = statusLabel,
+            roleLabel = if (isProvider) "Como: Proveedor" else "Como: Cliente",
+            counterpartName = counterpart?.name ?: "Usuario",
+            counterpartRatingText = counterpart?.rating?.let { String.format(localeEsCo, "%.1f", it) } ?: "--",
+            counterpartLocation = counterpart?.location ?: "",
+            counterpartAvatarUrl = counterpart?.photoUrl?.takeIf(String::isNotBlank),
+            evidenceImageUrls = evidence?.map { it.imageUrl } ?: emptyList(),
+            imageUrl = imageUrl?.takeIf(String::isNotBlank),
+            chatSummaryText = "Ver conversación con ${counterpart?.name ?: "el usuario"}"
+        )
+    }
+
+    private fun parseDate(iso: String?): Long {
+        if (iso == null) return System.currentTimeMillis()
+        return try {
+            val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+            sdf.parse(iso)?.time ?: System.currentTimeMillis()
+        } catch (_: Exception) {
+            System.currentTimeMillis()
         }
     }
 
@@ -91,8 +131,5 @@ class ServiceDetailsViewModel @Inject constructor(
         val localeEsCo: Locale = Locale.forLanguageTag("es-CO")
         val dateFormatter = SimpleDateFormat("dd 'de' MMMM, yyyy • hh:mm a", localeEsCo)
         val priceFormatter = NumberFormat.getNumberInstance(localeEsCo)
-        const val DEFAULT_AVATAR_URL = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"
     }
 }
-
-

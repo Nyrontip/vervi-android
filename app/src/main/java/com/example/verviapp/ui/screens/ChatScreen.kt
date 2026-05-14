@@ -2,11 +2,13 @@ package com.example.verviapp.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,6 +20,7 @@ import com.example.verviapp.viewmodel.ChatViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -27,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.verviapp.ui.components.VerviSmallButton
 import com.example.verviapp.ui.theme.VerviColors
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.AnimatedVisibility
@@ -216,6 +220,7 @@ fun ChatInput(
     onAddFile: () -> Unit = {}
 ) {
     val isEnabled = text.isNotBlank()
+    var isFocused by remember { mutableStateOf(false) }
 
     val sendColor by animateColorAsState(
         targetValue = if (isEnabled)
@@ -228,7 +233,12 @@ fun ChatInput(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 5.dp),
+            .padding(horizontal = 12.dp, vertical = 5.dp)
+            .border(
+                width = if (isFocused) 1.dp else 0.dp,
+                color = if (isFocused) VerviColors.Primary else Color.Transparent,
+                shape = RoundedCornerShape(28.dp)
+            ),
         shape = RoundedCornerShape(28.dp),
         tonalElevation = 3.dp,
         color = VerviColors.InputBackground
@@ -238,28 +248,13 @@ fun ChatInput(
                 .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
-            // 📎 Adjuntar (más minimalista)
-            /*IconButton(
-                onClick = onAddFile,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Adjuntar",
-                    tint = VerviColors.Primary
-                )
-            }*/
-
-            // ✏️ Input integrado (sin borde duro)
             TextField(
                 value = text,
                 onValueChange = onTextChange,
-                placeholder = {
-                    Text("Escribe un mensaje…")
-                },
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(1f)
+                    .onFocusChanged { isFocused = it.isFocused },
+                placeholder = { Text("Escribe un mensaje…") },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -267,7 +262,8 @@ fun ChatInput(
                     unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = VerviColors.Primary
                 ),
-                maxLines = 4
+                maxLines = 4,
+                singleLine = true
             )
 
             // ➤ Botón enviar moderno
@@ -296,13 +292,17 @@ fun ChatInput(
 // ---------- TOP BAR ----------
 
 @Composable
-fun ChatTopBar(onBack: () -> Unit) {
+fun ChatTopBar(
+    name: String,
+    avatarUrl: String?,
+    onBack: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(VerviColors.Primary)
             .statusBarsPadding()
-            .padding(vertical = 4.dp, horizontal = 5.dp),
+            .padding(vertical = 12.dp, horizontal = 5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButtonCircle(
@@ -311,19 +311,27 @@ fun ChatTopBar(onBack: () -> Unit) {
         ) { onBack() }
         Spacer(Modifier.width(8.dp))
         Box {
-            Avatar(
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuBbXJ6mwDBe7aVLNNLYT3qvuXHAzHznWBIhM55cvQSvU3-8xDX56fHQDumSJVMqGfoYWmwPoX4mSuQWf4VALZUafhYNLfT4pb--W3VdnHpbdtPORb_0_2LyxIII_-1wFKn0AjefyIk25IPTNcdTGF-vr3HOEcEuuPyi2AW9ZjRRMgwr04DSwDnUxNB35QZ4HzznnUcv80f768GU2yLXN1lnsoOHF1yKM8_DM4NX6MSHXjeBbTTRZS2fIU5_kRzqGaM830P3vJKh7akT"
-            )
-            /*StatusDot(
-                modifier = Modifier.align(
-                    Alignment.BottomEnd
-                )
-            )¨*/
+            if (avatarUrl != null) {
+                Avatar(avatarUrl)
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(VerviColors.Primary.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = VerviColors.TextWhite
+                    )
+                }
+            }
         }
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f)) {
-            Text("Carlos Ruiz", fontWeight = FontWeight.SemiBold, color = VerviColors.TextWhite)
-            Text("Proveedor de Limpieza", fontSize = 12.sp, color = VerviColors.TextWhite)
+            Text(name, fontWeight = FontWeight.SemiBold, color = VerviColors.TextWhite)
         }
     }
 }
@@ -331,8 +339,13 @@ fun ChatTopBar(onBack: () -> Unit) {
 // ---------- MESSAGES LIST ----------
 
 @Composable
-fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modifier) {
+fun ChatMessagesList(
+    messages: List<ChatMessageState>,
+    listState: LazyListState = rememberLazyListState(),
+    modifier: Modifier = Modifier
+) {
     LazyColumn(
+        state = listState,
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
@@ -344,7 +357,7 @@ fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modi
         }
         items(
             items = messages,
-            key = { it.hashCode() }
+            key = { it.id }
         ) { message ->
             ChatMessageItem(message)
         }
@@ -355,19 +368,33 @@ fun ChatMessagesList(messages: List<ChatMessageState>, modifier: Modifier = Modi
 
 @Composable
 fun ChatScreen(
+    conversationId: Int,
     navController: NavController,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(conversationId) {
+        viewModel.init(conversationId)
+    }
 
     val state by viewModel.uiState.collectAsState()
+    val listState = rememberLazyListState()
 
     val messages = state.messages
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            listState.animateScrollToItem(messages.size - 1)
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = VerviColors.BgColor,
         topBar = {
-            ChatTopBar { navController.popBackStack() }
+            ChatTopBar(
+                name = state.otherParticipantName ?: "Chat",
+                avatarUrl = state.otherParticipantAvatar,
+                onBack = { navController.popBackStack() }
+            )
         },
         bottomBar = {
             Column(
@@ -392,12 +419,47 @@ fun ChatScreen(
             }
         }
     ) { innerPadding ->
-        ChatMessagesList(
-            messages = messages,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
-        )
+        when {
+            state.isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = VerviColors.Blue)
+                }
+            }
+            state.error != null -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = state.error!!,
+                            color = VerviColors.TextGray,
+                            fontSize = 14.sp
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        VerviSmallButton(
+                            text = "Reintentar",
+                            color = VerviColors.Blue,
+                            onClick = { viewModel.retry() }
+                        )
+                    }
+                }
+            }
+            else -> {
+                ChatMessagesList(
+                    messages = state.messages,
+                    listState = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .consumeWindowInsets(innerPadding)
+                )
+            }
+        }
     }
 }

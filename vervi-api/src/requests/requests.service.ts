@@ -15,11 +15,18 @@ export class RequestsService {
   }
 
   async findById(id: number): Promise<Request | null> {
-    return this.requestsRepository.findOne({ where: { id }, relations: ['client', 'category', 'attachments', 'applications', 'services'] });
+    return this.requestsRepository.findOne({
+      where: { id },
+      relations: ['client', 'category', 'attachments', 'applications', 'services', 'services.provider'],
+    });
   }
 
   async findByClientId(clientId: number): Promise<Request[]> {
-    return this.requestsRepository.find({ where: { clientUserId: clientId }, relations: ['client', 'category', 'attachments'] });
+    return this.requestsRepository.find({
+      where: { clientUserId: clientId },
+      order: { createdAt: 'DESC' },
+      relations: ['client', 'category', 'attachments'],
+    });
   }
 
   async create(requestData: Partial<Request>): Promise<Request> {

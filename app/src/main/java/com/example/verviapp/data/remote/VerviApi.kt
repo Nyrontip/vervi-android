@@ -67,4 +67,40 @@ interface VerviApi {
 
     @PUT("notifications/user/{userId}/read-all")
     suspend fun markAllNotificationsRead(@Path("userId") userId: Int): Response<Unit>
+
+    // ── Servicios ──────────────────────────────────────────────
+
+    @GET("services/{id}")
+    suspend fun getServiceById(@Path("id") id: Int): Response<ServiceDto>
+
+    @GET("services/provider/{providerId}")
+    suspend fun getServicesByProvider(@Path("providerId") providerId: Int): Response<List<ServiceDto>>
+
+    // ── Aplicaciones (postulaciones) ──────────────────────────
+
+    @GET("applications/request/{requestId}")
+    suspend fun getApplicationsByRequest(@Path("requestId") requestId: Int): Response<List<ApplicationDto>>
+
+    @PUT("applications/{id}")
+    suspend fun updateApplication(
+        @Path("id") id: Int,
+        @Body request: Map<String, String>
+    ): Response<ApplicationDto>
+
+    @POST("applications/{id}/accept")
+    suspend fun acceptApplication(@Path("id") id: Int): Response<ServiceDto>
+
+    // ── Chat ────────────────────────────────────────────────────
+
+    @POST("chat/conversations/find-or-create")
+    suspend fun findOrCreateConversation(@Body request: FindOrCreateConversationRequest): Response<ConversationDto>
+
+    @GET("chat/messages/{conversationId}")
+    suspend fun getMessages(@Path("conversationId") conversationId: Int): Response<List<MessageDto>>
+
+    @GET("chat/conversations/{id}")
+    suspend fun getConversation(@Path("id") id: Int): Response<ConversationDto>
+
+    @POST("chat/messages")
+    suspend fun sendMessage(@Body request: CreateMessageRequest): Response<MessageDto>
 }

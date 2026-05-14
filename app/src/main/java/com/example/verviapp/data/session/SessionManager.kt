@@ -9,14 +9,21 @@ class SessionManager @Inject constructor(
     private val prefs: SharedPreferences
 ) {
 
-    fun saveUserSession(userId: Int, token: String? = null) {
+    fun saveUserSession(userId: Int, isProvider: Boolean = false, token: String? = null) {
         prefs.edit()
             .putInt(KEY_USER_ID, userId)
+            .putBoolean(KEY_IS_PROVIDER, isProvider)
             .apply()
         if (token != null) {
             saveAuthToken(token)
         }
     }
+
+    fun saveIsProvider(isProvider: Boolean) {
+        prefs.edit().putBoolean(KEY_IS_PROVIDER, isProvider).apply()
+    }
+
+    fun isCurrentUserProvider(): Boolean = prefs.getBoolean(KEY_IS_PROVIDER, false)
 
     fun saveAuthToken(token: String) {
         prefs.edit().putString(KEY_AUTH_TOKEN, token).apply()
@@ -30,6 +37,7 @@ class SessionManager @Inject constructor(
         prefs.edit()
             .remove(KEY_USER_ID)
             .remove(KEY_AUTH_TOKEN)
+            .remove(KEY_IS_PROVIDER)
             .apply()
     }
 
@@ -43,5 +51,6 @@ class SessionManager @Inject constructor(
     private companion object {
         const val KEY_USER_ID = "session_user_id"
         const val KEY_AUTH_TOKEN = "auth_token"
+        const val KEY_IS_PROVIDER = "is_provider"
     }
 }

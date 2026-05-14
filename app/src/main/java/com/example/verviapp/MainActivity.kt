@@ -28,6 +28,7 @@ import com.example.verviapp.ui.screens.RequestDetailsScreen
 import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
 import com.example.verviapp.ui.screens.ServiceHistoryScreen
+import com.example.verviapp.ui.screens.ApplicantsScreen
 import com.example.verviapp.ui.screens.ChatScreen
 
 @AndroidEntryPoint
@@ -84,8 +85,9 @@ class MainActivity : ComponentActivity() {
                         val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: return@dialog
                         RateServiceScreen(navController, serviceId)
                     }
-                    composable("chat") {
-                        ChatScreen(navController)
+                    composable("chat/{conversationId}", arguments = listOf(navArgument("conversationId") { type = NavType.IntType })) { backStackEntry ->
+                        val convId = backStackEntry.arguments?.getInt("conversationId") ?: return@composable
+                        ChatScreen(conversationId = convId, navController = navController)
                     }
                     composable("request/details") {
                         RequestDetailsScreen(navController)
@@ -99,6 +101,12 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
                         RequestCancelScreen(navController, requestId)
+                    }
+                    composable(
+                        route = "request/applications/{requestId}",
+                        arguments = listOf(navArgument("requestId") { type = NavType.IntType })
+                    ) {
+                        ApplicantsScreen(navController)
                     }
                     dialog(
                         route = "request/confirm/{requestId}",

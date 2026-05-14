@@ -5,42 +5,28 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.ListAlt
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
+import com.example.verviapp.viewmodel.RequestEvent
 import com.example.verviapp.viewmodel.RequestManagementViewModel
-
-// -----------------------------
-// Data Class
-// -----------------------------
-data class RequestItem(
-    val id: Int,
-    val status: String,
-    val statusColor: Color,
-    val title: String,
-    val date: String,
-    val applications: String,
-    val imageUrl: String,
-    val buttonText: String,
-    val secondaryIcon: ImageVector
-)
 
 // -----------------------------
 // SCREEN
 // -----------------------------
 @Composable
-fun RequestsScreen(navController: NavController, vm: com.example.verviapp.viewmodel.RequestManagementViewModel = hiltViewModel()) {
+fun RequestsScreen(navController: NavController, vm: RequestManagementViewModel = hiltViewModel()) {
 
     val state by vm.uiState.collectAsState()
 
@@ -48,12 +34,10 @@ fun RequestsScreen(navController: NavController, vm: com.example.verviapp.viewmo
     LaunchedEffect(Unit) {
         vm.events.collect { ev ->
             when (ev) {
-                is com.example.verviapp.viewmodel.RequestEvent.OpenRequest -> {
-                    navController.navigate("request/details")
-                }
-                com.example.verviapp.viewmodel.RequestEvent.CreateNew -> {
+                is RequestEvent.CreateNew -> {
                     navController.navigate("request/new")
                 }
+                else -> {}
             }
         }
     }
@@ -96,7 +80,7 @@ fun RequestsScreen(navController: NavController, vm: com.example.verviapp.viewmo
                 .background(VerviColors.BgColor)
         ) {
 
-            // 🔵 Tabs
+            // Tabs
             TabRow(
                 selectedTabIndex = state.selectedTab,
                 containerColor = VerviColors.BgColor,
@@ -118,59 +102,105 @@ fun RequestsScreen(navController: NavController, vm: com.example.verviapp.viewmo
                 }
             }
 
-            // 🔵 Lista de solicitudes
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(state.requests.size) { index ->
-                    VerviRequestCard(
-                        navController = navController,
-                        request = state.requests[index]
-                    )
+            when {
+                // Cargando
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = VerviColors.Blue)
+                    }
+                }
+
+                // Error
+                state.error != null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = VerviColors.CancelRed,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                text = state.error!!,
+                                fontSize = 14.sp,
+                                color = VerviColors.TextDark,
+                                modifier = Modifier.padding(horizontal = 32.dp),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            val needsLogin = state.error?.contains("iniciar sesión") == true
+                            VerviSmallButton(
+                                text = if (needsLogin) "Iniciar sesión" else "Reintentar",
+                                color = VerviColors.Blue,
+                                onClick = {
+                                    if (needsLogin) navController.navigate("login")
+                                    else vm.retry()
+                                },
+                                modifier = Modifier.widthIn(min = 180.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Vacío
+                state.requests.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.ListAlt,
+                                contentDescription = null,
+                                tint = VerviColors.TextGray,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                text = if (state.selectedTab == 0)
+                                    "No tienes solicitudes activas"
+                                else
+                                    "No tienes solicitudes finalizadas",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = VerviColors.TextDark
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "Crea una nueva solicitud para empezar",
+                                fontSize = 13.sp,
+                                color = VerviColors.TextGray
+                            )
+                        }
+                    }
+                }
+
+                // Datos
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.requests.size) { index ->
+                            val request = state.requests[index]
+                            VerviRequestCard(
+                                navController = navController,
+                                request = request,
+                                onClick = { navController.navigate("request/details/${request.id}") }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
-
-// -----------------------------
-// SAMPLE DATA
-// -----------------------------
-val sampleRequests = listOf(
-    RequestItem(
-        id = 1,
-        status = "En curso",
-        statusColor = Color(0xFF10B981),
-        title = "Mantenimiento de Aire Acondicionado",
-        date = "12 Oct 2023",
-        applications = "3 Postulaciones",
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuB67969hdR51hZJ4MMl2KcD7Be19oLLeVWL6ROGoIgDcM5U8XflIO3tkfgCzwuH2MJSl_8_Gheu3jkhhVNTufiHwaXoHb7SQgsbVTt4ldPwE8EZWXv_CVNcD3c_ohEvLSEQECdZzXvKyJzDDMy7F2KJt6ksuHGcG9YPaLmghhRMZ-w50KFxTEAAEexjyZI93LFChiCnrTJaogs1fQs6Zg7JZew6NBm_Ul9K9ZD0v3ViKD5bnk4NnJMmmYK7kKDu899cW_Owf4R2VWgC",
-        buttonText = "Gestionar",
-        secondaryIcon = Icons.Default.MoreHoriz
-    ),
-    RequestItem(
-        id = 2,
-        status = "Pendiente",
-        statusColor = Color(0xFFF59E0B),
-        title = "Clase Particular de Matemáticas",
-        date = "10 Oct 2023",
-        applications = "1 Postulación",
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBnl5p6ez-eg1L9zbqiPi776Iuugs_VciEqTLCanHi4PTptvUeBTYJuf-37hVntOaYzL8bDnsTTKRHFJwN13XDMvun57PjsABpdDapeKr5jXLYXSeSCOgbXTSjBlR0fXGcccOJv4v65jC0UpTk08VTtb8zFh-dMNEbmLlrK_d1oKkSCctoal7ERBV0fzFgeWYoZgzuJkqdx3GOQcCisgg-a5Q62_eZGbY52d-xyOXEzl-9nVrhRf83hHkWdJb6apj-WOF2Jhibnkhgr",
-        buttonText = "Gestionar",
-        secondaryIcon = Icons.Default.MoreHoriz
-    ),
-    RequestItem(
-        id = 3,
-        status = "Borrador",
-        statusColor = Color.Gray,
-        title = "Reparación de Fuga de Agua",
-        date = "Hoy",
-        applications = "0 Postulaciones",
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuA1bULF4g5fXFqhPjmuBYe3t3C2ROTKCc-X0AhOtpq620jekQb5iaUTK4G9oJP8fgGCm0gAyfMrtOmohM7ZaGZWqqQAnEhUOuusSHcDw25yFhxbiVhJx49fM57C8qxUHvQOcZ9IhDMoGNVrjiSWf7FMd7ypM-yxc9r2N8jGchiccQVbJNk3dabVUAOzIsaFOHeo9KzbjjMGsXseOWuLzOKdRN7EAguL-tsgVPTd-Dcs-joD9YSmKv6lHC8brYllkaAd8GFT31KpmHQv",
-        buttonText = "Continuar",
-        secondaryIcon = Icons.Default.DeleteOutline
-    )
-)

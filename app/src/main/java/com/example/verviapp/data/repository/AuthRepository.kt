@@ -30,7 +30,7 @@ class AuthRepository @Inject constructor(
             val response = api.login(LoginRequest(email, password))
             if (response.isSuccessful) {
                 val body = response.body()!!
-                sessionManager.saveUserSession(body.user.id, body.accessToken)
+                sessionManager.saveUserSession(body.user.id, body.user.isProvider, body.accessToken)
                 _authState.value = _authState.value.copy(
                     isLoading = false,
                     errorMessage = null

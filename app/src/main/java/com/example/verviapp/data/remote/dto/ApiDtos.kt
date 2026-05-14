@@ -82,7 +82,16 @@ data class RequestDto(
     @Json(name = "category") val category: CategoryDto?,
     @Json(name = "client") val client: UserDto?,
     @Json(name = "createdAt") val createdAt: String?,
-    @Json(name = "updatedAt") val updatedAt: String?
+    @Json(name = "updatedAt") val updatedAt: String?,
+    @Json(name = "services") val services: List<ServiceSummaryDto>? = null
+)
+
+data class ServiceSummaryDto(
+    val id: Int,
+    val providerUserId: Int,
+    val provider: UserDto?,
+    val title: String,
+    val createdAt: String?
 )
 
 @JsonClass(generateAdapter = true)
@@ -110,6 +119,72 @@ data class NotificationDto(
     @Json(name = "isUnread") val isUnread: Boolean,
     @Json(name = "requestId") val requestId: Int? = null,
     @Json(name = "createdAt") val createdAt: String
+)
+
+data class ConversationDto(
+    val id: Int,
+    val participantAUserId: Int,
+    val participantBUserId: Int,
+    val requestId: Int? = null,
+    val participantA: UserDto? = null,
+    val participantB: UserDto? = null
+)
+
+data class EvidenceDto(
+    val imageUrl: String,
+    val caption: String? = null
+)
+
+data class ServiceDto(
+    @Json(name = "id") val id: Int,
+    @Json(name = "title") val title: String,
+    @Json(name = "summary") val summary: String?,
+    @Json(name = "status") val status: String,
+    @Json(name = "totalPriceCop") val totalPriceCop: Long,
+    @Json(name = "location") val location: String?,
+    @Json(name = "clientUserId") val clientUserId: Int,
+    @Json(name = "providerUserId") val providerUserId: Int,
+    @Json(name = "client") val client: UserDto?,
+    @Json(name = "provider") val provider: UserDto?,
+    @Json(name = "requestId") val requestId: Int?,
+    @Json(name = "createdAt") val createdAt: String?,
+    @Json(name = "completedAt") val completedAt: String?,
+    @Json(name = "evidence") val evidence: List<EvidenceDto>? = null,
+    @Json(name = "imageUrl") val imageUrl: String? = null
+)
+
+data class FindOrCreateConversationRequest(
+    val participantAUserId: Int,
+    val participantBUserId: Int,
+    val requestId: Int? = null
+)
+
+data class MessageDto(
+    val id: Int,
+    val conversationId: Int,
+    val senderUserId: Int,
+    val body: String,
+    val isRead: Boolean,
+    val sentAt: String?,
+    val sender: UserDto? = null
+)
+
+data class CreateMessageRequest(
+    val conversationId: Int,
+    val senderUserId: Int,
+    val body: String
+)
+
+data class ApplicationDto(
+    val id: Int,
+    val requestId: Int,
+    val providerUserId: Int,
+    val provider: UserDto? = null,
+    val presentationMessage: String? = null,
+    val proposedPriceCop: Long? = null,
+    val immediateAvailability: Boolean = false,
+    val status: String = "PENDING",
+    val createdAt: String? = null
 )
 
 @JsonClass(generateAdapter = true)

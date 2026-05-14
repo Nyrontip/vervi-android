@@ -1,5 +1,6 @@
 package com.example.verviapp.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -142,12 +144,32 @@ private fun ServiceCard(servicio: Service, onDetalle: () -> Unit) {
         Column {
             // Imagen con badge de precio superpuesto
             Box {
-                AsyncImage(
-                    model = servicio.imageUrl,
-                    contentDescription = servicio.title,
-                    contentScale       = ContentScale.Crop,
-                    modifier           = Modifier.fillMaxWidth().height(160.dp)
-                )
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(160.dp)
+                ) {
+                    if (servicio.imageUrl.isNotBlank()) {
+                        AsyncImage(
+                            model = servicio.imageUrl,
+                            contentDescription = servicio.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(VerviColors.BorderGray.copy(alpha = 0.3f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Image,
+                                contentDescription = null,
+                                tint = VerviColors.TextGray,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    }
+                }
                 // Badge precio — fondo blanco, texto azul (usa VerviBadge global)
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(10.dp)) {
                     VerviBadge(

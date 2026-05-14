@@ -53,6 +53,9 @@ export class Service {
   @Column({ type: 'timestamp', nullable: true })
   completedAt: Date;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column({
     type: 'enum',
     enum: ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
