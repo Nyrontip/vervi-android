@@ -1,6 +1,7 @@
 package com.example.verviapp.data.remote
 
 import com.example.verviapp.data.remote.dto.*
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -103,4 +104,10 @@ interface VerviApi {
 
     @POST("chat/messages")
     suspend fun sendMessage(@Body request: CreateMessageRequest): Response<MessageDto>
+
+    // ── Upload ───────────────────────────────────────────────────
+
+    @Multipart
+    @POST("upload/image")
+    suspend fun uploadImage(@Part file: MultipartBody.Part): Response<ImageUploadResponse>
 }

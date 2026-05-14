@@ -192,3 +192,8 @@ data class ApiError(
     @Json(name = "message") val message: String,
     @Json(name = "statusCode") val statusCode: Int? = null
 )
+
+@JsonClass(generateAdapter = true)
+data class ImageUploadResponse(
+    @Json(name = "secure_url") val secureUrl: String
+)

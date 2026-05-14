@@ -8,6 +8,8 @@ import com.example.verviapp.data.dao.RequestDao
 import com.example.verviapp.data.dao.RequestDetailsDao
 import com.example.verviapp.data.entity.RequestAttachmentEntity
 import com.example.verviapp.data.entity.RequestEntity
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.ImageUploadRepository
 import com.example.verviapp.data.repository.SampleData
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.model.NewRequestUiState
@@ -31,7 +33,8 @@ class NewRequestViewModel @Inject constructor(
     private val categoryDao: CategoryDao,
     private val requestDao: RequestDao,
     private val requestDetailsDao: RequestDetailsDao,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val imageUploadRepository: ImageUploadRepository
 ) : ViewModel() {
 
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
@@ -160,7 +163,26 @@ class NewRequestViewModel @Inject constructor(
 
                 val userId = sessionManager.getLoggedInUserId() ?: SampleData.DEMO_PROVIDER_USER_ID
                 val now = System.currentTimeMillis()
-                val firstAttachment = state.attachments.firstOrNull()?.toString().orEmpty()
+
+                val imageUrls = mutableListOf<String>()
+                for (uri in state.attachments) {
+                    uri?.let {
+                        when (val result = imageUploadRepository.uploadImage(it)) {
+                            is ApiResult.Success -> {
+                                imageUrls.add(result.data.secureUrl)
+                            }
+                            is ApiResult.Error -> {
+                                _uiState.value = _uiState.value.copy(
+                                    isSubmitting = false,
+                                    error = "Error al subir imagen: ${result.message}"
+                                )
+                                return@launch
+                            }
+                        }
+                    }
+                }
+
+                val firstImageUrl = imageUrls.firstOrNull() ?: ""
                 val requestId = requestDao.insertRequest(
                     RequestEntity(
                         clientUserId = userId,
@@ -174,7 +196,7 @@ class NewRequestViewModel @Inject constructor(
                         requiredDateMillis = selectedDateMillis,
                         applications = "0 Postulaciones",
                         applicationCount = 0,
-                        imageUrl = firstAttachment,
+                        imageUrl = firstImageUrl,
                         buttonText = "Gestionar",
                         isUrgent = false,
                         isActive = true,
@@ -191,17 +213,14 @@ class NewRequestViewModel @Inject constructor(
                     return@launch
                 }
 
-                val attachments = state.attachments
-                    .mapIndexedNotNull { index, uri ->
-                        uri?.toString()?.takeIf { it.isNotBlank() }?.let { rawUri ->
-                            RequestAttachmentEntity(
-                                requestId = requestId.toInt(),
-                                uri = rawUri,
-                                mimeType = resolveMimeType(uri),
-                                sortOrder = index
-                            )
-                        }
-                    }
+                val attachments = imageUrls.mapIndexed { index, cloudUrl ->
+                    RequestAttachmentEntity(
+                        requestId = requestId.toInt(),
+                        uri = cloudUrl,
+                        mimeType = "image/jpeg",
+                        sortOrder = index
+                    )
+                }
 
                 if (attachments.isNotEmpty()) {
                     requestDetailsDao.insertAttachments(attachments)
