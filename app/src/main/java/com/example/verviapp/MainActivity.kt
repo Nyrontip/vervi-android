@@ -75,8 +75,9 @@ class MainActivity : ComponentActivity() {
                     composable("request/new") {
                         NewRequestScreen(navController)
                     }
-                    composable("services/history") {
-                        ServiceHistoryScreen(navController)
+                    composable("services/history?userId={userId}") { backStackEntry ->
+                        val userId = backStackEntry.arguments?.getString("userId")
+                        ServiceHistoryScreen(navController, userId)
                     }
                     dialog(
                         route = "service/rate/{serviceId}",

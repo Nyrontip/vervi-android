@@ -69,6 +69,13 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
         },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
+        if (state.isLoading) {
+            VerviLoadingState(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            )
+        } else {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -320,6 +327,7 @@ fun EditProfileScreen(navController: NavController, viewModel: EditProfileViewMo
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
         }
     }
 }

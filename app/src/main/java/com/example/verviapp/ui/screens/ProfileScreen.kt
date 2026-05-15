@@ -54,10 +54,19 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
             )
         },
         bottomBar = {
-            VerviBottomBar(navController)
+            if (canManageProfile) {
+                VerviBottomBar(navController)
+            }
         },
         containerColor = VerviColors.BgColor
     ) { innerPadding ->
+        if (state.isLoading) {
+            VerviLoadingState(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            )
+        } else {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -206,28 +215,29 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
             SectionLabel("ACTIVIDAD")
             Spacer(modifier = Modifier.height(10.dp))
 
-            // VerviActivityItem
             Card(
                 shape    = RoundedCornerShape(12.dp),
                 colors   = CardDefaults.cardColors(containerColor = Color.White),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                VerviActivityItem(
-                    icon = Icons.Default.ListAlt,
-                    titulo = "Mis Solicitudes",
-                    subtitulo = "Ver tus pedidos pendientes",
-                    onClick = { navController.navigate("requests/management") }
-                )
-                HorizontalDivider(
-                    modifier  = Modifier.padding(horizontal = 16.dp),
-                    color     = VerviColors.BgColor,
-                    thickness = 1.dp
-                )
+                if (canManageProfile) {
+                    VerviActivityItem(
+                        icon = Icons.Default.ListAlt,
+                        titulo = "Mis Solicitudes",
+                        subtitulo = "Ver tus pedidos pendientes",
+                        onClick = { navController.navigate("requests/management") }
+                    )
+                    HorizontalDivider(
+                        modifier  = Modifier.padding(horizontal = 16.dp),
+                        color     = VerviColors.BgColor,
+                        thickness = 1.dp
+                    )
+                }
                 VerviActivityItem(
                     icon = Icons.Default.History,
                     titulo = "Historial de Servicios",
                     subtitulo = "Servicios completados y recibos",
-                    onClick = { navController.navigate("services/history") }
+                    onClick = { navController.navigate("services/history?userId=${state.user.id}") }
                 )
             }
 
@@ -251,6 +261,7 @@ fun ProfileScreen(navController: NavController, userId: String? = null, viewMode
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
         }
     }
 }
