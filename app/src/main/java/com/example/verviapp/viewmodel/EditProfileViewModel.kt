@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.ImageUploadRepository
 import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.data.repository.UserRepository
 import com.example.verviapp.data.session.SessionManager
@@ -21,7 +22,8 @@ import javax.inject.Inject
 class EditProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val requestRepository: RequestRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val imageUploadRepository: ImageUploadRepository
 ) : ViewModel() {
 
     private val currencyFormatter = NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
@@ -132,6 +134,23 @@ class EditProfileViewModel @Inject constructor(
                 return@launch
             }
 
+            var photoUrlToSave: String? = currentState.photoUrl.ifBlank { null }
+
+            if (photoUri != null) {
+                when (val uploadResult = imageUploadRepository.uploadImage(photoUri)) {
+                    is ApiResult.Success -> {
+                        photoUrlToSave = uploadResult.data.secureUrl
+                    }
+                    is ApiResult.Error -> {
+                        _state.value = _state.value.copy(
+                            isSaving = false,
+                            errorMessage = "Error al subir imagen: ${uploadResult.message}"
+                        )
+                        return@launch
+                    }
+                }
+            }
+
             when (val result = userRepository.updateUser(
                 id = userId,
                 name = normalizedName,
@@ -139,7 +158,7 @@ class EditProfileViewModel @Inject constructor(
                 location = currentState.location.trim(),
                 isProvider = currentState.isProvider,
                 suggestedPriceCop = parsePrice(currentState.price),
-                photoUrl = currentState.photoUrl.ifBlank { null }
+                photoUrl = photoUrlToSave
             )) {
                 is ApiResult.Success -> {
                     _state.value = _state.value.copy(isSaving = false, saveSuccess = true, errorMessage = null)
