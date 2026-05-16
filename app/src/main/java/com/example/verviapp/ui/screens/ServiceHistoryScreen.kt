@@ -23,9 +23,13 @@ import com.example.verviapp.viewmodel.ServiceHistoryEvent
 import com.example.verviapp.viewmodel.ServiceHistoryViewModel
 
 @Composable
-fun ServiceHistoryScreen(navController: NavController, vm: ServiceHistoryViewModel = hiltViewModel()) {
+fun ServiceHistoryScreen(navController: NavController, userId: String? = null, vm: ServiceHistoryViewModel = hiltViewModel()) {
 
     val state by vm.uiState.collectAsState()
+
+    LaunchedEffect(userId) {
+        vm.loadForUser(userId?.toIntOrNull())
+    }
 
     LaunchedEffect(Unit) {
         vm.navigationEvents.collect { event ->
@@ -33,7 +37,6 @@ fun ServiceHistoryScreen(navController: NavController, vm: ServiceHistoryViewMod
                 is ServiceHistoryEvent.OpenDetails -> {
                     navController.navigate("service/details/${event.item.serviceId}")
                 }
-                else -> {}
             }
         }
     }

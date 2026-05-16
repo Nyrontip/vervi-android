@@ -134,8 +134,13 @@ fun VerviBottomBar(navController: NavController) {
 
 // Busca el índice del item que coincide con la ruta actual
     val selectedIndex = items.indexOfFirst {
-        it.route.lowercase() == currentRoute?.lowercase()  // lowercase moderno y seguro con null
-    }.takeIf { it >= 0 } ?: 0  // fallback a Inicio si no coincide ninguno
+        val route = currentRoute ?: ""
+        when {
+            it.route == "profile" -> route.startsWith("profile")
+            it.route == "services/history" -> route.startsWith("services/history")
+            else -> route == it.route
+        }
+    }.takeIf { it >= 0 } ?: 0
 
     NavigationBar(
             containerColor = Color.White,

@@ -31,6 +31,8 @@ class EditProfileViewModel @Inject constructor(
     private val _state = MutableStateFlow(EditProfileState())
     val state: StateFlow<EditProfileState> = _state.asStateFlow()
 
+    private var categoryIdMap: Map<String, Int> = emptyMap()
+
     private fun editableUserId(): Int? = sessionManager.getLoggedInUserId()
 
     fun hasActiveSession(): Boolean = editableUserId() != null
@@ -79,6 +81,7 @@ class EditProfileViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = requestRepository.loadCategories()) {
                 is ApiResult.Success -> {
+                    categoryIdMap = result.data.associate { it.name to it.id }
                     val allCategoryNames = result.data.map { it.name }
                     val selectedCategories = _state.value.categories
                     val availableCategories = allCategoryNames.filterNot { it in selectedCategories }
@@ -151,6 +154,8 @@ class EditProfileViewModel @Inject constructor(
                 }
             }
 
+            val categoryIds = currentState.categories.mapNotNull { categoryIdMap[it] }
+
             when (val result = userRepository.updateUser(
                 id = userId,
                 name = normalizedName,
@@ -158,7 +163,8 @@ class EditProfileViewModel @Inject constructor(
                 location = currentState.location.trim(),
                 isProvider = currentState.isProvider,
                 suggestedPriceCop = parsePrice(currentState.price),
-                photoUrl = photoUrlToSave
+                photoUrl = photoUrlToSave,
+                categoryIds = categoryIds.ifEmpty { null }
             )) {
                 is ApiResult.Success -> {
                     _state.value = _state.value.copy(isSaving = false, saveSuccess = true, errorMessage = null)

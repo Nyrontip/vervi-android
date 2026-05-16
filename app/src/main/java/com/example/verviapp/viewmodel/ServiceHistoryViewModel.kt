@@ -37,18 +37,29 @@ class ServiceHistoryViewModel @Inject constructor(
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
+    private var targetUserId: Int? = sessionManager.getLoggedInUserId()
+
     private val _uiState = MutableStateFlow(ServiceHistoryUiState())
     val uiState: StateFlow<ServiceHistoryUiState> = _uiState.asStateFlow()
 
     private val _navigationEvents = MutableSharedFlow<ServiceHistoryEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
 
-    init {
+    fun loadForUser(userId: Int? = null) {
+        val id = userId ?: sessionManager.getLoggedInUserId() ?: run {
+            _uiState.value = _uiState.value.copy(isLoading = false, error = "Debes iniciar sesión", services = emptyList())
+            return
+        }
+        targetUserId = id
         loadServices()
     }
 
     fun selectTab(index: Int) {
-        if (_uiState.value.selectedTab == index) return
+        val id = targetUserId ?: return
+        if (_uiState.value.selectedTab == index && _uiState.value.services.isNotEmpty()) {
+            _uiState.value = _uiState.value.copy(selectedTab = index)
+            return
+        }
         _uiState.value = _uiState.value.copy(selectedTab = index)
         loadServices()
     }
@@ -58,41 +69,27 @@ class ServiceHistoryViewModel @Inject constructor(
     }
 
     fun retry() {
-        loadServices()
+        targetUserId?.let { loadServices() }
     }
 
     private fun loadServices() {
-        val userId = sessionManager.getLoggedInUserId()
-        if (userId == null) {
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                error = "Debes iniciar sesión"
-            )
-            return
-        }
-
+        val userId = targetUserId ?: return
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-
             when (val result = repository.getServicesByProvider(userId)) {
                 is ApiResult.Success -> {
                     val activeOnly = _uiState.value.selectedTab == 0
-                    val filtered = result.data.filter { service ->
-                        if (activeOnly) service.status in listOf("SCHEDULED", "IN_PROGRESS")
-                        else service.status in listOf("COMPLETED", "CANCELLED")
+                    val filtered = result.data.filter { s ->
+                        if (activeOnly) s.status in listOf("SCHEDULED", "IN_PROGRESS")
+                        else s.status in listOf("COMPLETED", "CANCELLED")
                     }
-
                     _uiState.value = _uiState.value.copy(
                         services = filtered.map { it.toUiItem() },
-                        isLoading = false,
-                        error = null
+                        isLoading = false, error = null
                     )
                 }
                 is ApiResult.Error -> {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = result.message
-                    )
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = result.message)
                 }
             }
         }
@@ -101,15 +98,11 @@ class ServiceHistoryViewModel @Inject constructor(
     private fun ServiceDto.toUiItem(): ServiceHistoryItem {
         val formattedPrice = "\$${priceFormatter.format(totalPriceCop)} COP"
         val dateStr = dateFormatter.format(Date(isoParser.parse(createdAt ?: "")?.time ?: System.currentTimeMillis()))
-
         return ServiceHistoryItem(
-            serviceId = id,
-            title = title,
+            serviceId = id, title = title,
             provider = client?.name ?: "Cliente",
-            date = dateStr,
-            price = formattedPrice,
-            imageUrl = imageUrl ?: "",
-            status = status.toStatusLabel()
+            date = dateStr, price = formattedPrice,
+            imageUrl = imageUrl ?: "", status = status.toStatusLabel()
         )
     }
 
@@ -122,7 +115,7 @@ class ServiceHistoryViewModel @Inject constructor(
     }
 
     private companion object {
-        val localeEsCo: Locale = Locale.forLanguageTag("es-CO")
+        val localeEsCo = Locale.forLanguageTag("es-CO")
         val dateFormatter = SimpleDateFormat("dd MMM yyyy", localeEsCo)
         val priceFormatter = NumberFormat.getNumberInstance(localeEsCo)
         val isoParser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
