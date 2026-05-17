@@ -167,6 +167,7 @@ class EditProfileViewModel @Inject constructor(
                 categoryIds = categoryIds.ifEmpty { null }
             )) {
                 is ApiResult.Success -> {
+                    sessionManager.saveIsProvider(currentState.isProvider)
                     _state.value = _state.value.copy(isSaving = false, saveSuccess = true, errorMessage = null)
                 }
                 is ApiResult.Error -> {
