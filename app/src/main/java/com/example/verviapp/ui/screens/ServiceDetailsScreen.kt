@@ -1,5 +1,8 @@
 package com.example.verviapp.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Chat
@@ -44,6 +48,11 @@ fun ServiceDetailsScreen(
     val detail = uiState.detail
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
+
+    // Evidence image picker (provider only)
+    val evidencePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri -> uri?.let { vm.addEvidence(it) } }
 
     LaunchedEffect(serviceId) {
         vm.load(serviceId)
@@ -274,6 +283,56 @@ fun ServiceDetailsScreen(
                                     color = VerviColors.TextGray
                                 )
                             }
+                        }
+                    }
+
+                    // Provider: Add evidence button
+                    if (uiState.isOwner) {
+                        Spacer(Modifier.height(12.dp))
+                        if (uiState.isUploadingEvidence) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = VerviColors.Primary
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text("Subiendo imagen...", fontSize = 13.sp, color = VerviColors.TextSecondary)
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = {
+                                    evidencePicker.launch(
+                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = VerviColors.Primary
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AddPhotoAlternate,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text("+ Agregar evidencia", fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                        // Evidence upload error
+                        uiState.evidenceError?.let { errMsg ->
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                text = errMsg,
+                                color = VerviColors.CancelRed,
+                                fontSize = 12.sp
+                            )
                         }
                     }
 

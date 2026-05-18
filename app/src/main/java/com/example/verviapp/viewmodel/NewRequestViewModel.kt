@@ -3,14 +3,10 @@ package com.example.verviapp.viewmodel
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.verviapp.data.dao.CategoryDao
-import com.example.verviapp.data.dao.RequestDao
-import com.example.verviapp.data.dao.RequestDetailsDao
-import com.example.verviapp.data.entity.RequestAttachmentEntity
-import com.example.verviapp.data.entity.RequestEntity
+import com.example.verviapp.data.remote.dto.RequestCreateRequest
 import com.example.verviapp.data.repository.ApiResult
 import com.example.verviapp.data.repository.ImageUploadRepository
-import com.example.verviapp.data.repository.SampleData
+import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.model.NewRequestUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,13 +22,12 @@ import javax.inject.Inject
 
 sealed class NewRequestEvent {
     object Submitted : NewRequestEvent()
+    data class DraftSaved(val draftId: Int) : NewRequestEvent()
 }
 
 @HiltViewModel
 class NewRequestViewModel @Inject constructor(
-    private val categoryDao: CategoryDao,
-    private val requestDao: RequestDao,
-    private val requestDetailsDao: RequestDetailsDao,
+    private val requestRepository: RequestRepository,
     private val sessionManager: SessionManager,
     private val imageUploadRepository: ImageUploadRepository
 ) : ViewModel() {
@@ -45,32 +40,33 @@ class NewRequestViewModel @Inject constructor(
     private val _events = MutableSharedFlow<NewRequestEvent>()
     val events = _events.asSharedFlow()
 
+    /** Cache of categories fetched from API: name -> id */
+    private var categoryMap: Map<String, Int> = emptyMap()
+
     init {
         loadCategories()
     }
 
     private fun loadCategories() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoadingCategories = true,
-                categoriesError = null
-            )
-
-            runCatching { categoryDao.getCategoryNames() }
-                .onSuccess { names ->
+            _uiState.value = _uiState.value.copy(isLoadingCategories = true, categoriesError = null)
+            when (val result = requestRepository.loadCategories()) {
+                is ApiResult.Success -> {
+                    categoryMap = result.data.associate { it.name to it.id }
                     _uiState.value = _uiState.value.copy(
-                        categoryOptions = names,
+                        categoryOptions = result.data.map { it.name },
                         isLoadingCategories = false,
                         categoriesError = null
                     )
                 }
-                .onFailure { throwable ->
+                is ApiResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         categoryOptions = emptyList(),
                         isLoadingCategories = false,
-                        categoriesError = throwable.message ?: "No se pudieron cargar las categorias"
+                        categoriesError = result.message
                     )
                 }
+            }
         }
     }
 
@@ -103,7 +99,6 @@ class NewRequestViewModel @Inject constructor(
         val current = _uiState.value.attachments
         val firstEmptyIndex = current.indexOfFirst { it == null }
         if (firstEmptyIndex < 0) return
-
         val next = current.toMutableList()
         next[firstEmptyIndex] = uri
         _uiState.value = _uiState.value.copy(attachments = next)
@@ -112,139 +107,105 @@ class NewRequestViewModel @Inject constructor(
     fun removeAttachment(index: Int) {
         val current = _uiState.value.attachments
         if (index !in current.indices) return
-
         val next = current.toMutableList()
         next[index] = null
         _uiState.value = _uiState.value.copy(attachments = next)
     }
 
-    fun submit() {
+    /** Returns true if the form has any data worth saving */
+    fun hasUnsavedData(): Boolean {
+        val s = _uiState.value
+        return s.title.isNotBlank() || s.description.isNotBlank() || s.attachments.any { it != null }
+    }
+
+    fun submit() = submitInternal(asDraft = false)
+
+    fun saveDraft() = submitInternal(asDraft = true)
+
+    private fun submitInternal(asDraft: Boolean) {
         val state = _uiState.value
-        val budgetValue = state.budget
-            .replace("$", "")
-            .replace(".", "")
-            .replace(",", "")
-            .trim()
-            .toLongOrNull()
+        val budgetValue = parseBudget(state.budget)
 
-        val validationError = when {
-            state.title.isBlank() -> "El titulo es obligatorio"
-            state.description.isBlank() -> "La descripcion es obligatoria"
-            state.category.isBlank() -> "Selecciona una categoria"
-            state.dateMillis == null -> "Selecciona la fecha requerida"
-            budgetValue == null || budgetValue <= 0L -> "Ingresa un presupuesto valido"
-            else -> null
-        }
-
-        if (validationError != null) {
-            _uiState.value = state.copy(error = validationError)
-            return
+        if (!asDraft) {
+            val validationError = when {
+                state.title.isBlank() -> "El titulo es obligatorio"
+                state.description.isBlank() -> "La descripcion es obligatoria"
+                state.category.isBlank() -> "Selecciona una categoria"
+                state.dateMillis == null -> "Selecciona la fecha requerida"
+                budgetValue == null || budgetValue <= 0L -> "Ingresa un presupuesto valido"
+                else -> null
+            }
+            if (validationError != null) {
+                _uiState.value = state.copy(error = validationError)
+                return
+            }
+        } else {
+            if (state.title.isBlank()) {
+                _uiState.value = state.copy(error = "Agrega al menos un título para guardar el borrador")
+                return
+            }
         }
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSubmitting = true, error = null)
             try {
-                val selectedDateMillis = state.dateMillis ?: run {
-                    _uiState.value = _uiState.value.copy(
-                        isSubmitting = false,
-                        error = "Selecciona la fecha requerida"
-                    )
+                val userId = sessionManager.getLoggedInUserId() ?: run {
+                    _uiState.value = _uiState.value.copy(isSubmitting = false, error = "Debes iniciar sesión")
                     return@launch
                 }
 
-                val categoryId = categoryDao.getCategoryIdByName(state.category)
-                if (categoryId == null) {
-                    _uiState.value = _uiState.value.copy(
-                        isSubmitting = false,
-                        error = "No se pudo resolver la categoria seleccionada"
-                    )
-                    return@launch
-                }
-
-                val userId = sessionManager.getLoggedInUserId() ?: SampleData.DEMO_PROVIDER_USER_ID
-                val now = System.currentTimeMillis()
-
+                // Upload images
                 val imageUrls = mutableListOf<String>()
                 for (uri in state.attachments) {
                     uri?.let {
                         when (val result = imageUploadRepository.uploadImage(it)) {
-                            is ApiResult.Success -> {
-                                imageUrls.add(result.data.secureUrl)
-                            }
+                            is ApiResult.Success -> imageUrls.add(result.data.secureUrl)
                             is ApiResult.Error -> {
-                                _uiState.value = _uiState.value.copy(
-                                    isSubmitting = false,
-                                    error = "Error al subir imagen: ${result.message}"
-                                )
+                                _uiState.value = _uiState.value.copy(isSubmitting = false, error = "Error al subir imagen: ${result.message}")
                                 return@launch
                             }
                         }
                     }
                 }
 
-                val firstImageUrl = imageUrls.firstOrNull() ?: ""
-                val requestId = requestDao.insertRequest(
-                    RequestEntity(
-                        clientUserId = userId,
-                        categoryId = categoryId,
-                        status = "Pendiente",
-                        title = state.title.trim(),
-                        description = state.description.trim(),
-                        date = state.dateText,
-                        location = "Por definir",
-                        budgetCop = budgetValue,
-                        requiredDateMillis = selectedDateMillis,
-                        applications = "0 Postulaciones",
-                        applicationCount = 0,
-                        imageUrl = firstImageUrl,
-                        buttonText = "Gestionar",
-                        isUrgent = false,
-                        isActive = true,
-                        createdAt = now,
-                        updatedAt = now
-                    )
+                val categoryId = categoryMap[state.category]
+
+                val requestData = RequestCreateRequest(
+                    clientUserId = userId,
+                    categoryId = categoryId,
+                    title = state.title.trim(),
+                    description = state.description.trim().takeIf { it.isNotBlank() },
+                    location = null,
+                    budgetCop = parseBudget(state.budget),
+                    requiredDateMillis = state.dateMillis,
+                    imageUrl = imageUrls.firstOrNull(),
+                    isUrgent = false,
+                    isActive = !asDraft,
+                    status = if (asDraft) "Borrador" else "Pendiente"
                 )
 
-                if (requestId <= 0L) {
-                    _uiState.value = _uiState.value.copy(
-                        isSubmitting = false,
-                        error = "No se pudo guardar la solicitud"
-                    )
-                    return@launch
+                when (val result = requestRepository.createRequest(requestData)) {
+                    is ApiResult.Success -> {
+                        _uiState.value = _uiState.value.copy(isSubmitting = false)
+                        if (asDraft) {
+                            _events.emit(NewRequestEvent.DraftSaved(result.data.id))
+                        } else {
+                            _events.emit(NewRequestEvent.Submitted)
+                        }
+                    }
+                    is ApiResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            isSubmitting = false,
+                            error = result.message
+                        )
+                    }
                 }
-
-                val attachments = imageUrls.mapIndexed { index, cloudUrl ->
-                    RequestAttachmentEntity(
-                        requestId = requestId.toInt(),
-                        uri = cloudUrl,
-                        mimeType = "image/jpeg",
-                        sortOrder = index
-                    )
-                }
-
-                if (attachments.isNotEmpty()) {
-                    requestDetailsDao.insertAttachments(attachments)
-                }
-
-                _uiState.value = _uiState.value.copy(isSubmitting = false)
-                _events.emit(NewRequestEvent.Submitted)
             } catch (t: Throwable) {
-                _uiState.value = _uiState.value.copy(
-                    isSubmitting = false,
-                    error = t.message ?: "Error desconocido"
-                )
+                _uiState.value = _uiState.value.copy(isSubmitting = false, error = t.message ?: "Error desconocido")
             }
         }
     }
 
-    private fun resolveMimeType(uri: Uri): String? {
-        val value = uri.toString().lowercase(Locale.US)
-        return when {
-            value.endsWith(".png") -> "image/png"
-            value.endsWith(".webp") -> "image/webp"
-            value.endsWith(".jpg") || value.endsWith(".jpeg") -> "image/jpeg"
-            else -> null
-        }
-    }
+    private fun parseBudget(raw: String): Long? =
+        raw.replace("$", "").replace(".", "").replace(",", "").trim().toLongOrNull()
 }
-

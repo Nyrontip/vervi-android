@@ -80,12 +80,11 @@ class RequestManagementViewModel @Inject constructor(
             when (val result = repository.getUserRequests(userId, null)) {
                 is ApiResult.Success -> {
                     val allRequests = result.data
-                    val activeOnly = _uiState.value.selectedTab == 0
-
-                    val filtered = if (activeOnly) {
-                        allRequests.filter { it.isActive }
-                    } else {
-                        allRequests.filter { !it.isActive }
+                    val filtered = when (_uiState.value.selectedTab) {
+                        0 -> allRequests.filter { it.isActive && it.status != "Borrador" }
+                        1 -> allRequests.filter { !it.isActive && it.status != "Borrador" }
+                        2 -> allRequests.filter { it.status == "Borrador" }
+                        else -> allRequests
                     }
 
                     _uiState.value = _uiState.value.copy(
@@ -103,6 +102,7 @@ class RequestManagementViewModel @Inject constructor(
             }
         }
     }
+
 
     private fun RequestDto.toUiItem(): RequestItem {
         val dateStr = createdAt?.take(10) ?: ""

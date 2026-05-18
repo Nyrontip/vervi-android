@@ -37,10 +37,26 @@ export class RequestsService {
   async update(id: number, requestData: Partial<Request>): Promise<Request | null> {
     // Filter out relational properties, primary key, and read-only timestamps
     const { id: _, createdAt, updatedAt, client, category, attachments, applications, notifications, conversations, services, ...columns } = requestData as any;
+    
+    // Defensive check: map incoming frontend status to DB enum values
+    if (columns.status) {
+      const s = columns.status.toUpperCase();
+      if (s === 'CANCELLED' || s === 'CANCELADA') {
+        columns.status = 'Cerrado';
+      } else if (s === 'COMPLETED' || s === 'COMPLETADO') {
+        columns.status = 'Cerrado';
+      } else if (s === 'IN_PROGRESS' || s === 'EN_CURSO') {
+        columns.status = 'En curso';
+      } else if (s === 'PENDING' || s === 'PENDIENTE') {
+        columns.status = 'Pendiente';
+      } else if (s === 'DRAFT' || s === 'BORRADOR') {
+        columns.status = 'Borrador';
+      }
+    }
+
     await this.requestsRepository.update(id, columns);
     return this.findById(id);
   }
-
 
 
   async remove(id: number): Promise<void> {

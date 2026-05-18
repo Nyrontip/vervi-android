@@ -3,10 +3,11 @@ package com.example.verviapp.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.verviapp.data.dao.RequestDao
-import com.example.verviapp.data.dao.ServiceApplicationDao
-import com.example.verviapp.data.entity.ServiceApplicationEntity
-import com.example.verviapp.data.repository.SampleData
+import android.net.Uri
+import com.example.verviapp.data.remote.dto.ApplicationCreateRequest
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.ImageUploadRepository
+import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.ApplyForServiceUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,8 +24,8 @@ sealed class ApplyForServiceEvent {
 
 @HiltViewModel
 class ApplyForServiceViewModel @Inject constructor(
-    private val requestDao: RequestDao,
-    private val serviceApplicationDao: ServiceApplicationDao,
+    private val requestRepository: RequestRepository,
+    private val imageUploadRepository: ImageUploadRepository,
     private val sessionManager: SessionManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -47,12 +48,21 @@ class ApplyForServiceViewModel @Inject constructor(
 
     fun load(requestId: Int) {
         viewModelScope.launch {
-            val request = requestDao.getRequestById(requestId)
-            _uiState.value = _uiState.value.copy(
-                requestId = requestId,
-                requestTitle = request?.title.orEmpty(),
-                error = null
-            )
+            when (val result = requestRepository.getRequestDetail(requestId)) {
+                is ApiResult.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        requestId = requestId,
+                        requestTitle = result.data.title,
+                        error = null
+                    )
+                }
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        requestId = requestId,
+                        error = result.message
+                    )
+                }
+            }
         }
     }
 
@@ -100,29 +110,50 @@ class ApplyForServiceViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSubmitting = true, error = null)
             try {
-                val providerUserId = sessionManager.getLoggedInUserId() ?: SampleData.SERVICE_LOCAL_USER_ID
-                val ok = serviceApplicationDao.submitApplication(
-                    ServiceApplicationEntity(
+                val providerUserId = sessionManager.getLoggedInUserId() ?: run {
+                    _uiState.value = _uiState.value.copy(isSubmitting = false, error = "Debes iniciar sesión")
+                    return@launch
+                }
+
+                // Upload evidence image if selected
+                var evidenceImageUrl: String? = null
+                state.evidenceUri?.let { uriStr ->
+                    val uri = Uri.parse(uriStr)
+                    when (val uploadResult = imageUploadRepository.uploadImage(uri)) {
+                        is ApiResult.Success -> evidenceImageUrl = uploadResult.data.secureUrl
+                        is ApiResult.Error -> {
+                            _uiState.value = _uiState.value.copy(
+                                isSubmitting = false,
+                                error = "Error al subir imagen de evidencia: ${uploadResult.message}"
+                            )
+                            return@launch
+                        }
+                    }
+                }
+
+                val result = requestRepository.createApplication(
+                    ApplicationCreateRequest(
                         requestId = safeRequestId,
                         providerUserId = providerUserId,
                         presentationMessage = state.presentationMessage.trim(),
                         proposedPriceCop = parsedPrice,
-                        evidenceUri = state.evidenceUri,
                         immediateAvailability = state.immediateAvailability,
-                        status = "PENDING"
+                        evidenceImageUrl = evidenceImageUrl
                     )
                 )
 
-                if (!ok) {
-                    _uiState.value = _uiState.value.copy(
-                        isSubmitting = false,
-                        error = "No se pudo registrar la postulacion"
-                    )
-                    return@launch
+                when (result) {
+                    is ApiResult.Success -> {
+                        _uiState.value = _uiState.value.copy(isSubmitting = false)
+                        _events.emit(ApplyForServiceEvent.Submitted)
+                    }
+                    is ApiResult.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            isSubmitting = false,
+                            error = result.message
+                        )
+                    }
                 }
-
-                _uiState.value = _uiState.value.copy(isSubmitting = false)
-                _events.emit(ApplyForServiceEvent.Submitted)
             } catch (t: Throwable) {
                 _uiState.value = _uiState.value.copy(
                     isSubmitting = false,
@@ -132,5 +163,3 @@ class ApplyForServiceViewModel @Inject constructor(
         }
     }
 }
-
-

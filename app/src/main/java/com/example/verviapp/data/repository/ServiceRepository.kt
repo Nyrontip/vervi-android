@@ -1,7 +1,9 @@
 package com.example.verviapp.data.repository
 
 import com.example.verviapp.data.remote.VerviApi
+import com.example.verviapp.data.remote.dto.AddEvidenceBody
 import com.example.verviapp.data.remote.dto.ServiceDto
+import com.example.verviapp.data.remote.dto.ServiceEvidenceRequest
 import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,6 +17,17 @@ class ServiceRepository @Inject constructor(
 
     suspend fun getServicesByProvider(providerId: Int): ApiResult<List<ServiceDto>> =
         fetchList { api.getServicesByProvider(providerId) }
+
+    suspend fun addEvidenceToService(
+        serviceId: Int,
+        imageUrl: String,
+        caption: String? = null
+    ): ApiResult<ServiceDto> = fetchOne {
+        api.updateService(
+            serviceId,
+            AddEvidenceBody(evidence = listOf(ServiceEvidenceRequest(imageUrl = imageUrl, caption = caption)))
+        )
+    }
 
     private suspend fun fetchOne(
         apiCall: suspend () -> Response<ServiceDto>
@@ -48,3 +61,4 @@ class ServiceRepository @Inject constructor(
         ApiResult.Error(e.message ?: "Error de conexión")
     }
 }
+

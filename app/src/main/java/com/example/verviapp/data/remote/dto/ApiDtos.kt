@@ -197,3 +197,51 @@ data class ApiError(
 data class ImageUploadResponse(
     @Json(name = "secure_url") val secureUrl: String
 )
+
+// ── Postulaciones (aplicaciones) ────────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class ApplicationCreateRequest(
+    @Json(name = "requestId") val requestId: Int,
+    @Json(name = "providerUserId") val providerUserId: Int,
+    @Json(name = "presentationMessage") val presentationMessage: String,
+    @Json(name = "proposedPriceCop") val proposedPriceCop: Long? = null,
+    @Json(name = "immediateAvailability") val immediateAvailability: Boolean = false,
+    @Json(name = "evidenceImageUrl") val evidenceImageUrl: String? = null
+)
+
+// ── Reviews / Calificaciones ─────────────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class ReviewCreateRequest(
+    @Json(name = "serviceId") val serviceId: Int,
+    @Json(name = "reviewerUserId") val reviewerUserId: Int,
+    @Json(name = "reviewedUserId") val reviewedUserId: Int,
+    @Json(name = "rating") val rating: Int,
+    @Json(name = "comment") val comment: String? = null,
+    @Json(name = "evidenceImageUrl") val evidenceImageUrl: String? = null
+)
+
+data class ReviewDto(
+    val id: Int,
+    val serviceId: Int,
+    val reviewerUserId: Int,
+    val reviewedUserId: Int,
+    val rating: Int,
+    val comment: String? = null,
+    val evidenceImageUrl: String? = null,
+    val createdAt: String? = null
+)
+
+// ── Evidencia de servicio ────────────────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class ServiceEvidenceRequest(
+    @Json(name = "imageUrl") val imageUrl: String,
+    @Json(name = "caption") val caption: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class AddEvidenceBody(
+    @Json(name = "evidence") val evidence: List<ServiceEvidenceRequest>
+)

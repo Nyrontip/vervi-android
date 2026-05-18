@@ -14,6 +14,8 @@ data class NewRequestUiState(
     val isLoadingCategories: Boolean = false,
     val categoriesError: String? = null,
     val isSubmitting: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val draftId: Int? = null
 )
+
 

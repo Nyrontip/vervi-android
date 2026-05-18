@@ -98,6 +98,34 @@ class RequestRepository @Inject constructor(
     suspend fun getRequestDetail(requestId: Int): ApiResult<RequestDto> =
         fetchOne { api.getRequestById(requestId) }
 
+    suspend fun createRequest(data: RequestCreateRequest): ApiResult<RequestDto> =
+        fetchOne { api.createRequest(data) }
+
+    suspend fun updateRequestStatus(requestId: Int, status: String): ApiResult<RequestDto> {
+        // Fetch current data then send only the status update
+        val current = when (val r = getRequestDetail(requestId)) {
+            is ApiResult.Success -> r.data
+            is ApiResult.Error -> return ApiResult.Error(r.message, r.code)
+        }
+        val mappedStatus = when (status) {
+            "CANCELLED", "Cancelada" -> "Cerrado"
+            "COMPLETED", "Completado" -> "Cerrado"
+            else -> status
+        }
+        return fetchOne {
+            api.updateRequest(
+                requestId,
+                current.copy(
+                    status = mappedStatus,
+                    isActive = mappedStatus !in listOf("CANCELLED", "COMPLETED", "Cancelada", "Completado", "Cerrado")
+                )
+            )
+        }
+    }
+
+    suspend fun deleteRequest(requestId: Int): ApiResult<Unit> =
+        executeAppAction { api.deleteRequest(requestId) }
+
     // ── Postulaciones ───────────────────────────────────────────
 
     suspend fun getApplicationsByRequest(requestId: Int): ApiResult<List<ApplicationDto>> =
@@ -109,7 +137,11 @@ class RequestRepository @Inject constructor(
     suspend fun rejectApplication(applicationId: Int): ApiResult<Unit> =
         executeAppAction { api.updateApplication(applicationId, mapOf("status" to "REJECTED")) }
 
+    suspend fun createApplication(data: ApplicationCreateRequest): ApiResult<ApplicationDto> =
+        fetchAppOne { api.createApplication(data) }
+
     fun getLoggedInUserId(): Int? = sessionManager.getLoggedInUserId()
+
 
     // ── Helpers ────────────────────────────────────────────────
 
@@ -154,6 +186,23 @@ class RequestRepository @Inject constructor(
     } catch (e: Exception) {
         ApiResult.Error(e.message ?: "Error de conexión")
     }
+
+    private suspend fun fetchAppOne(
+        apiCall: suspend () -> Response<ApplicationDto>
+    ): ApiResult<ApplicationDto> = try {
+        val response = apiCall()
+        if (response.isSuccessful && response.body() != null) {
+            ApiResult.Success(response.body()!!)
+        } else {
+            ApiResult.Error(
+                response.errorBody()?.string() ?: "Error al enviar postulación",
+                response.code()
+            )
+        }
+    } catch (e: Exception) {
+        ApiResult.Error(e.message ?: "Error de conexión")
+    }
+
 
     private suspend fun fetchList(
         apiCall: suspend () -> Response<List<RequestDto>>

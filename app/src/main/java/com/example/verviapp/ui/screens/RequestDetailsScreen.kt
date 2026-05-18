@@ -30,6 +30,10 @@ import com.example.verviapp.ui.components.organisms.ImageCarousel
 import com.example.verviapp.ui.components.organisms.RequestDetailsCard
 import com.example.verviapp.ui.components.organisms.RequestActionBar
 import com.example.verviapp.ui.theme.VerviColors
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 /**
  * Detail screen for a **request / solicitud** (open job): hero, budget, apply flow.
@@ -46,6 +50,19 @@ fun RequestDetailsScreen(
     val request = uiState.request
     val requestId = request?.id?.toIntOrNull()
     val images = request?.images.orEmpty()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                vm.retry()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
     val scrollState = rememberScrollState()
     var selectedCarouselIndex by remember { mutableIntStateOf(0) }
 
@@ -86,6 +103,7 @@ fun RequestDetailsScreen(
                 RequestActionBar(
                     isOwner = uiState.isOwner,
                     hasProvider = hasProvider,
+                    isClosed = uiState.isClosed,
                     onApplyClick = {
                         if (!vm.isLoggedIn()) {
                             navController.navigate("login")
@@ -106,6 +124,7 @@ fun RequestDetailsScreen(
                     }
                 )
             }
+
         }
     ) { innerPadding ->
         Column(

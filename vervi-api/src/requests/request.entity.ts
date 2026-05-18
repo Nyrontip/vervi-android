@@ -45,7 +45,14 @@ export class Request {
   @Column({ nullable: true })
   budgetCop: number;
 
-  @Column({ nullable: true })
+  @Column({
+    type: 'bigint',
+    nullable: true,
+    transformer: {
+      to: (value: number | null) => value,
+      from: (value: string | null) => value ? parseInt(value, 10) : null
+    }
+  })
   requiredDateMillis: number;
 
   @Column({ nullable: true })
