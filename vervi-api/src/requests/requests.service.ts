@@ -8,7 +8,7 @@ export class RequestsService {
   constructor(
     @InjectRepository(Request)
     private requestsRepository: Repository<Request>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Request[]> {
     return this.requestsRepository.find({ relations: ['client', 'category', 'attachments', 'applications'] });
@@ -35,9 +35,13 @@ export class RequestsService {
   }
 
   async update(id: number, requestData: Partial<Request>): Promise<Request | null> {
-    await this.requestsRepository.update(id, requestData);
+    // Filter out relational properties, primary key, and read-only timestamps
+    const { id: _, createdAt, updatedAt, client, category, attachments, applications, notifications, conversations, services, ...columns } = requestData as any;
+    await this.requestsRepository.update(id, columns);
     return this.findById(id);
   }
+
+
 
   async remove(id: number): Promise<void> {
     await this.requestsRepository.delete(id);
