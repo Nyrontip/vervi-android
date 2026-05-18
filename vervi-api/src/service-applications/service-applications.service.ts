@@ -11,7 +11,7 @@ export class ServiceApplicationsService {
     private applicationsRepository: Repository<ServiceApplication>,
     @InjectRepository(Service)
     private servicesRepository: Repository<Service>,
-  ) {}
+  ) { }
 
   async findAll(): Promise<ServiceApplication[]> {
     return this.applicationsRepository.find({ relations: ['request', 'provider'] });
@@ -35,9 +35,12 @@ export class ServiceApplicationsService {
   }
 
   async update(id: number, applicationData: Partial<ServiceApplication>): Promise<ServiceApplication | null> {
-    await this.applicationsRepository.update(id, applicationData);
+    // Filter out relational properties so TypeORM update does not try to query across relations
+    const { request, provider, notifications, ...columns } = applicationData as any;
+    await this.applicationsRepository.update(id, columns);
     return this.findById(id);
   }
+
 
   async remove(id: number): Promise<void> {
     await this.applicationsRepository.delete(id);
