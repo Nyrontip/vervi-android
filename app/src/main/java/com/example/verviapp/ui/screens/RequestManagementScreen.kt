@@ -21,6 +21,10 @@ import com.example.verviapp.ui.components.*
 import com.example.verviapp.ui.theme.VerviColors
 import com.example.verviapp.viewmodel.RequestEvent
 import com.example.verviapp.viewmodel.RequestManagementViewModel
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 // -----------------------------
 // SCREEN
@@ -29,6 +33,19 @@ import com.example.verviapp.viewmodel.RequestManagementViewModel
 fun RequestsScreen(navController: NavController, vm: RequestManagementViewModel = hiltViewModel()) {
 
     val state by vm.uiState.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                vm.retry()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     // Navegación por eventos
     LaunchedEffect(Unit) {
@@ -86,7 +103,7 @@ fun RequestsScreen(navController: NavController, vm: RequestManagementViewModel 
                 containerColor = VerviColors.BgColor,
                 contentColor = VerviColors.Blue
             ) {
-                listOf("Activas", "Finalizadas").forEachIndexed { index, title ->
+                listOf("Activas", "Finalizadas", "Borradores").forEachIndexed { index, title ->
                     Tab(
                         selected = state.selectedTab == index,
                         onClick = { vm.selectTab(index) },
@@ -164,17 +181,21 @@ fun RequestsScreen(navController: NavController, vm: RequestManagementViewModel 
                             )
                             Spacer(Modifier.height(16.dp))
                             Text(
-                                text = if (state.selectedTab == 0)
-                                    "No tienes solicitudes activas"
-                                else
-                                    "No tienes solicitudes finalizadas",
+                                text = when (state.selectedTab) {
+                                    0 -> "No tienes solicitudes activas"
+                                    1 -> "No tienes solicitudes finalizadas"
+                                    else -> "No tienes borradores guardados"
+                                },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = VerviColors.TextDark
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "Crea una nueva solicitud para empezar",
+                                text = if (state.selectedTab == 2)
+                                    "Los borradores aparecerán aquí al salir sin publicar"
+                                else
+                                    "Crea una nueva solicitud para empezar",
                                 fontSize = 13.sp,
                                 color = VerviColors.TextGray
                             )

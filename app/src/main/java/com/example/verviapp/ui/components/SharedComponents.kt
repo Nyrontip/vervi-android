@@ -806,33 +806,38 @@ fun VerviRequestCard(
                 )
             }
 
-            Row(
-                modifier = Modifier.padding(top = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            val isClosed = request.status in listOf("CANCELLED", "COMPLETED", "Cancelada", "Completado", "Cerrado")
+            val showButtons = request.status == "Borrador" || !isClosed
 
-                if (request.status == "Borrador") {
-                    VerviSmallButton(
-                        text = "Eliminar",
-                        color = VerviColors.CancelRed,
-                        onClick = { navController.navigate("request/cancel/${request.id}") },
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
+            if (showButtons) {
+                Row(
+                    modifier = Modifier.padding(top = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
 
-                    VerviSmallButton(
-                        text = "Cancelar",
-                        color = VerviColors.CancelRed,
-                        onClick = { navController.navigate("request/cancel/${request.id}") },
-                        modifier = Modifier.weight(1f)
-                    )
+                    if (request.status == "Borrador") {
+                        VerviSmallButton(
+                            text = "Eliminar",
+                            color = VerviColors.CancelRed,
+                            onClick = { navController.navigate("request/delete/${request.id}") },
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
 
-                    VerviSmallButton(
-                        text = "Confirmar",
-                        color = VerviColors.Primary,
-                        onClick = { navController.navigate("request/confirm/${request.id}") },
-                        modifier = Modifier.weight(1f)
-                    )
+                        VerviSmallButton(
+                            text = "Cancelar",
+                            color = VerviColors.CancelRed,
+                            onClick = { navController.navigate("request/cancel/${request.id}") },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        VerviSmallButton(
+                            text = "Confirmar",
+                            color = VerviColors.Primary,
+                            onClick = { navController.navigate("request/confirm/${request.id}") },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }

@@ -1,11 +1,13 @@
 package com.example.verviapp.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.verviapp.data.remote.dto.ServiceDto
 import com.example.verviapp.data.repository.ApiResult
 import com.example.verviapp.data.repository.ChatRepository
+import com.example.verviapp.data.repository.ImageUploadRepository
 import com.example.verviapp.data.repository.ServiceRepository
 import com.example.verviapp.data.session.SessionManager
 import com.example.verviapp.viewmodel.state.ServiceDetailItem
@@ -25,13 +27,16 @@ data class ServiceDetailsUiState(
     val error: String? = null,
     val detail: ServiceDetailItem? = null,
     val isOwner: Boolean = false,
-    val counterpartUserId: Int? = null
+    val counterpartUserId: Int? = null,
+    val isUploadingEvidence: Boolean = false,
+    val evidenceError: String? = null
 )
 
 @HiltViewModel
 class ServiceDetailsViewModel @Inject constructor(
     private val repository: ServiceRepository,
     private val chatRepository: ChatRepository,
+    private val imageUploadRepository: ImageUploadRepository,
     private val sessionManager: SessionManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -79,6 +84,36 @@ class ServiceDetailsViewModel @Inject constructor(
         return when (val result = chatRepository.findOrCreateConversation(counterpartUserId, requestId)) {
             is ApiResult.Success -> result.data.id
             is ApiResult.Error -> null
+        }
+    }
+
+    fun addEvidence(uri: Uri) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isUploadingEvidence = true, evidenceError = null)
+            when (val uploadResult = imageUploadRepository.uploadImage(uri)) {
+                is ApiResult.Success -> {
+                    val secureUrl = uploadResult.data.secureUrl
+                    when (val addResult = repository.addEvidenceToService(serviceIdArg, secureUrl)) {
+                        is ApiResult.Success -> {
+                            _uiState.value = _uiState.value.copy(isUploadingEvidence = false)
+                            // Reload to pick up the new evidence from the server
+                            load(serviceIdArg)
+                        }
+                        is ApiResult.Error -> {
+                            _uiState.value = _uiState.value.copy(
+                                isUploadingEvidence = false,
+                                evidenceError = addResult.message
+                            )
+                        }
+                    }
+                }
+                is ApiResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isUploadingEvidence = false,
+                        evidenceError = "Error al subir imagen: ${uploadResult.message}"
+                    )
+                }
+            }
         }
     }
 

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service } from './service.entity';
+import { ServiceEvidence } from './service-evidence.entity';
 
 @Injectable()
 export class ServicesService {
@@ -34,7 +35,23 @@ export class ServicesService {
   async update(id: number, serviceData: Partial<Service>): Promise<Service | null> {
     // Filter out relational properties so TypeORM update does not try to query across one-to-many/many-to-one relations
     const { client, provider, request, evidence, reviews, conversations, ...columns } = serviceData as any;
-    await this.servicesRepository.update(id, columns);
+    
+    // Save evidence if provided
+    if (evidence && Array.isArray(evidence) && evidence.length > 0) {
+      const newEvidences = evidence.map(ev => {
+        const item = new ServiceEvidence();
+        item.serviceId = id;
+        item.imageUrl = ev.imageUrl;
+        item.caption = ev.caption || '';
+        return item;
+      });
+      await this.servicesRepository.manager.save(newEvidences);
+    }
+
+    if (Object.keys(columns).length > 0) {
+      await this.servicesRepository.update(id, columns);
+    }
+    
     return this.findById(id);
   }
 

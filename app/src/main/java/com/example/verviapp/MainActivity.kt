@@ -24,6 +24,7 @@ import com.example.verviapp.ui.screens.NotificationsScreen
 import com.example.verviapp.ui.screens.RateServiceScreen
 import com.example.verviapp.ui.screens.RequestCancelScreen
 import com.example.verviapp.ui.screens.RequestConfirmScreen
+import com.example.verviapp.ui.screens.RequestDeleteScreen
 import com.example.verviapp.ui.screens.RequestDetailsScreen
 import com.example.verviapp.ui.screens.ServiceDetailsScreen
 import com.example.verviapp.ui.screens.RequestsScreen
@@ -102,6 +103,13 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
                         RequestCancelScreen(navController, requestId)
+                    }
+                    dialog(
+                        route = "request/delete/{requestId}",
+                        arguments = listOf(navArgument("requestId") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val requestId = backStackEntry.arguments?.getInt("requestId") ?: return@dialog
+                        RequestDeleteScreen(navController, requestId)
                     }
                     composable(
                         route = "request/applications/{requestId}",

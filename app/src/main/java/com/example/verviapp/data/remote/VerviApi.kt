@@ -110,4 +110,25 @@ interface VerviApi {
     @Multipart
     @POST("upload/image")
     suspend fun uploadImage(@Part file: MultipartBody.Part): Response<ImageUploadResponse>
+
+    // ── Crear postulación ────────────────────────────────────────
+
+    @POST("applications")
+    suspend fun createApplication(@Body request: ApplicationCreateRequest): Response<ApplicationDto>
+
+    // ── Reviews / Calificaciones ─────────────────────────────────
+
+    @POST("reviews")
+    suspend fun createReview(@Body request: ReviewCreateRequest): Response<ReviewDto>
+
+    @GET("reviews/service/{serviceId}")
+    suspend fun getReviewsByService(@Path("serviceId") serviceId: Int): Response<List<ReviewDto>>
+
+    // ── Actualizar servicio (evidencia parcial) ───────────────────
+
+    @PUT("services/{id}")
+    suspend fun updateService(
+        @Path("id") id: Int,
+        @Body request: AddEvidenceBody
+    ): Response<ServiceDto>
 }

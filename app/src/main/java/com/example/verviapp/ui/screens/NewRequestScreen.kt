@@ -1,5 +1,6 @@
 package com.example.verviapp.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
@@ -78,14 +80,59 @@ fun NewRequestScreen(
 
     var categoryMenuExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showDraftDialog by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = uiState.dateMillis
     )
 
+    val handleBack: () -> Unit = {
+        if (viewModel.hasUnsavedData() && !uiState.isSubmitting) {
+            showDraftDialog = true
+        } else {
+            navController.popBackStack()
+        }
+    }
+
+    // Intercept back navigation when form has unsaved data
+    BackHandler(enabled = viewModel.hasUnsavedData() && !uiState.isSubmitting) {
+        handleBack()
+    }
+
+    // Draft save dialog
+    if (showDraftDialog) {
+        AlertDialog(
+            onDismissRequest = { showDraftDialog = false },
+            title = { Text("¿Guardar como borrador?") },
+            text = { Text("Puedes continuar editando esta solicitud más tarde desde la sección Borradores.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDraftDialog = false
+                    viewModel.saveDraft()
+                }) {
+                    Text("Guardar borrador", color = VerviColors.Primary, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = {
+                        showDraftDialog = false
+                        navController.popBackStack()
+                    }) {
+                        Text("Descartar", color = VerviColors.CancelRed)
+                    }
+                    TextButton(onClick = { showDraftDialog = false }) {
+                        Text("Cancelar", color = VerviColors.TextGray)
+                    }
+                }
+            }
+        )
+    }
+
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
-            if (event is NewRequestEvent.Submitted) {
-                navController.popBackStack()
+            when (event) {
+                is NewRequestEvent.Submitted -> navController.popBackStack()
+                is NewRequestEvent.DraftSaved -> navController.popBackStack()
             }
         }
     }
@@ -103,7 +150,7 @@ fun NewRequestScreen(
             Column {
                 VerviTopBar(
                     title = "Nueva Solicitud",
-                    onBack = { navController.popBackStack() }
+                    onBack = handleBack
                 )
                 HorizontalDivider(
                     thickness = 1.dp,

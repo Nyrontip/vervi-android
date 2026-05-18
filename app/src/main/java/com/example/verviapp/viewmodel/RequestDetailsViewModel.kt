@@ -26,6 +26,7 @@ data class RequestDetailsUiState(
     val error: String? = null,
     val request: RequestDetailItem? = null,
     val isOwner: Boolean = false,
+    val isClosed: Boolean = false,
     val provider: ClientSummary? = null,
     val providerUserId: Int? = null,
     val clientUserId: Int? = null
@@ -76,11 +77,13 @@ class RequestDetailsViewModel @Inject constructor(
                     val dto = result.data
                     val currentUserId = sessionManager.getLoggedInUserId()
                     val owner = currentUserId != null && currentUserId == dto.clientUserId
+                    val closed = dto.status in listOf("CANCELLED", "COMPLETED", "Cancelada", "Completado", "Cerrado")
 
                     val resolvedProvider = dto.resolveProvider()
                     _uiState.value = _uiState.value.copy(
                         request = dto.toDetailItem(),
                         isOwner = owner,
+                        isClosed = closed,
                         provider = resolvedProvider?.first,
                         providerUserId = resolvedProvider?.second,
                         clientUserId = dto.clientUserId,

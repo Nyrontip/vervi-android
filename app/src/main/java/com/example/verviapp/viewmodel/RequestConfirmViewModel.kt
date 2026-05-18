@@ -2,7 +2,8 @@ package com.example.verviapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.verviapp.data.dao.RequestDao
+import com.example.verviapp.data.repository.ApiResult
+import com.example.verviapp.data.repository.RequestRepository
 import com.example.verviapp.viewmodel.state.RequestConfirmUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,7 +19,7 @@ sealed class RequestConfirmEvent {
 
 @HiltViewModel
 class RequestConfirmViewModel @Inject constructor(
-    private val requestDao: RequestDao
+    private val requestRepository: RequestRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RequestConfirmUiState())
@@ -52,33 +53,18 @@ class RequestConfirmViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSubmitting = true, error = null)
-            try {
-                val now = System.currentTimeMillis()
-                val updatedRows = requestDao.confirmRequest(
-                    requestId = requestId,
-                    status = "Completado",
-                    buttonText = "Ver",
-                    closedAt = now,
-                    updatedAt = now
-                )
-
-                if (updatedRows == 0) {
+            when (val result = requestRepository.updateRequestStatus(requestId, "COMPLETED")) {
+                is ApiResult.Success -> {
+                    _uiState.value = _uiState.value.copy(isSubmitting = false)
+                    _events.emit(RequestConfirmEvent.Confirmed)
+                }
+                is ApiResult.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isSubmitting = false,
-                        error = "No se pudo confirmar la solicitud"
+                        error = result.message
                     )
-                    return@launch
                 }
-
-                _uiState.value = _uiState.value.copy(isSubmitting = false)
-                _events.emit(RequestConfirmEvent.Confirmed)
-            } catch (t: Throwable) {
-                _uiState.value = _uiState.value.copy(
-                    isSubmitting = false,
-                    error = t.message ?: "Error desconocido"
-                )
             }
         }
     }
 }
-
