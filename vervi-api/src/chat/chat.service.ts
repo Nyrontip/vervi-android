@@ -5,6 +5,7 @@ import { Conversation } from './conversation.entity';
 import { Message } from './message.entity';
 import { Request } from '../requests/request.entity';
 import { Service } from '../services/service.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ChatService {
@@ -17,6 +18,7 @@ export class ChatService {
     private requestsRepository: Repository<Request>,
     @InjectRepository(Service)
     private servicesRepository: Repository<Service>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async findAllConversations(): Promise<Conversation[]> {
@@ -69,6 +71,24 @@ export class ChatService {
 
     // Gatillar inicio de servicio si es primer mensaje del provider
     await this.tryStartService(messageData.conversationId!, messageData.senderUserId!);
+
+    // Notificar al otro participante de la conversación
+    const conversation = await this.conversationsRepository.findOne({
+      where: { id: saved.conversationId },
+    });
+    if (conversation) {
+      const otherUserId = conversation.participantAUserId === saved.senderUserId
+        ? conversation.participantBUserId
+        : conversation.participantAUserId;
+
+      await this.notificationsService.create({
+        userId: otherUserId,
+        title: 'Nuevo mensaje',
+        description: `Tienes un nuevo mensaje en la conversación`,
+        type: 'MESSAGE',
+        conversationId: saved.conversationId,
+      });
+    }
 
     return saved;
   }
